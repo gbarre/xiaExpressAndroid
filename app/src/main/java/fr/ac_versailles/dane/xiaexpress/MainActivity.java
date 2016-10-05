@@ -15,14 +15,15 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int SELECT_PICTURE = 1;
 
     private static String documentsDirectory = Environment.getExternalStorageDirectory().getPath()+"/XiaExpress/";
+    private static String cacheDirectory = documentsDirectory+".cache/";
 
     private String selectedImagePath;
     private String[] arrayNames = new String[50];
@@ -41,30 +43,26 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //String documentsDirectory = Environment.getExternalStorageDirectory().getPath()+"/XiaExpress/";
-        File dir = new File(documentsDirectory);
-        dir.mkdirs();
+        File docDir = new File(documentsDirectory);
+        docDir.mkdirs();
+        File cacheDir = new File(cacheDirectory);
+        cacheDir.mkdirs();
 
         // Load the collection in grid view
         gridView = (GridView) findViewById(R.id.gridView);
         gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData());
         gridView.setAdapter(gridAdapter);
 
-        Log.v("arrayNames", Arrays.toString(arrayNames));
-
         // Add listener on collection
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 PhotoThumbnail item = (PhotoThumbnail) parent.getItemAtPosition(position);
 
-                Log.v("item", item.getTitle());
-
                 //Create intent
                 Intent intent = new Intent(MainActivity.this, CreateDetailActivity.class);
                 intent.putExtra("title", item.getTitle());
-                //intent.putExtra("image", item.getImage());
 
                 //Start details activity
-                Log.v("Click", item.getTitle());
                 startActivity(intent);
 
 
@@ -105,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                //Bitmap bitmap = BitmapFactory.decodeFile(documentsDirectory + now + ".jpg");
                 Bitmap bitmap = decodeSampledBitmapFromFile(documentsDirectory + now + ".jpg", 150, 150);
                 String imgName = new File(documentsDirectory + now + ".jpg").getName();
                 gridAdapter.add(new PhotoThumbnail(bitmap, imgName));
@@ -144,11 +141,20 @@ public class MainActivity extends AppCompatActivity {
         File dir = new File(documentsDirectory);
         File[] imgs = dir.listFiles();
         for (int i = 0; i < imgs.length; i++) {
-            //Bitmap bitmap = BitmapFactory.decodeFile(imgs[i].toString());
-            Bitmap bitmap = decodeSampledBitmapFromFile(imgs[i].toString(), 150, 150);
             String imgName = imgs[i].getName();
-            imageItems.add(new PhotoThumbnail(bitmap, imgName));
-            arrayNames[i] = imgName;
+            if (!imgName.equals(new String(".cache"))) {
+                arrayNames[i] = imgName;
+
+                Bitmap bitmap;
+                // Check if image is in cacheDirectory
+                if (new File(cacheDirectory + imgName).exists()) {
+                    bitmap = BitmapFactory.decodeFile(cacheDirectory + imgName);
+                } else {
+                    bitmap = decodeSampledBitmapFromFile(imgs[i].toString(), 150, 150);
+                }
+
+                imageItems.add(new PhotoThumbnail(bitmap, imgName));
+            }
         }
         return imageItems;
     }
@@ -156,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Copy file from path src to path dst
      */
-    public void copy(File src, File dst) throws IOException {
+    public static void copy(File src, File dst) throws IOException {
         InputStream in = new FileInputStream(src);
         OutputStream out = new FileOutputStream(dst);
 
@@ -171,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private static Bitmap decodeSampledBitmapFromFile(String path,int reqWidth, int reqHeight) {
+    private Bitmap decodeSampledBitmapFromFile(String path, int reqWidth, int reqHeight) {
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -185,7 +191,33 @@ public class MainActivity extends AppCompatActivity {
 
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(path,options);
+
+        // Copy file to cacheDirectory
+        String imgName = path.substring(path.lastIndexOf("/")+1);
+        File cachedImage = new File(cacheDirectory+imgName);
+        try {
+            cachedImage.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Bitmap bitmap = BitmapFactory.decodeFile(path,options);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, bos);
+        byte[] bitmapData = bos.toByteArray();
+
+        try {
+            FileOutputStream fos = new FileOutputStream(cachedImage);
+            fos.write(bitmapData);
+            fos.flush();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return BitmapFactory.decodeFile(String.valueOf(cachedImage));
     }
 
     private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
