@@ -1,12 +1,9 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +12,8 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,22 +30,35 @@ public class MainActivity extends AppCompatActivity {
     private GridViewAdapter gridAdapter;
     private static final int SELECT_PICTURE = 1;
 
-    private static String documentsDirectory = Environment.getExternalStorageDirectory().getPath()+"/XiaExpress/";
-    private static String cacheDirectory = documentsDirectory+".cache/";
-
     private String selectedImagePath;
     private String[] arrayNames = new String[50];
+
+    private String documentsDirectory;
+    private String cacheDirectory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //String documentsDirectory = Environment.getExternalStorageDirectory().getPath()+"/XiaExpress/";
-        File docDir = new File(documentsDirectory);
-        docDir.mkdirs();
-        File cacheDir = new File(cacheDirectory);
-        cacheDir.mkdirs();
+        documentsDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
+        cacheDirectory = documentsDirectory + ".cache" + File.separator;
+        File cDirectory = new File(cacheDirectory);
+        boolean success = true;
+        if (!cDirectory.exists()) {
+            success = cDirectory.mkdir();
+            if (success) {
+                // Do something on success
+                Log.v("Success", ".cache created");
+            } else {
+                // Do something else on failure
+                Log.v("Success", ".cache not created");
+            }
+        }
+        else {
+            Log.v("Success", ".cache exist");
+        }
+
 
         // Load the collection in grid view
         gridView = (GridView) findViewById(R.id.gridView);
@@ -88,49 +100,33 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+
     // Store the image
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_PICTURE) {
+                Log.v("result", data.toString());
                 // Convert uri to path
                 Uri selectedImageUri = data.getData();
-                selectedImagePath = getPath(selectedImageUri);
-
+                Log.v("selectedImageUri", selectedImageUri.toString());
                 // Copy file to documentsDirectory
                 long now = System.currentTimeMillis();
+
                 try {
-                    copy(new File(selectedImagePath), new File(documentsDirectory + now + ".jpg"));
+                    InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
+                    copy(inputStream, new File(documentsDirectory + now + ".jpg"));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                Log.v("onresult", "try to decode");
                 Bitmap bitmap = decodeSampledBitmapFromFile(documentsDirectory + now + ".jpg", 150, 150);
                 String imgName = new File(documentsDirectory + now + ".jpg").getName();
                 gridAdapter.add(new PhotoThumbnail(bitmap, imgName));
             }
         }
-    }
-
-    /**
-     * helper to retrieve the path of an image URI
-     */
-    public String getPath(Uri uri) {
-        // just some safety built in
-        if( uri == null ) {
-            // TODO perform some logging or show user feedback
-            return null;
-        }
-        // try to retrieve the image from the media store first
-        // this will only work for images selected from gallery
-        String[] projection = { MediaStore.Images.Media.DATA };
-        Cursor cursor = getContentResolver().query(uri,
-                projection, null, null, null);
-        if( cursor != null ){
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-            return cursor.getString(column_index);
-        }
-        // this is our fallback here
-        return uri.getPath();
     }
 
     /**
@@ -140,21 +136,29 @@ public class MainActivity extends AppCompatActivity {
         final ArrayList<PhotoThumbnail> imageItems = new ArrayList<>();
         File dir = new File(documentsDirectory);
         File[] imgs = dir.listFiles();
-        for (int i = 0; i < imgs.length; i++) {
-            String imgName = imgs[i].getName();
-            if (!imgName.equals(new String(".cache"))) {
-                arrayNames[i] = imgName;
+        if (imgs != null && imgs.length > 1) {
+            for (int i = 1; i < imgs.length; i++) {
+                String imgName = imgs[i].getName();
+                Log.v("imgs["+i+"]", imgName);
+                if (!imgName.equals(new String(".cache"))) {
+                    arrayNames[i] = imgName;
 
-                Bitmap bitmap;
-                // Check if image is in cacheDirectory
-                if (new File(cacheDirectory + imgName).exists()) {
-                    bitmap = BitmapFactory.decodeFile(cacheDirectory + imgName);
-                } else {
-                    bitmap = decodeSampledBitmapFromFile(imgs[i].toString(), 150, 150);
+                    Bitmap bitmap;
+                    // Check if image is in cacheDirectory
+                    if (new File(cacheDirectory + imgName).exists()) {
+                        bitmap = BitmapFactory.decodeFile(cacheDirectory + imgName);
+                    } else {
+                        bitmap = decodeSampledBitmapFromFile(imgs[i].toString(), 150, 150);
+                    }
+
+                    imageItems.add(new PhotoThumbnail(bitmap, imgName));
                 }
-
-                imageItems.add(new PhotoThumbnail(bitmap, imgName));
             }
+        }
+        else {
+            Log.v("noImage", "try to load plus200");
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.plus200);
+            imageItems.add(new PhotoThumbnail(bitmap, "New resource..."));
         }
         return imageItems;
     }
@@ -162,8 +166,9 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Copy file from path src to path dst
      */
-    public static void copy(File src, File dst) throws IOException {
-        InputStream in = new FileInputStream(src);
+    public static void copy(InputStream in, File dst) throws IOException {
+        Log.v("copy", "copy launched");
+        //InputStream in = new FileInputStream(src);
         OutputStream out = new FileOutputStream(dst);
 
         // Transfer bytes from in to out
@@ -176,14 +181,12 @@ public class MainActivity extends AppCompatActivity {
         out.close();
     }
 
-
     private Bitmap decodeSampledBitmapFromFile(String path, int reqWidth, int reqHeight) {
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = false;
         options.inPreferredConfig = Bitmap.Config.RGB_565;
-        //options.inDither = true;
         BitmapFactory.decodeFile(path, options);
 
         // Calculate inSampleSize
