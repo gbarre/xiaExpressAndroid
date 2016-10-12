@@ -24,8 +24,8 @@ import static fr.ac_versailles.dane.xiaexpress.Util.*;
 import static fr.ac_versailles.dane.xiaexpress.dbg.*;
 
 /**
- *  dbg.java
- *  MainActivity
+ *  MainActivity.java
+ *  xia-android
  *
  *  Created by guillaume on 29/09/2016.
  *

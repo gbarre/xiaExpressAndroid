@@ -8,7 +8,7 @@ import static fr.ac_versailles.dane.xiaexpress.dbg.*;
 
 /**
  *  Util.java
- *  MainActivity
+ *  xia-android
  *
  *  Created by guillaume on 12/10/2016.
  *

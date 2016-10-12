@@ -6,7 +6,7 @@ import java.io.File;
 
 /**
  *  dbg.java
- *  MainActivity
+ *  xia-android
  *
  *  Created by guillaume on 12/10/2016.
  *

@@ -4,7 +4,7 @@ import android.util.Log;
 
 /**
  *  dbg.java
- *  XiaExpress
+ *  xia-android
  *
  *  Created by guillaume on 12/10/2016.
  *

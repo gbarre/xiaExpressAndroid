@@ -15,7 +15,7 @@ import static fr.ac_versailles.dane.xiaexpress.dbg.*;
 
 /**
  *  CreateDetailActivity.java
- *  MainActivity
+ *  xia-android
  *
  *  Created by guillaume on 29/09/2016.
  *
