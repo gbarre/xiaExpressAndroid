@@ -6,17 +6,13 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,41 +20,58 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
+import static fr.ac_versailles.dane.xiaexpress.Util.*;
+import static fr.ac_versailles.dane.xiaexpress.dbg.*;
+
+/**
+ *  dbg.java
+ *  MainActivity
+ *
+ *  Created by guillaume on 29/09/2016.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ *  @author : guillaume.barre@ac-versailles.fr
+ */
+
 
 public class MainActivity extends AppCompatActivity {
     private GridView gridView;
     private GridViewAdapter gridAdapter;
     private static final int SELECT_PICTURE = 1;
 
-    private String selectedImagePath;
     private String[] arrayNames = new String[50];
 
-    private String documentsDirectory;
+    private String rootDirectory;
+    private String imagesDirectory;
+    private String xmlDirectory;
     private String cacheDirectory;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        documentsDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
-        cacheDirectory = documentsDirectory + ".cache" + File.separator;
-        File cDirectory = new File(cacheDirectory);
-        boolean success = true;
-        if (!cDirectory.exists()) {
-            success = cDirectory.mkdir();
-            if (success) {
-                // Do something on success
-                Log.v("Success", ".cache created");
-            } else {
-                // Do something else on failure
-                Log.v("Success", ".cache not created");
-            }
-        }
-        else {
-            Log.v("Success", ".cache exist");
-        }
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
 
+        rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
+        imagesDirectory = Constants.getImagesFrom(rootDirectory);
+        xmlDirectory = Constants.getXMLFrom(rootDirectory);
+        cacheDirectory = Constants.getCacheFrom(rootDirectory);
+
+        createDirectory(imagesDirectory);
+        createDirectory(xmlDirectory);
+        createDirectory(cacheDirectory);
 
         // Load the collection in grid view
         gridView = (GridView) findViewById(R.id.gridView);
@@ -104,26 +117,25 @@ public class MainActivity extends AppCompatActivity {
 
     // Store the image
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_PICTURE) {
-                Log.v("result", data.toString());
+                pt(TAG, data.toString());
                 // Convert uri to path
                 Uri selectedImageUri = data.getData();
-                Log.v("selectedImageUri", selectedImageUri.toString());
+                pt(TAG, selectedImageUri.toString());
                 // Copy file to documentsDirectory
                 long now = System.currentTimeMillis();
 
                 try {
                     InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
-                    copy(inputStream, new File(documentsDirectory + now + ".jpg"));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    copy(inputStream, new File(imagesDirectory + now + ".jpg"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                Log.v("onresult", "try to decode");
-                Bitmap bitmap = decodeSampledBitmapFromFile(documentsDirectory + now + ".jpg", 150, 150);
-                String imgName = new File(documentsDirectory + now + ".jpg").getName();
+                pt(TAG, "try to decode");
+                Bitmap bitmap = decodeSampledBitmapFromFile(imagesDirectory + now + ".jpg", 150, 150);
+                String imgName = new File(imagesDirectory + now + ".jpg").getName();
                 gridAdapter.add(new PhotoThumbnail(bitmap, imgName));
             }
         }
@@ -133,30 +145,31 @@ public class MainActivity extends AppCompatActivity {
      * Prepare some dummy data for gridview
      */
     private ArrayList<PhotoThumbnail> getData() {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         final ArrayList<PhotoThumbnail> imageItems = new ArrayList<>();
-        File dir = new File(documentsDirectory);
+        File dir = new File(imagesDirectory);
         File[] imgs = dir.listFiles();
-        if (imgs != null && imgs.length > 1) {
-            for (int i = 1; i < imgs.length; i++) {
+
+        if (imgs != null && imgs.length > 0) {
+            pt(TAG, "imgs not null : " + imgs.length);
+            for (int i = 0; i < imgs.length; i++) {
                 String imgName = imgs[i].getName();
-                Log.v("imgs["+i+"]", imgName);
-                if (!imgName.equals(new String(".cache"))) {
-                    arrayNames[i] = imgName;
+                pt(TAG, imgName);
+                arrayNames[i] = imgName;
 
-                    Bitmap bitmap;
-                    // Check if image is in cacheDirectory
-                    if (new File(cacheDirectory + imgName).exists()) {
-                        bitmap = BitmapFactory.decodeFile(cacheDirectory + imgName);
-                    } else {
-                        bitmap = decodeSampledBitmapFromFile(imgs[i].toString(), 150, 150);
-                    }
-
-                    imageItems.add(new PhotoThumbnail(bitmap, imgName));
+                Bitmap bitmap;
+                // Check if image is in cacheDirectory
+                if (new File(cacheDirectory + imgName).exists()) {
+                    bitmap = BitmapFactory.decodeFile(cacheDirectory + imgName);
+                } else {
+                    bitmap = decodeSampledBitmapFromFile(imgs[i].toString(), 150, 150);
                 }
+
+                imageItems.add(new PhotoThumbnail(bitmap, imgName));
             }
         }
         else {
-            Log.v("noImage", "try to load plus200");
+            pt(TAG, "try to load plus200");
             Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.plus200);
             imageItems.add(new PhotoThumbnail(bitmap, "New resource..."));
         }
@@ -167,7 +180,8 @@ public class MainActivity extends AppCompatActivity {
      * Copy file from path src to path dst
      */
     public static void copy(InputStream in, File dst) throws IOException {
-        Log.v("copy", "copy launched");
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+        pt(TAG, "copy launched");
         //InputStream in = new FileInputStream(src);
         OutputStream out = new FileOutputStream(dst);
 
@@ -199,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
         String imgName = path.substring(path.lastIndexOf("/")+1);
         File cachedImage = new File(cacheDirectory+imgName);
         try {
-            cachedImage.createNewFile();
+            boolean _ = cachedImage.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -214,8 +228,6 @@ public class MainActivity extends AppCompatActivity {
             fos.write(bitmapData);
             fos.flush();
             fos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
