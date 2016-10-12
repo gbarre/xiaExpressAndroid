@@ -4,9 +4,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.io.File;
 
@@ -40,10 +42,14 @@ public class CreateDetailActivity extends AppCompatActivity {
     private String xmlDirectory;
     private String cacheDirectory;
 
+    private Toolbar myToolbar;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_detail);
+        myToolbar = (Toolbar) findViewById(R.id.myToolbar);
+        setBtnsIcons();
 
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         pt(TAG, "onCreate launched");
@@ -55,9 +61,6 @@ public class CreateDetailActivity extends AppCompatActivity {
 
         String title = getIntent().getStringExtra("title");
 
-        TextView titleTextView = (TextView) findViewById(R.id.title);
-        titleTextView.setText(title);
-
         ImageView imageView = (ImageView) findViewById(R.id.image);
         String imagePath = imagesDirectory + title;
         pt(TAG, imagePath);
@@ -65,6 +68,15 @@ public class CreateDetailActivity extends AppCompatActivity {
         options.inJustDecodeBounds = false;
         Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
         imageView.setImageBitmap(bitmap);
+    }
+
+    private void setBtnsIcons() {
+        int blueColor = ContextCompat.getColor(this, R.color.blue);
+        Button bt = new Button(this);
+        bt.setText("new button");
+        bt.setBackgroundColor(blueColor);
+        bt.setLayoutParams(new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT));
+        myToolbar.addView(bt);
     }
 
 }
