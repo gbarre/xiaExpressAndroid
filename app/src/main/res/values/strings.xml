@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">Xia Express</string>
 
+    <string name="Collection">Collection</string>
+    <string name="ok">OK</string>
+    <string name="title">Title</string>
+    <string name="undo">Undo</string>
+    <string name="add">Add</string>
+    <string name="trash">Trash</string>
+    <string name="play">Play</string>
+    <string name="export">Export</string>
+    <string name="edit">Edit</string>
+    <string name="bkgimg">Background Image</string>
+
 </resources>

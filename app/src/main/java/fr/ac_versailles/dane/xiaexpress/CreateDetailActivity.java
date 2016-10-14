@@ -1,13 +1,16 @@
 package fr.ac_versailles.dane.xiaexpress;
 
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import java.io.File;
@@ -42,13 +45,12 @@ public class CreateDetailActivity extends AppCompatActivity {
     private String xmlDirectory;
     private String cacheDirectory;
 
-    private Toolbar myToolbar;
+    private Boolean createDetail = false; // true while polygon creation
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_detail);
-        myToolbar = (Toolbar) findViewById(R.id.myToolbar);
         setBtnsIcons();
 
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
@@ -71,12 +73,105 @@ public class CreateDetailActivity extends AppCompatActivity {
     }
 
     private void setBtnsIcons() {
-        int blueColor = ContextCompat.getColor(this, R.color.blue);
-        Button bt = new Button(this);
-        bt.setText("new button");
-        bt.setBackgroundColor(blueColor);
-        bt.setLayoutParams(new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT));
-        myToolbar.addView(bt);
+
+        // Buttons
+        Button btCollection = (Button) findViewById(R.id.collection);
+        final ImageButton btAddDetail = (ImageButton) findViewById(R.id.addDetail);
+        ImageButton btUndo = (ImageButton) findViewById(R.id.undo);
+        ImageButton btPlay = (ImageButton) findViewById(R.id.play);
+        Button btOK = (Button) findViewById(R.id.ok);
+        ImageButton btExport = (ImageButton) findViewById(R.id.export);
+        ImageButton btEdit = (ImageButton) findViewById(R.id.edit);
+        ImageButton btTrash = (ImageButton) findViewById(R.id.trash);
+
+        if (createDetail) {
+            btAddDetail.setVisibility(View.GONE);
+            btPlay.setVisibility(View.GONE);
+
+            btUndo.setVisibility(View.VISIBLE);
+            btOK.setVisibility(View.VISIBLE);
+            btTrash.setVisibility(View.VISIBLE);
+        }
+        else {
+            btAddDetail.setVisibility(View.VISIBLE);
+            btPlay.setVisibility(View.VISIBLE);
+
+            btUndo.setVisibility(View.GONE);
+            btOK.setVisibility(View.GONE);
+            btTrash.setVisibility(View.GONE);
+        }
+
+        btCollection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        btAddDetail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addDetail();
+            }
+        });
+
+        btOK.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopCreation();
+            }
+        });
+
+
+
+
+
+    }
+
+    public void addDetail() {
+        createDetail = true;
+        setBtnsIcons();
+    }
+
+    public void stopCreation() {
+        createDetail = false;
+        setBtnsIcons();
+    }
+
+    public void showPopUp() {
+
+        AlertDialog.Builder helpBuilder = new AlertDialog.Builder(this);
+        helpBuilder.setTitle("Pop Up");
+        helpBuilder.setMessage("This is a Simple Pop Up");
+        helpBuilder.setPositiveButton("Positive",
+                new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do nothing but close the dialog
+
+                    }
+                });
+
+        helpBuilder.setNegativeButton("Negative", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Do nothing
+            }
+        });
+
+        helpBuilder.setNeutralButton("Neutral", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Do nothing
+            }
+        });
+
+        // Remember, create doesn't show the dialog
+        AlertDialog helpDialog = helpBuilder.create();
+        helpDialog.show();
+
     }
 
 }
