@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -63,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        pt(TAG, "test");
+        pt(TAG, "metric : " + String.valueOf(metrics));
 
         rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
