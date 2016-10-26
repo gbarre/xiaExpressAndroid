@@ -35,7 +35,7 @@ public class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
 
     private Context context;
     private int layoutResourceId;
-    private ArrayList<PhotoThumbnail> data = new ArrayList<PhotoThumbnail>();
+    private ArrayList<PhotoThumbnail> data = new ArrayList<>();
 
     public GridViewAdapter(Context context, int layoutResourceId, ArrayList<PhotoThumbnail> data) {
         super(context, layoutResourceId, data);

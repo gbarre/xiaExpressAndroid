@@ -66,14 +66,14 @@ public class CreateDetailActivity extends AppCompatActivity {
     private Point movingCoords = new Point(0, 0);
     private Boolean landscape = false;
 
-    private Map<Integer, xiaDetail> details = new HashMap<Integer, xiaDetail>();
+    private Map<Integer, xiaDetail> details = new HashMap<>();
     private Integer currentDetailTag = 0;
     private Integer detailToSegue = 0;
     private Boolean createDetail = false;
     private Point beginTouchLocation = new Point(0, 0);
     private float editDetail = -1;
     private Boolean moveDetail = false;
-    private Map<Integer, ImageView> virtPoints = new HashMap<Integer, ImageView>();
+    private Map<Integer, ImageView> virtPoints = new HashMap<>();
     private Integer[] polygonPointsOrder = new Integer[9999];
 
     //private ImageView imgView;// = new ImageView(this); // UIImageView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
@@ -115,6 +115,7 @@ public class CreateDetailActivity extends AppCompatActivity {
         loadBackground(imagesDirectory + fileName);
         xml = getXMLFromPath(xmlDirectory + fileTitle + ".xml");
         loadDetails(xml);
+        cleaningDetails(); // remove details with 1 or 2 points
     }
 
     @Override
@@ -130,7 +131,7 @@ public class CreateDetailActivity extends AppCompatActivity {
         // get masked (not specific to a pointer) action
         int maskedAction = event.getActionMasked();
         float eventX = event.getX();
-        float eventY = event.getY() - 35;
+        float eventY = event.getY() - toolbarHeight;
 
         switch (maskedAction) {
 
@@ -196,6 +197,115 @@ public class CreateDetailActivity extends AppCompatActivity {
         return true;
     }
 
+
+
+    private void addDetail() {
+        createDetail = true;
+        setBtnsIcons();
+    }
+
+    private void cleaningDetails() {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+        for(Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
+            Integer detailTag = entry.getKey();
+            xiaDetail detail = entry.getValue();
+            if ( detailTag != 0 && detail.points.size() < 3 ) {
+                // TODO performFullDetailRemove(detailTag);
+            }
+        }
+    }
+
+    private float distance(float xA, float yA, float xB, float yB) {
+        return (float) Math.sqrt((xA-xB)*(xA-xB)+(yA-yB)*(yA-yB));
+    }
+
+    private void loadBackground(String imagePath) {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+
+        ImageView imageView = (ImageView) findViewById(R.id.image);
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        float availableWidth = metrics.widthPixels;
+        float availableHeight = metrics.heightPixels - toolbarHeight * metrics.scaledDensity;
+
+        //final BitmapFactory.Options options = new BitmapFactory.Options();
+        //options.inJustDecodeBounds = false;
+        Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+
+        float scaleX = availableWidth / bitmap.getWidth();
+        float scaleY = availableHeight / bitmap.getHeight();
+        scale = Math.min(scaleX, scaleY);
+
+        xMin = (scaleX == scale) ? 0 : (availableWidth - bitmap.getWidth()*scale) / 2;
+        yMin = (scaleY == scale) ? 0 : (availableHeight - bitmap.getHeight()*scale) / 2;
+
+        imageView.setImageBitmap(bitmap);
+    }
+
+    private void loadDetails(Document xml) {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+
+        NodeList xmlDetails = xml.getElementsByTagName("detail");
+        Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
+        float cornerWidth = corner.getWidth();
+        float cornerHeight = corner.getHeight();
+        for (int i = 0; i < xmlDetails.getLength(); i++) {
+            pt(TAG, "Detail " + i);
+            Node detail = xmlDetails.item(i);
+            NamedNodeMap detailAttr = detail.getAttributes();
+            Node pathNode = detailAttr.getNamedItem("path");
+            String path = pathNode.getTextContent();
+            if (!"".equals(path)) { // we have a path, try to draw it...
+                // Get detail tag
+                Node tag = detailAttr.getNamedItem("tag");
+                int detailTag = Integer.valueOf(tag.getTextContent());
+                // clean all subview with this tag
+                for (int j = 0; j < detailsArea.getChildCount(); j++) {
+                    View child = detailsArea.getChildAt(j);
+                    if ((Integer) child.getTag() == detailTag || (Integer) child.getTag() == detailTag + 100) {
+                        detailsArea.removeView(child);
+                    }
+                }
+                xiaDetail newDetail = new xiaDetail(detailTag, scale);
+                details.put(detailTag, newDetail);
+                // Add points to detail
+                String[] pointsArray = path.split(" ");
+                if (pointsArray.length > 2) {
+                    Integer pointIndex = 0;
+                    for (String aPointsArray : pointsArray) {
+                        String[] coords = aPointsArray.split(";");
+                        if (coords.length == 2) {
+                            Float x = Float.parseFloat(coords[0]) * scale + xMin - cornerWidth / 2;
+                            Float y = Float.parseFloat(coords[1]) * scale + yMin - cornerHeight / 2;
+                            ImageView newPoint = details.get(detailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
+                            // TODO check for zPosition & hidden
+                            detailsArea.addView(newPoint);
+                        }
+                    }
+                    String constraint = detailAttr.getNamedItem("constraint").getTextContent();
+                    if (constraint.equals("")) {
+                        details.get(detailTag).constraint = Constants.constraintPolygon;
+                    }
+                    else {
+                        details.get(detailTag).constraint = (!constraint.equals(Constants.constraintPolygon) && pointsArray.length != 4) ? Constants.constraintPolygon : constraint;
+                    }
+                    Boolean drawEllipse = (details.get(detailTag).constraint.equals(Constants.constraintEllipse));
+                    details.get(detailTag).locked = (detailAttr.getNamedItem("locked").getTextContent().equals("true"));
+                    // TODO buildShape(true, color: noEditColor, tag: detailTag, points: details["\(detailTag)"]!.points, parentView: imgView, ellipse: drawEllipse, locked: details["\(detailTag)"]!.locked)
+                    // TODO attainable points
+                }
+            }
+
+
+            String description = detail.getTextContent();
+
+
+            pt(TAG, "Path : " + path);
+            pt(TAG, "Description : " + description);
+
+        }
+    }
+
     private void setBtnsIcons() {
 
         // Buttons
@@ -250,91 +360,6 @@ public class CreateDetailActivity extends AppCompatActivity {
 
 
 
-    }
-
-    private float distance(float xA, float yA, float xB, float yB) {
-        return (float) Math.sqrt((xA-xB)*(xA-xB)+(yA-yB)*(yA-yB));
-    }
-
-    private void addDetail() {
-        createDetail = true;
-        setBtnsIcons();
-    }
-
-    private void loadBackground(String imagePath) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-
-        ImageView imageView = (ImageView) findViewById(R.id.image);
-
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        float availableWidth = metrics.widthPixels;
-        float availableHeight = metrics.heightPixels - toolbarHeight * metrics.scaledDensity;
-
-        //final BitmapFactory.Options options = new BitmapFactory.Options();
-        //options.inJustDecodeBounds = false;
-        Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
-
-        float scaleX = availableWidth / bitmap.getWidth();
-        float scaleY = availableHeight / bitmap.getHeight();
-        scale = Math.min(scaleX, scaleY);
-
-        xMin = (scaleX == scale) ? 0 : (availableWidth - bitmap.getWidth()*scale) / 2;
-        yMin = (scaleY == scale) ? 0 : (availableHeight - bitmap.getHeight()*scale) / 2;
-
-        imageView.setImageBitmap(bitmap);
-    }
-
-    private void loadDetails(Document xml) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-
-        NodeList xmlDetails = xml.getElementsByTagName("detail");
-        Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
-        float cornerWidth = corner.getWidth();
-        float cornerHeight = corner.getHeight();
-        for (int i = 0; i < xmlDetails.getLength(); i++) {
-            pt(TAG, "Detail " + i);
-            Node detail = xmlDetails.item(i);
-            NamedNodeMap detailAttr = detail.getAttributes();
-            Node pathNode = detailAttr.getNamedItem("path");
-            String path = pathNode.getTextContent();
-            if (!"".equals(path)) { // we have a path, try to draw it...
-                // Get detail tag
-                Node tag = detailAttr.getNamedItem("tag");
-                int detailTag = Integer.valueOf(tag.getTextContent());
-                // clean all subview with this tag
-                for (int j = 0; j < detailsArea.getChildCount(); j++) {
-                    View child = detailsArea.getChildAt(j);
-                    if (Integer.valueOf((Integer) child.getTag()) == detailTag || Integer.valueOf((Integer) child.getTag()) == detailTag + 100) {
-                        detailsArea.removeView(child);
-                    }
-                }
-                xiaDetail newDetail = new xiaDetail(detailTag, scale);
-                details.put(detailTag, newDetail);
-                // Add points to detail
-                String[] pointsArray = path.split(" ");
-                if (pointsArray.length > 2) {
-                    Integer pointIndex = 0;
-                    for (int j = 0; j < pointsArray.length; j++) {
-                        String[] coords = pointsArray[j].split(";");
-                        if (coords.length == 2) {
-                            Float x = Float.parseFloat(coords[0]) * scale + xMin - cornerWidth / 2;
-                            Float y = Float.parseFloat(coords[1]) * scale + yMin - cornerHeight / 2;
-                            ImageView newPoint = details.get(detailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
-                            // TODO check for zPosition & hidden
-                            detailsArea.addView(newPoint);
-                        }
-                    }
-                }
-            }
-
-
-            String description = detail.getTextContent();
-
-
-            pt(TAG, "Path : " + path);
-            pt(TAG, "Description : " + description);
-
-        }
     }
 
     private void stopCreation() {

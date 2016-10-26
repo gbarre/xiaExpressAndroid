@@ -1,7 +1,6 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
@@ -10,13 +9,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -74,9 +70,7 @@ class Util {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             xml = docBuilder.parse(xmlFile);
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
+        } catch (SAXException | ParserConfigurationException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
@@ -92,8 +86,6 @@ class Util {
             StreamResult result = new StreamResult(new File(filepath));
             transformer.transform(source, result);
 
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
         } catch (TransformerException e) {
             e.printStackTrace();
         }
@@ -119,9 +111,6 @@ class Util {
                 inputStream.close();
                 ret = stringBuilder.toString();
             }
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

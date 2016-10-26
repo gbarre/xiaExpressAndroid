@@ -26,10 +26,12 @@ import java.io.File;
 
 public class Constants extends Application {
 
-    private static Boolean enableDebug = true;
+    public static String constraintRectangle = "rectangle";
+    public static String constraintEllipse = "ellipse";
+    public static String constraintPolygon = "polygon";
 
     public static Boolean getEnableDebug() {
-        return enableDebug;
+        return true;
     }
 
     public static String getImagesFrom(String rootDirectory) {

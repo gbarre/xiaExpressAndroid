@@ -1,8 +1,6 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.content.Context;
-import android.graphics.Point;
-import android.media.Image;
 import android.widget.ImageView;
 
 import java.util.HashMap;
@@ -30,7 +28,7 @@ import java.util.Map;
 
 class xiaDetail {
 
-    public Map<Integer, ImageView> points = new HashMap<Integer, ImageView>();
+    public Map<Integer, ImageView> points = new HashMap<>();
     public Integer tag = 0;
     public double scale = 1.0;
     public String constraint = "";
