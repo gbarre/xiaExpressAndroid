@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -61,7 +62,8 @@ public class CreateDetailActivity extends AppCompatActivity {
     private String fileName = "";
     private String filePath = "";
     private String fileTitle = "";
-    private Point location = new Point(0, 0);
+    private float locationX = 0;
+    private float locationY = 0;
     private float movingPoint = -1; // Id of point
     private Point movingCoords = new Point(0, 0);
     private Boolean landscape = false;
@@ -130,8 +132,8 @@ public class CreateDetailActivity extends AppCompatActivity {
 
         // get masked (not specific to a pointer) action
         int maskedAction = event.getActionMasked();
-        float eventX = event.getX();
-        float eventY = event.getY() - toolbarHeight;
+        locationX = event.getX();
+        locationY = event.getY() - toolbarHeight;
 
         switch (maskedAction) {
 
@@ -139,19 +141,89 @@ public class CreateDetailActivity extends AppCompatActivity {
             case MotionEvent.ACTION_POINTER_DOWN: {
                 // TODO use data
                 pt(TAG, "onTouch " + String.valueOf(pointerIndex));
-                pt(TAG, "coords" + String.valueOf(eventX + ";" + eventY));
-                /*float dist = distance(eventX, eventY, point.getX(), point.getY());
-                pt(TAG, "dist" + String.valueOf(dist));
-                if ( dist < 50) {
-                    pt(TAG, "touch point");
-                    movePoint = true;
-                    point.setX(eventX);
-                    point.setY(eventY);
+                pt(TAG, "coords" + String.valueOf(locationX + ";" + locationY));
+                if (createDetail) {
+                    // TODO create details :-)
                 }
-                else { // add image
-                    movePoint = false;
-                }*/
+                else {
+                    int touchedTag = 0;
 
+                    // Look if we try to move a detail
+                    /* TODO pointInPolygon method to move shape
+                    for(Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
+                        Integer detailTag = entry.getKey();
+                        xiaDetail detail = entry.getValue();
+
+                        if (pointInPolygon(detailPoints.points, touchPoint: location)) {
+                            touchedTag = (NumberFormatter().number(from: detailTag)?.intValue)!
+                                    beginTouchLocation = location
+                            editDetail = touchedTag
+                            currentDetailTag = touchedTag
+                            movingCoords = location
+                            moveDetail = (detailPoints.locked) ? false : true
+                            changeDetailColor(editDetail)
+                            break
+                        }
+                    }*/
+
+                    // Should we move an existing point ?
+                    if (currentDetailTag != 0 && !details.get(currentDetailTag).locked) {
+                        movingPoint = -1;
+                        for (Map.Entry<Integer, ImageView> entry : details.get(currentDetailTag).points.entrySet()) {
+                            Integer id = entry.getKey();
+                            ImageView point = entry.getValue();
+
+                            float dist = distance(locationX, locationY, point.getX(), point.getY());
+                            if (dist < 20) { // We are close to an exiting point, move it
+                                ImageView toMove = point;
+                                /*switch (details.get(currentDetailTag).constraint) {
+                                    case Constant.constraintEllipse:
+                                        toMove.center = ploc
+                                        break
+                                    default:
+                                        toMove.center = location
+                                        break
+                                }*/ // TODO why the switch before and not this 2 lines ?
+                                toMove.setX(locationX);
+                                toMove.setY(locationY);
+
+                                details.get(currentDetailTag).points.put(id, toMove);
+                                movingPoint = id;
+                                moveDetail = false;
+                                break;
+                            } else { // No point here, just move the detail
+                                //moveDetail = (details["\(currentDetailTag)"] !.locked)?false:true
+                            }
+                        }
+                    }
+
+                    // Should we add a virtual point ?
+                    /* TODO add virtpoint LATER
+                    if touchedVirtPoint != -1 {
+                        moveDetail = false
+                        let nbPoints = (details["\(currentDetailTag)"]?.points.count)!
+                                movingPoint = touchedVirtPoint + 1
+                        // Change indexes of next points
+                        var i = nbPoints
+                        while i > touchedVirtPoint-1 {
+                            details["\(currentDetailTag)"]?.points[i+1] = details["\(currentDetailTag)"]?.points[i]
+                            i = i - 1
+                        }
+
+                        // Add new point
+                        let newPoint = details["\(currentDetailTag)"]?.createPoint(location, imageName: "corner", index: movingPoint)
+                        newPoint?.layer.zPosition = 1
+                        imgView.addSubview(newPoint!)
+
+                        // Remove old polygon
+                        for subview in imgView.subviews {
+                            if subview.tag == (currentDetailTag + 100) {
+                                subview.removeFromSuperview()
+                            }
+                        }
+                        buildShape(true, color: editColor, tag: currentDetailTag, points: details["\(currentDetailTag)"]!.points, parentView: imgView, locked: details["\(currentDetailTag)"]!.locked)
+                    }*/
+                }
                 break;
             }
             case MotionEvent.ACTION_MOVE: { // a pointer was moved
