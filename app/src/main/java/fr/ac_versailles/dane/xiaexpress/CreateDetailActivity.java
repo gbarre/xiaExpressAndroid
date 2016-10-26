@@ -65,14 +65,15 @@ public class CreateDetailActivity extends AppCompatActivity {
     private float locationX = 0;
     private float locationY = 0;
     private float movingPoint = -1; // Id of point
-    private Point movingCoords = new Point(0, 0);
+    private float movingCoordsX = 0;
+    private float movingCoordsY = 0;
     private Boolean landscape = false;
 
     private Map<Integer, xiaDetail> details = new HashMap<>();
     private Integer currentDetailTag = 0;
     private Integer detailToSegue = 0;
     private Boolean createDetail = false;
-    private Point beginTouchLocation = new Point(0, 0);
+    //private Point beginTouchLocation = new Point(0, 0); // old bad idea
     private float editDetail = -1;
     private Boolean moveDetail = false;
     private Map<Integer, ImageView> virtPoints = new HashMap<>();
@@ -149,22 +150,22 @@ public class CreateDetailActivity extends AppCompatActivity {
                     int touchedTag = 0;
 
                     // Look if we try to move a detail
-                    /* TODO pointInPolygon method to move shape
                     for(Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
                         Integer detailTag = entry.getKey();
-                        xiaDetail detail = entry.getValue();
+                        xiaDetail detailPoints = entry.getValue();
 
-                        if (pointInPolygon(detailPoints.points, touchPoint: location)) {
-                            touchedTag = (NumberFormatter().number(from: detailTag)?.intValue)!
-                                    beginTouchLocation = location
-                            editDetail = touchedTag
-                            currentDetailTag = touchedTag
-                            movingCoords = location
-                            moveDetail = (detailPoints.locked) ? false : true
-                            changeDetailColor(editDetail)
-                            break
+                        if (pointInPolygon(detailPoints.points, locationX, locationY)) {
+                            touchedTag = detailTag;
+                            //beginTouchLocation = location; // old bad idea
+                            editDetail = touchedTag;
+                            currentDetailTag = touchedTag;
+                            movingCoordsX = locationX;
+                            movingCoordsY = locationY;
+                            moveDetail = (detailPoints.locked) ? false : true;
+                            // TODO changeDetailColor(editDetail)
+                            break;
                         }
-                    }*/
+                    }
 
                     // Should we move an existing point ?
                     if (currentDetailTag != 0 && !details.get(currentDetailTag).locked) {
@@ -229,9 +230,102 @@ public class CreateDetailActivity extends AppCompatActivity {
             case MotionEvent.ACTION_MOVE: { // a pointer was moved
                 // TODO use data
                 pt(TAG, "onTouch action move");
-                /*if (movePoint) {
-                    point.setX(eventX);
-                    point.setY(eventY);
+                if ( movingPoint != -1 && currentDetailTag != 0 && !details.get(currentDetailTag).locked ) {
+                    movingPoint = Math.round(movingPoint);
+                    float plocX = details.get(currentDetailTag).points.get(Math.round(movingPoint)).getX();
+                    float plocY = details.get(currentDetailTag).points.get(Math.round(movingPoint)).getY();
+
+                    float dist = distance(locationX, locationY, plocX, plocY);
+                    if ( dist < 200 ) {
+                        ImageView toMove = details.get(currentDetailTag).points.get(Math.round(movingPoint));
+                        int previousPoint = Math.round(mod(Math.round(movingPoint + 3), 4));
+                        int nextPoint = Math.round(mod(Math.round(movingPoint + 1), 4));
+                        int oppositePoint = Math.round(mod(Math.round(movingPoint + 2), 4));
+
+                        // TODO Are there any constraint ?
+                        if (details.get(currentDetailTag).constraint.equals(Constants.constraintRectangle)) {
+                            if (movingPoint % 2 == 0) {
+                                details.get(currentDetailTag).points.get(previousPoint).setX(locationX);
+                                details.get(currentDetailTag).points.get(previousPoint).setY(details.get(currentDetailTag).points.get(previousPoint).getY());
+
+                                details.get(currentDetailTag).points.get(nextPoint).setX(details.get(currentDetailTag).points.get(nextPoint).getX());
+                                details.get(currentDetailTag).points.get(nextPoint).setY(locationY);
+                            } else {
+                                details.get(currentDetailTag).points.get(previousPoint).setX(details.get(currentDetailTag).points.get(previousPoint).getX());
+                                details.get(currentDetailTag).points.get(previousPoint).setY(locationY);
+
+                                details.get(currentDetailTag).points.get(nextPoint).setX(locationX);
+                                details.get(currentDetailTag).points.get(nextPoint).setY(details.get(currentDetailTag).points.get(nextPoint).getY());
+                            }
+                            toMove.setX(locationX);
+                            toMove.setY(locationY);
+                            details.get(currentDetailTag).points.put(Math.round(movingPoint), toMove);
+                        }
+                        else if (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse)) {
+                            if (movingPoint % 2 == 0) {
+                                float middleHeight = (details.get(currentDetailTag).points.get(oppositePoint).getY() - locationY)/2 + locationY;
+                                toMove.setX(plocX);
+                                toMove.setY(locationY);
+                                details.get(currentDetailTag).points.get(Math.round(movingPoint)).setX(plocX);
+                                details.get(currentDetailTag).points.get(Math.round(movingPoint)).setY(details.get(currentDetailTag).points.get(Math.round(movingPoint)).getY());
+                                details.get(currentDetailTag).points.get(previousPoint).setX(details.get(currentDetailTag).points.get(previousPoint).getX());
+                                details.get(currentDetailTag).points.get(previousPoint).setY(middleHeight);
+                                details.get(currentDetailTag).points.get(nextPoint).setX(details.get(currentDetailTag).points.get(nextPoint).getX());
+                                details.get(currentDetailTag).points.get(nextPoint).setY(middleHeight);
+                            } else {
+                                float middleWidth = (details.get(currentDetailTag).points.get(oppositePoint).getX() - locationX)/2 + locationX;
+                                toMove.setX(locationX);
+                                toMove.setY(plocY);
+                                details.get(currentDetailTag).points.get(Math.round(movingPoint)).setX(details.get(currentDetailTag).points.get(Math.round(movingPoint)).getX());
+                                details.get(currentDetailTag).points.get(Math.round(movingPoint)).setY(plocY);
+                                details.get(currentDetailTag).points.get(previousPoint).setX(middleWidth);
+                                details.get(currentDetailTag).points.get(previousPoint).setY(details.get(currentDetailTag).points.get(previousPoint).getY());
+                                details.get(currentDetailTag).points.get(nextPoint).setX(middleWidth);
+                                details.get(currentDetailTag).points.get(nextPoint).setY(details.get(currentDetailTag).points.get(nextPoint).getY());
+                            }
+                        }
+                        else {
+                            toMove.setX(locationX);
+                            toMove.setY(locationY);
+                            details.get(currentDetailTag).points.put(Math.round(movingPoint), toMove);
+                        }
+                    }
+                }
+/*
+                if (createDetail) {
+                    // TODO
+                }
+                else {
+                    if ( editDetail != -1) {
+                        if (moveDetail) {
+                            movingPoint = -1;
+                            let deltaX = location.x - movingCoords.x
+                            let deltaY = location.y - movingCoords.y
+                            for subview in imgView.subviews {
+                                if ( subview.tag == currentDetailTag || subview.tag == (currentDetailTag + 100) ) {
+                                    let origin = subview.frame.origin
+                                    let destination = CGPoint(x: origin.x + deltaX, y: origin.y + deltaY)
+                                    subview.frame.origin = destination
+                                }
+                            }
+                            movingCoords = location
+                        }
+                    }
+                }*/
+
+                /* TODO after buildShape
+                if details["\(currentDetailTag)"]?.points.count > 2 {
+                    // rebuild points & shape
+                    for subview in imgView.subviews {
+                        if subview.tag == (currentDetailTag + 100) {
+                            subview.removeFromSuperview()
+                        }
+                        if subview.tag == currentDetailTag {
+                            subview.layer.zPosition = 1
+                        }
+                    }
+                    let drawEllipse: Bool = (details["\(currentDetailTag)"]?.constraint == constraintEllipse) ? true : false
+                    buildShape(true, color: editColor, tag: currentDetailTag, points: details["\(currentDetailTag)"]!.points, parentView: imgView, ellipse: drawEllipse, locked: details["\(currentDetailTag)"]!.locked)
                 }*/
                 break;
             }

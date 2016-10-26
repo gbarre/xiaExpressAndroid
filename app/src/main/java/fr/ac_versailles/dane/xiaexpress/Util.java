@@ -1,5 +1,7 @@
 package fr.ac_versailles.dane.xiaexpress;
 
+import android.widget.ImageView;
+
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -9,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -78,17 +82,30 @@ class Util {
         return xml;
     }
 
-    static void writeXML(Document xml, String filepath) {
-        try {
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(xml);
-            StreamResult result = new StreamResult(new File(filepath));
-            transformer.transform(source, result);
+    static int mod(int x, int y)
+    {
+        int result = x % y;
+        return result < 0? result + y : result;
+    }
 
-        } catch (TransformerException e) {
-            e.printStackTrace();
+    static Boolean pointInPolygon(Map<Integer, ImageView> points, float touchPointX, float touchPointY) {
+        // translate from C : http://alienryderflex.com/polygon/
+        int polyCorners = points.size();
+        int j = polyCorners - 1;
+        Boolean oddNodes = false;
+
+        for (int i = 0; i < polyCorners; i++) {
+            if ( (points.get(i).getY() < touchPointY && points.get(j).getY() >= touchPointY
+                    || points.get(j).getY() < touchPointY && points.get(i).getY() >= touchPointY)
+            && (points.get(i).getX() <= touchPointX || points.get(j).getX() <= touchPointX) ) {
+                if ( points.get(i).getX() + (touchPointY - points.get(i).getY()) / (points.get(j).getY() - points.get(i).getY()) * (points.get(j).getX() - points.get(i).getX()) < touchPointX ) {
+                    oddNodes = !oddNodes;
+                }
+            }
+            j=i;
         }
+
+        return oddNodes;
     }
 
     static String readFromFile(InputStream inputStream) {
@@ -116,5 +133,18 @@ class Util {
         }
 
         return ret;
+    }
+
+    static void writeXML(Document xml, String filepath) {
+        try {
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(xml);
+            StreamResult result = new StreamResult(new File(filepath));
+            transformer.transform(source, result);
+
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
     }
 }
