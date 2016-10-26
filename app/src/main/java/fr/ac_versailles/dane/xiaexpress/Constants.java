@@ -26,14 +26,10 @@ import java.io.File;
 
 public class Constants extends Application {
 
-    private static Boolean enableDebug = false;
+    private static Boolean enableDebug = true;
 
     public static Boolean getEnableDebug() {
         return enableDebug;
-    }
-
-    public void setEnableDebug(Boolean enable) {
-        enableDebug = enable;
     }
 
     public static String getImagesFrom(String rootDirectory) {

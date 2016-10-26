@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="44dp"
         android:background="@color/blue"
-        android:minHeight="44dp">
+        android:minHeight="44dp"
+        android:id="@+id/toolbar">
         <include layout="@layout/menu_create_detail">
 
         </include>
@@ -24,20 +25,15 @@
             android:id="@+id/image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:contentDescription="@string/bkgimg"/>
+            android:contentDescription="@string/bkgimg"
+            android:tag=""/>
     </FrameLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="44dp">
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="test"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true" />
+        android:layout_marginTop="44dp"
+        android:id="@+id/detailsArea">
     </RelativeLayout>
 
 

@@ -3,17 +3,28 @@ package fr.ac_versailles.dane.xiaexpress;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import static fr.ac_versailles.dane.xiaexpress.Util.*;
 import static fr.ac_versailles.dane.xiaexpress.dbg.*;
@@ -43,33 +54,146 @@ public class CreateDetailActivity extends AppCompatActivity {
     private String rootDirectory;
     private String imagesDirectory;
     private String xmlDirectory;
-    private String cacheDirectory;
+    //private String cacheDirectory;
 
-    private Boolean createDetail = false; // true while polygon creation
+    private Integer index = 0;
+    private Document xml;
+    private String fileName = "";
+    private String filePath = "";
+    private String fileTitle = "";
+    private Point location = new Point(0, 0);
+    private float movingPoint = -1; // Id of point
+    private Point movingCoords = new Point(0, 0);
+    private Boolean landscape = false;
+
+    private Map<Integer, xiaDetail> details = new HashMap<Integer, xiaDetail>();
+    private Integer currentDetailTag = 0;
+    private Integer detailToSegue = 0;
+    private Boolean createDetail = false;
+    private Point beginTouchLocation = new Point(0, 0);
+    private float editDetail = -1;
+    private Boolean moveDetail = false;
+    private Map<Integer, ImageView> virtPoints = new HashMap<Integer, ImageView>();
+    private Integer[] polygonPointsOrder = new Integer[9999];
+
+    //private ImageView imgView;// = new ImageView(this); // UIImageView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
+    //private img = UIImage()
+    private float toolbarHeight = 0;
+    private RelativeLayout detailsArea;
+    private float scale = 1;
+    private float xMin = 0;
+    private float yMin = 0;
+
+    //private menu: UIAlertController!
+    private int btnTag = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_detail);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbarHeight = myToolbar.getHeight();
+
         setBtnsIcons();
 
+        detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
+
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-        pt(TAG, "onCreate launched");
 
         rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
-        cacheDirectory = Constants.getCacheFrom(rootDirectory);
+        //cacheDirectory = Constants.getCacheFrom(rootDirectory);
 
-        String title = getIntent().getStringExtra("title");
+        fileName = getIntent().getStringExtra("title");
+        fileTitle = fileName.replace(".jpg", "");
+    }
 
-        ImageView imageView = (ImageView) findViewById(R.id.image);
-        String imagePath = imagesDirectory + title;
-        pt(TAG, imagePath);
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = false;
-        Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
-        imageView.setImageBitmap(bitmap);
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus){
+        // This is done after onCreate
+        loadBackground(imagesDirectory + fileName);
+        xml = getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+        loadDetails(xml);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+
+        // get pointer index from the event object
+        int pointerIndex = event.getActionIndex();
+
+        // get pointer ID
+        int pointerId = event.getPointerId(pointerIndex);
+
+        // get masked (not specific to a pointer) action
+        int maskedAction = event.getActionMasked();
+        float eventX = event.getX();
+        float eventY = event.getY() - 35;
+
+        switch (maskedAction) {
+
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN: {
+                // TODO use data
+                pt(TAG, "onTouch " + String.valueOf(pointerIndex));
+                pt(TAG, "coords" + String.valueOf(eventX + ";" + eventY));
+                /*float dist = distance(eventX, eventY, point.getX(), point.getY());
+                pt(TAG, "dist" + String.valueOf(dist));
+                if ( dist < 50) {
+                    pt(TAG, "touch point");
+                    movePoint = true;
+                    point.setX(eventX);
+                    point.setY(eventY);
+                }
+                else { // add image
+                    movePoint = false;
+                }*/
+
+                break;
+            }
+            case MotionEvent.ACTION_MOVE: { // a pointer was moved
+                // TODO use data
+                pt(TAG, "onTouch action move");
+                /*if (movePoint) {
+                    point.setX(eventX);
+                    point.setY(eventY);
+                }*/
+                break;
+            }
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_CANCEL: {
+                // TODO use data
+                pt(TAG, "onTouch action up");
+                /*if (movePoint) {
+                    movePoint = false;
+                }
+                else {
+                    ImageView newPoint = new ImageView(this);
+                    newPoint.setImageResource((R.drawable.corner_x1));
+                    newPoint.setX(500);
+                    newPoint.setY(200);
+                    RelativeLayout detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
+                    detailsArea.addView(newPoint);
+
+                    /*RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(500, 200);
+                    lp.addRule(RelativeLayout.CENTER_IN_PARENT); // A position in layout.
+                    newPoint.setLayoutParams(lp);
+// imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    imageView.setImageResource(R.drawable.photo);
+                    RelativeLayout layout = (RelativeLayout) findViewById(R.id.layout);
+                    layout.addView(imageView);*/
+
+                    pt(TAG, "Add point here");
+//                }
+                break;
+            }
+        }
+
+
+        return true;
     }
 
     private void setBtnsIcons() {
@@ -128,12 +252,92 @@ public class CreateDetailActivity extends AppCompatActivity {
 
     }
 
-    public void addDetail() {
+    private float distance(float xA, float yA, float xB, float yB) {
+        return (float) Math.sqrt((xA-xB)*(xA-xB)+(yA-yB)*(yA-yB));
+    }
+
+    private void addDetail() {
         createDetail = true;
         setBtnsIcons();
     }
 
-    public void stopCreation() {
+    private void loadBackground(String imagePath) {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+
+        ImageView imageView = (ImageView) findViewById(R.id.image);
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        float availableWidth = metrics.widthPixels;
+        float availableHeight = metrics.heightPixels - toolbarHeight * metrics.scaledDensity;
+
+        //final BitmapFactory.Options options = new BitmapFactory.Options();
+        //options.inJustDecodeBounds = false;
+        Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+
+        float scaleX = availableWidth / bitmap.getWidth();
+        float scaleY = availableHeight / bitmap.getHeight();
+        scale = Math.min(scaleX, scaleY);
+
+        xMin = (scaleX == scale) ? 0 : (availableWidth - bitmap.getWidth()*scale) / 2;
+        yMin = (scaleY == scale) ? 0 : (availableHeight - bitmap.getHeight()*scale) / 2;
+
+        imageView.setImageBitmap(bitmap);
+    }
+
+    private void loadDetails(Document xml) {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+
+        NodeList xmlDetails = xml.getElementsByTagName("detail");
+        Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
+        float cornerWidth = corner.getWidth();
+        float cornerHeight = corner.getHeight();
+        for (int i = 0; i < xmlDetails.getLength(); i++) {
+            pt(TAG, "Detail " + i);
+            Node detail = xmlDetails.item(i);
+            NamedNodeMap detailAttr = detail.getAttributes();
+            Node pathNode = detailAttr.getNamedItem("path");
+            String path = pathNode.getTextContent();
+            if (!"".equals(path)) { // we have a path, try to draw it...
+                // Get detail tag
+                Node tag = detailAttr.getNamedItem("tag");
+                int detailTag = Integer.valueOf(tag.getTextContent());
+                // clean all subview with this tag
+                for (int j = 0; j < detailsArea.getChildCount(); j++) {
+                    View child = detailsArea.getChildAt(j);
+                    if (Integer.valueOf((Integer) child.getTag()) == detailTag || Integer.valueOf((Integer) child.getTag()) == detailTag + 100) {
+                        detailsArea.removeView(child);
+                    }
+                }
+                xiaDetail newDetail = new xiaDetail(detailTag, scale);
+                details.put(detailTag, newDetail);
+                // Add points to detail
+                String[] pointsArray = path.split(" ");
+                if (pointsArray.length > 2) {
+                    Integer pointIndex = 0;
+                    for (int j = 0; j < pointsArray.length; j++) {
+                        String[] coords = pointsArray[j].split(";");
+                        if (coords.length == 2) {
+                            Float x = Float.parseFloat(coords[0]) * scale + xMin - cornerWidth / 2;
+                            Float y = Float.parseFloat(coords[1]) * scale + yMin - cornerHeight / 2;
+                            ImageView newPoint = details.get(detailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
+                            // TODO check for zPosition & hidden
+                            detailsArea.addView(newPoint);
+                        }
+                    }
+                }
+            }
+
+
+            String description = detail.getTextContent();
+
+
+            pt(TAG, "Path : " + path);
+            pt(TAG, "Description : " + description);
+
+        }
+    }
+
+    private void stopCreation() {
         createDetail = false;
         setBtnsIcons();
     }

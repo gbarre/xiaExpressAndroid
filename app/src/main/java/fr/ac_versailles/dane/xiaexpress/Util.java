@@ -1,8 +1,28 @@
 package fr.ac_versailles.dane.xiaexpress;
 
-import android.nfc.Tag;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import static fr.ac_versailles.dane.xiaexpress.dbg.*;
 
@@ -31,7 +51,6 @@ class Util {
     static void createDirectory(String directory) {
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         File cDirectory = new File(directory);
-        dbg.enable = true;
         boolean success;
         if (!cDirectory.exists()) {
             success = cDirectory.mkdir();
@@ -46,5 +65,67 @@ class Util {
         else {
             pt(TAG, directory + " already exist");
         }
+    }
+
+    static Document getXMLFromPath(String filepath) {
+        File xmlFile = new File(filepath);
+        Document xml = null;
+        try {
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            xml = docBuilder.parse(xmlFile);
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return xml;
+    }
+
+    static void writeXML(Document xml, String filepath) {
+        try {
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(xml);
+            StreamResult result = new StreamResult(new File(filepath));
+            transformer.transform(source, result);
+
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static String readFromFile(InputStream inputStream) {
+
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+        String ret = "";
+
+        try {
+
+            if ( inputStream != null ) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while ( (receiveString = bufferedReader.readLine()) != null ) {
+                    stringBuilder.append(receiveString);
+                }
+
+                inputStream.close();
+                ret = stringBuilder.toString();
+            }
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return ret;
     }
 }

@@ -14,11 +14,11 @@ import android.widget.GridView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
 import static fr.ac_versailles.dane.xiaexpress.Util.*;
@@ -64,10 +64,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        pt(TAG, "test");
-        pt(TAG, "metric : " + String.valueOf(metrics));
 
         rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
@@ -125,10 +121,8 @@ public class MainActivity extends AppCompatActivity {
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_PICTURE) {
-                pt(TAG, data.toString());
                 // Convert uri to path
                 Uri selectedImageUri = data.getData();
-                pt(TAG, selectedImageUri.toString());
                 // Copy file to documentsDirectory
                 long now = System.currentTimeMillis();
 
@@ -138,10 +132,40 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                pt(TAG, "try to decode");
                 Bitmap bitmap = decodeSampledBitmapFromFile(imagesDirectory + now + ".jpg", 150, 150);
                 String imgName = new File(imagesDirectory + now + ".jpg").getName();
                 gridAdapter.add(new PhotoThumbnail(bitmap, imgName));
+
+                // Create xml file
+                String xmlString = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n" +
+                        "<xia>\n" +
+                        "\t<title></title>\n" +
+                        "\t<description></description>\n" +
+                        "\t<creator></creator>\n" +
+                        "\t<rights></rights>\n" +
+                        "\t<license></license>\n" +
+                        "\t<date></date>\n" +
+                        "\t<publisher></publisher>\n" +
+                        "\t<identifier></identifier>\n" +
+                        "\t<source></source>\n" +
+                        "\t<relation></relation>\n" +
+                        "\t<language></language>\n" +
+                        "\t<keywords></keywords>\n" +
+                        "\t<coverage></coverage>\n" +
+                        "\t<contributors></contributors>\n" +
+                        "\t<readonly code=\"1234\">false</readonly>\n" +
+                        "\t<image description=\"\" title=\"\" desctription=\"\" />\n" +
+                        "\t<details show=\"true\">\n" +
+                        "\t</details>\n" +
+                        "</xia>";
+                try {
+                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(xmlDirectory + now + ".xml"));
+                    outputStreamWriter.write(xmlString);
+                    outputStreamWriter.close();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -156,10 +180,8 @@ public class MainActivity extends AppCompatActivity {
         File[] imgs = dir.listFiles();
 
         if (imgs != null && imgs.length > 0) {
-            pt(TAG, "imgs not null : " + imgs.length);
             for (int i = 0; i < imgs.length; i++) {
                 String imgName = imgs[i].getName();
-                pt(TAG, imgName);
                 arrayNames[i] = imgName;
 
                 Bitmap bitmap;
@@ -174,7 +196,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else {
-            pt(TAG, "try to load plus200");
             Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.plus200);
             imageItems.add(new PhotoThumbnail(bitmap, "New resource..."));
         }
@@ -186,7 +207,6 @@ public class MainActivity extends AppCompatActivity {
      */
     public static void copy(InputStream in, File dst) throws IOException {
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-        pt(TAG, "copy launched");
         //InputStream in = new FileInputStream(src);
         OutputStream out = new FileOutputStream(dst);
 

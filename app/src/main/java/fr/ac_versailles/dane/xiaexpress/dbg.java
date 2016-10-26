@@ -29,6 +29,7 @@ class dbg {
     static void pt(String TAG, String logString) {
         if (enable) {
             Log.i(TAG, logString);
+
         }
     }
 
