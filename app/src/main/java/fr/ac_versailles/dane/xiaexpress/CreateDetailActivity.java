@@ -3,8 +3,6 @@ package fr.ac_versailles.dane.xiaexpress;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Point;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -94,8 +92,6 @@ public class CreateDetailActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_detail);
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbarHeight = myToolbar.getHeight();
 
         setBtnsIcons();
 
@@ -115,6 +111,9 @@ public class CreateDetailActivity extends AppCompatActivity {
     @Override
     public void onWindowFocusChanged(boolean hasFocus){
         // This is done after onCreate
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbarHeight = myToolbar.getHeight();
+
         loadBackground(imagesDirectory + fileName);
         xml = getXMLFromPath(xmlDirectory + fileTitle + ".xml");
         loadDetails(xml);
@@ -124,6 +123,7 @@ public class CreateDetailActivity extends AppCompatActivity {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         // get pointer index from the event object
         int pointerIndex = event.getActionIndex();
@@ -134,15 +134,15 @@ public class CreateDetailActivity extends AppCompatActivity {
         // get masked (not specific to a pointer) action
         int maskedAction = event.getActionMasked();
         locationX = event.getX();
-        locationY = event.getY() - toolbarHeight;
+        locationY = event.getY() - toolbarHeight * metrics.scaledDensity;
 
         switch (maskedAction) {
 
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN: {
                 // TODO use data
-                pt(TAG, "onTouch " + String.valueOf(pointerIndex));
-                pt(TAG, "coords" + String.valueOf(locationX + ";" + locationY));
+                pt(TAG, "touch", String.valueOf(locationX + " ; " + locationY));
+                pt(TAG, "currentDetailTag", currentDetailTag);
                 if (createDetail) {
                     // TODO create details :-)
                 }
@@ -154,7 +154,9 @@ public class CreateDetailActivity extends AppCompatActivity {
                         Integer detailTag = entry.getKey();
                         xiaDetail detailPoints = entry.getValue();
 
-                        if (pointInPolygon(detailPoints.points, locationX, locationY)) {
+                        Boolean touchIn = pointInPolygon(detailPoints.points, locationX, locationY);
+                        pt(TAG, "pointInPolygon " + detailTag, touchIn);
+                        if (touchIn) {
                             touchedTag = detailTag;
                             //beginTouchLocation = location; // old bad idea
                             editDetail = touchedTag;
@@ -169,13 +171,15 @@ public class CreateDetailActivity extends AppCompatActivity {
 
                     // Should we move an existing point ?
                     if (currentDetailTag != 0 && !details.get(currentDetailTag).locked) {
+                        pt(TAG, "Try to move existing point", "");
                         movingPoint = -1;
                         for (Map.Entry<Integer, ImageView> entry : details.get(currentDetailTag).points.entrySet()) {
                             Integer id = entry.getKey();
                             ImageView point = entry.getValue();
 
                             float dist = distance(locationX, locationY, point.getX(), point.getY());
-                            if (dist < 20) { // We are close to an exiting point, move it
+                            pt(TAG, "dist to point " + id, dist);
+                            if (dist < 80) { // We are close to an exiting point, move it
                                 ImageView toMove = point;
                                 /*switch (details.get(currentDetailTag).constraint) {
                                     case Constant.constraintEllipse:
@@ -190,6 +194,7 @@ public class CreateDetailActivity extends AppCompatActivity {
 
                                 details.get(currentDetailTag).points.put(id, toMove);
                                 movingPoint = id;
+                                pt(TAG, "movingPoint", movingPoint);
                                 moveDetail = false;
                                 break;
                             } else { // No point here, just move the detail
@@ -229,13 +234,13 @@ public class CreateDetailActivity extends AppCompatActivity {
             }
             case MotionEvent.ACTION_MOVE: { // a pointer was moved
                 // TODO use data
-                pt(TAG, "onTouch action move");
                 if ( movingPoint != -1 && currentDetailTag != 0 && !details.get(currentDetailTag).locked ) {
                     movingPoint = Math.round(movingPoint);
                     float plocX = details.get(currentDetailTag).points.get(Math.round(movingPoint)).getX();
                     float plocY = details.get(currentDetailTag).points.get(Math.round(movingPoint)).getY();
 
                     float dist = distance(locationX, locationY, plocX, plocY);
+                    pt(TAG, "dist", dist);
                     if ( dist < 200 ) {
                         ImageView toMove = details.get(currentDetailTag).points.get(Math.round(movingPoint));
                         int previousPoint = Math.round(mod(Math.round(movingPoint + 3), 4));
@@ -333,28 +338,59 @@ public class CreateDetailActivity extends AppCompatActivity {
             case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_CANCEL: {
                 // TODO use data
-                pt(TAG, "onTouch action up");
-                /*if (movePoint) {
-                    movePoint = false;
+                pt(TAG, "onTouch action", "up");
+                pt(TAG, "currentDetailTag", currentDetailTag);
+                if (currentDetailTag > 99) {
+                    if (details.get(currentDetailTag).points.size() > 2) {
+                        // rebuild points & shape
+                        for (int j = 0; j < detailsArea.getChildCount(); j++) {
+                            View child = detailsArea.getChildAt(j);
+                            if ((Integer) child.getTag() == currentDetailTag + 100) { // remove shape
+                                detailsArea.removeView(child);
+                            }
+                            if (child.getTag() == currentDetailTag) {
+                                // TODO place this child @ zPosition = 1
+                            }
+                        }
+
+                        Boolean drawEllipse = (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse)) ? true : false;
+                        // TODO buildshape & virtpoints
+                    /*buildShape(true, color: editColor, tag: detailTag, points: details["\(currentDetailTag)"]!.points, parentView: imgView, ellipse: drawEllipse, locked: details["\(currentDetailTag)"]!.locked)
+                    let locked = details["\(currentDetailTag)"]!.locked
+                    if (details["\(currentDetailTag)"]?.constraint == constraintPolygon && !locked) {
+                        virtPoints = details["\(currentDetailTag)"]!.makeVirtPoints()
+                        for virtPoint in virtPoints {
+                            imgView.addSubview(virtPoint.1)
+                        }
+                    }*/
+
+                        // TODO Save the detail in xml
+                    /*
+                    if let detail = xml["xia"]["details"]["detail"].allWithAttributes(["tag" : "\(currentDetailTag)"]) {
+                        for d in detail {
+                            d.attributes["path"] = (details["\(currentDetailTag)"]?.createPath())!
+                                    d.attributes["constraint"] = details["\(currentDetailTag)"]?.constraint
+                        }
+                    }
+                    let _ = writeXML(xml, path: "\(filePath).xml")*/
+                    }
+                }
+
+                if (createDetail) {
+                    moveDetail = false;
                 }
                 else {
-                    ImageView newPoint = new ImageView(this);
-                    newPoint.setImageResource((R.drawable.corner_x1));
-                    newPoint.setX(500);
-                    newPoint.setY(200);
-                    RelativeLayout detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
-                    detailsArea.addView(newPoint);
+                    if (editDetail == -1 && movingPoint == -1) {
+                        // TODO changeDetailColor(-1)
+                        currentDetailTag = 0;
+                        moveDetail = false;
+                    }
+                    else {
+                        editDetail = -1;
+                    }
+                }
 
-                    /*RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(500, 200);
-                    lp.addRule(RelativeLayout.CENTER_IN_PARENT); // A position in layout.
-                    newPoint.setLayoutParams(lp);
-// imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                    imageView.setImageResource(R.drawable.photo);
-                    RelativeLayout layout = (RelativeLayout) findViewById(R.id.layout);
-                    layout.addView(imageView);*/
-
-                    pt(TAG, "Add point here");
-//                }
+                setBtnsIcons();
                 break;
             }
         }
@@ -416,7 +452,6 @@ public class CreateDetailActivity extends AppCompatActivity {
         float cornerWidth = corner.getWidth();
         float cornerHeight = corner.getHeight();
         for (int i = 0; i < xmlDetails.getLength(); i++) {
-            pt(TAG, "Detail " + i);
             Node detail = xmlDetails.item(i);
             NamedNodeMap detailAttr = detail.getAttributes();
             Node pathNode = detailAttr.getNamedItem("path");
@@ -446,6 +481,7 @@ public class CreateDetailActivity extends AppCompatActivity {
                             ImageView newPoint = details.get(detailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
                             // TODO check for zPosition & hidden
                             detailsArea.addView(newPoint);
+                            pointIndex = pointIndex + 1;
                         }
                     }
                     String constraint = detailAttr.getNamedItem("constraint").getTextContent();
@@ -461,14 +497,6 @@ public class CreateDetailActivity extends AppCompatActivity {
                     // TODO attainable points
                 }
             }
-
-
-            String description = detail.getTextContent();
-
-
-            pt(TAG, "Path : " + path);
-            pt(TAG, "Description : " + description);
-
         }
     }
 

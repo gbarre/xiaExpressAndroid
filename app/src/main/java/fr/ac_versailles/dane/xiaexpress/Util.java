@@ -56,14 +56,14 @@ class Util {
             success = cDirectory.mkdir();
             if (success) {
                 // Do something on success
-                pt(TAG, directory + " created");
+                pt(TAG, directory, "created");
             } else {
                 // Do something else on failure
-                pt(TAG, directory + " not created");
+                pt(TAG, directory, "not created");
             }
         }
         else {
-            pt(TAG, directory + " already exist");
+            pt(TAG, directory, "already exist");
         }
     }
 
@@ -89,12 +89,14 @@ class Util {
     }
 
     static Boolean pointInPolygon(Map<Integer, ImageView> points, float touchPointX, float touchPointY) {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         // translate from C : http://alienryderflex.com/polygon/
         int polyCorners = points.size();
         int j = polyCorners - 1;
         Boolean oddNodes = false;
-
+        //pt(TAG, "touchPoint", "(" + touchPointX + ";" + touchPointY + ")");
         for (int i = 0; i < polyCorners; i++) {
+            //pt(TAG, "point " + i, points.get(i).getX() + ";" + points.get(i).getY());
             if ( (points.get(i).getY() < touchPointY && points.get(j).getY() >= touchPointY
                     || points.get(j).getY() < touchPointY && points.get(i).getY() >= touchPointY)
             && (points.get(i).getX() <= touchPointX || points.get(j).getX() <= touchPointX) ) {
@@ -109,7 +111,6 @@ class Util {
     }
 
     static String readFromFile(InputStream inputStream) {
-
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         String ret = "";
 

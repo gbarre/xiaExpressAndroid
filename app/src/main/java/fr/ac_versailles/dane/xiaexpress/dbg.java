@@ -26,10 +26,14 @@ class dbg {
 
     static Boolean enable = Constants.getEnableDebug();
 
-    static void pt(String TAG, String logString) {
+    static void pt(String TAG, String logString, Object object) {
         if (enable) {
-            Log.i(TAG, logString);
-
+            if (object.equals(null)) {
+                Log.i(TAG, logString);
+            }
+            else {
+                Log.i(TAG, logString + " : " + object.toString());
+            }
         }
     }
 
