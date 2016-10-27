@@ -84,6 +84,9 @@ public class CreateDetailActivity extends AppCompatActivity {
     private float scale = 1;
     private float xMin = 0;
     private float yMin = 0;
+    private DisplayMetrics metrics;
+    float cornerWidth = 0;
+    float cornerHeight = 0;
 
     //private menu: UIAlertController!
     private int btnTag = 0;
@@ -114,6 +117,11 @@ public class CreateDetailActivity extends AppCompatActivity {
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbarHeight = myToolbar.getHeight();
 
+        metrics = getResources().getDisplayMetrics();
+        Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
+        cornerWidth = corner.getWidth();
+        cornerHeight = corner.getHeight();
+
         loadBackground(imagesDirectory + fileName);
         xml = getXMLFromPath(xmlDirectory + fileTitle + ".xml");
         loadDetails(xml);
@@ -123,7 +131,6 @@ public class CreateDetailActivity extends AppCompatActivity {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         // get pointer index from the event object
         int pointerIndex = event.getActionIndex();
@@ -155,7 +162,6 @@ public class CreateDetailActivity extends AppCompatActivity {
                         xiaDetail detailPoints = entry.getValue();
 
                         Boolean touchIn = pointInPolygon(detailPoints.points, locationX, locationY);
-                        pt(TAG, "pointInPolygon " + detailTag, touchIn);
                         if (touchIn) {
                             touchedTag = detailTag;
                             //beginTouchLocation = location; // old bad idea
@@ -171,14 +177,12 @@ public class CreateDetailActivity extends AppCompatActivity {
 
                     // Should we move an existing point ?
                     if (currentDetailTag != 0 && !details.get(currentDetailTag).locked) {
-                        pt(TAG, "Try to move existing point", "");
                         movingPoint = -1;
                         for (Map.Entry<Integer, ImageView> entry : details.get(currentDetailTag).points.entrySet()) {
                             Integer id = entry.getKey();
                             ImageView point = entry.getValue();
 
                             float dist = distance(locationX, locationY, point.getX(), point.getY());
-                            pt(TAG, "dist to point " + id, dist);
                             if (dist < 80) { // We are close to an exiting point, move it
                                 ImageView toMove = point;
                                 /*switch (details.get(currentDetailTag).constraint) {
@@ -194,7 +198,6 @@ public class CreateDetailActivity extends AppCompatActivity {
 
                                 details.get(currentDetailTag).points.put(id, toMove);
                                 movingPoint = id;
-                                pt(TAG, "movingPoint", movingPoint);
                                 moveDetail = false;
                                 break;
                             } else { // No point here, just move the detail
@@ -364,15 +367,21 @@ public class CreateDetailActivity extends AppCompatActivity {
                         }
                     }*/
 
-                        // TODO Save the detail in xml
-                    /*
-                    if let detail = xml["xia"]["details"]["detail"].allWithAttributes(["tag" : "\(currentDetailTag)"]) {
-                        for d in detail {
-                            d.attributes["path"] = (details["\(currentDetailTag)"]?.createPath())!
-                                    d.attributes["constraint"] = details["\(currentDetailTag)"]?.constraint
+                        // Save the detail in xml
+                        NodeList xmlDetails = xml.getElementsByTagName("detail");
+                        for (int i = 0; i < xmlDetails.getLength(); i++) {
+                            Node detail = xmlDetails.item(i);
+                            NamedNodeMap detailAttr = detail.getAttributes();
+                            Node tag = detailAttr.getNamedItem("tag");
+                            int detailTag = Integer.valueOf(tag.getTextContent());
+                            if (detailTag == currentDetailTag) {
+                                Node detailPath = detailAttr.getNamedItem("path");
+                                detailPath.setTextContent(details.get(currentDetailTag).createPath(xMin - cornerWidth/2, yMin - cornerHeight/2));
+                                Node detailConstraint = detailAttr.getNamedItem("constraint");
+                                detailConstraint.setTextContent(details.get(currentDetailTag).constraint);
+                            }
                         }
-                    }
-                    let _ = writeXML(xml, path: "\(filePath).xml")*/
+                        writeXML(xml, xmlDirectory + fileTitle + ".xml");
                     }
                 }
 
@@ -426,7 +435,6 @@ public class CreateDetailActivity extends AppCompatActivity {
 
         ImageView imageView = (ImageView) findViewById(R.id.image);
 
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
         float availableWidth = metrics.widthPixels;
         float availableHeight = metrics.heightPixels - toolbarHeight * metrics.scaledDensity;
 
@@ -448,9 +456,6 @@ public class CreateDetailActivity extends AppCompatActivity {
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
 
         NodeList xmlDetails = xml.getElementsByTagName("detail");
-        Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
-        float cornerWidth = corner.getWidth();
-        float cornerHeight = corner.getHeight();
         for (int i = 0; i < xmlDetails.getLength(); i++) {
             Node detail = xmlDetails.item(i);
             NamedNodeMap detailAttr = detail.getAttributes();

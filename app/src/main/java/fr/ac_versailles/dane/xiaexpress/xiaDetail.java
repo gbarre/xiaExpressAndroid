@@ -5,13 +5,15 @@ import android.widget.ImageView;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
- * .java
+ * xiaDetail.java
  * XiaExpress
- * <p>
+ *
  * Created by guillaume on 24/10/2016.
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -30,14 +32,33 @@ class xiaDetail {
 
     public Map<Integer, ImageView> points = new HashMap<>();
     public Integer tag = 0;
-    public double scale = 1.0;
+    public float scale = 1;
     public String constraint = "";
     public Boolean locked = false;
 
-    public xiaDetail(Integer tag, double scale) {
+    public xiaDetail(Integer tag, float scale) {
         this.tag = tag;
         points.clear();
         this.scale = scale;
+    }
+
+    public String createPath(float xMin, float ymin){
+        if (points.size() < 2) {
+            return "0;0";
+        }
+        else {
+
+            String path = "";
+            SortedSet<Integer> keys = new TreeSet<>(points.keySet());
+            for (Integer key : keys) {
+                ImageView point = points.get(key);
+                float x = (point.getX() - xMin) / scale;
+                float y = (point.getY() - ymin) / scale;
+                path = path + x + ";" + y + " ";
+            }
+
+            return path.trim(); // return X1.xxx;Y1.yyy X2.xxx;Y2.yyy X3.xxx;Y3.yyy ...
+        }
     }
 
     public ImageView createPoint(float x, float y, int ResId, Integer index, Context ctx) {
