@@ -498,7 +498,7 @@ public class CreateDetailActivity extends AppCompatActivity {
                     }
                     Boolean drawEllipse = (details.get(detailTag).constraint.equals(Constants.constraintEllipse));
                     details.get(detailTag).locked = (detailAttr.getNamedItem("locked").getTextContent().equals("true"));
-                    // TODO buildShape(true, color: noEditColor, tag: detailTag, points: details["\(detailTag)"]!.points, parentView: imgView, ellipse: drawEllipse, locked: details["\(detailTag)"]!.locked)
+                    buildShape(this, true, R.color.green, detailTag, details.get(detailTag).points, detailsArea, drawEllipse, details.get(detailTag).locked);
                     // TODO attainable points
                 }
             }
