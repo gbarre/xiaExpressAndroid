@@ -1,8 +1,10 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.DisplayMetrics;
 import android.widget.ImageView;
 
 import org.junit.Test;
@@ -35,16 +37,23 @@ public class xiaDetailTests {
 
     private xiaDetail singlePointDetail = new xiaDetail(1, 1);
     private xiaDetail multiplePointsDetail = new xiaDetail(1, 1);
+    private xiaDetail ellipsePointsDetail = new xiaDetail(1, 1);
     private Context ctx = InstrumentationRegistry.getTargetContext();
 
     public xiaDetailTests() {
         // Single point detail
-        singlePointDetail.createPoint(10, 10, 0, 0, ctx);
+        singlePointDetail.createPoint(10, 10, R.drawable.corner, 0, ctx);
 
         // Multiple points detail
-        multiplePointsDetail.createPoint(10, 10, 0, 0, ctx);
-        multiplePointsDetail.createPoint(200, 150, 0, 1, ctx);
+        multiplePointsDetail.createPoint(10, 10, R.drawable.corner, 0, ctx);
+        multiplePointsDetail.createPoint(200, 150, R.drawable.corner, 1, ctx);
         multiplePointsDetail.createPoint(120, 150, 0, 2, ctx);
+
+        // Ellipse points detail
+        ellipsePointsDetail.createPoint(200, 200, R.drawable.corner, 0, ctx);
+        ellipsePointsDetail.createPoint(350, 400, R.drawable.corner, 1, ctx);
+        ellipsePointsDetail.createPoint(200, 600, R.drawable.corner, 2, ctx);
+        ellipsePointsDetail.createPoint(50, 400, R.drawable.corner, 3, ctx);
 
     }
 
@@ -78,5 +87,32 @@ public class xiaDetailTests {
         assertEquals(output.getBackground(), expectedOutput.getBackground());
     }
 
+    @Test
+    public void testXiaDetailCreateShapeEllipse() throws Exception {
+        ImageView outputEllipse = ellipsePointsDetail.createShape(ctx, true, Color.GREEN, 20, 20, new DisplayMetrics(), 0, true, false);
+
+        ImageView expectedEllipse = new ImageView(ctx);
+        expectedEllipse.setX(60);
+        expectedEllipse.setY(210);
+        expectedEllipse.setTag(101);
+
+        assertEquals(outputEllipse.getX(), expectedEllipse.getX());
+        assertEquals(outputEllipse.getY(), expectedEllipse.getY());
+        assertEquals(outputEllipse.getTag(), expectedEllipse.getTag());
+    }
+
+    @Test
+    public void testXiaDetailCreateShapePolygon() throws Exception {
+        ImageView outputEllipse = multiplePointsDetail.createShape(ctx, true, Color.GREEN, 20, 20, new DisplayMetrics(), 0, false, false);
+
+        ImageView expectedPolygon = new ImageView(ctx);
+        expectedPolygon.setX(0);
+        expectedPolygon.setY(0);
+        expectedPolygon.setTag(101);
+
+        assertEquals(outputEllipse.getX(), expectedPolygon.getX());
+        assertEquals(outputEllipse.getY(), expectedPolygon.getY());
+        assertEquals(outputEllipse.getTag(), expectedPolygon.getTag());
+    }
 
 }
