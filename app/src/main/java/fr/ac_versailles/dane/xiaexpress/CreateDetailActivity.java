@@ -179,16 +179,14 @@ public class CreateDetailActivity extends AppCompatActivity {
 
                             float dist = distance(locationX, locationY, point.getX(), point.getY());
                             if (dist < 80) { // We are close to an exiting point, move it
-                                /*switch (details.get(currentDetailTag).constraint) {
-                                    case Constant.constraintEllipse:
-                                        toMove.center = ploc
-                                        break
-                                    default:
-                                        toMove.center = location
-                                        break
-                                }*/ // TODO why the switch before and not this 2 lines ?
-                                point.setX(locationX);
-                                point.setY(locationY);
+                                if (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse)) { // avoid that the touch point is moving without constraint
+                                    point.setX(point.getX());
+                                    point.setY(point.getY());
+                                }
+                                else {
+                                    point.setX(locationX);
+                                    point.setY(locationY);
+                                }
 
                                 details.get(currentDetailTag).points.put(id, point);
                                 movingPoint = id;

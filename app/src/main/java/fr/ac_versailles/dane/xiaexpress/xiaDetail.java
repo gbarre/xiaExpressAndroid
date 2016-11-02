@@ -88,8 +88,10 @@ class xiaDetail {
             int height = Math.abs(Math.round(points.get(0).getY() - points.get(2).getY()));
             shape.setIntrinsicWidth(width);
             shape.setIntrinsicHeight(height);
-            shapeView.setX(points.get(3).getX() + cornerWidth / 2);
-            shapeView.setY(points.get(0).getY() + cornerHeight / 2);
+            float x = Math.min(points.get(1).getX(), points.get(3).getX());
+            float y = Math.min(points.get(0).getY(), points.get(2).getY());
+            shapeView.setX(x + cornerWidth / 2);
+            shapeView.setY(y + cornerHeight / 2);
         }
         else {
             Path p = new Path();
