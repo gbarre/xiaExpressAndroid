@@ -1,10 +1,6 @@
 package fr.ac_versailles.dane.xiaexpress;
 
-import android.content.Context;
-import android.graphics.Rect;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -20,7 +16,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -49,63 +44,6 @@ import static fr.ac_versailles.dane.xiaexpress.dbg.*;
  */
 
 class Util {
-
-    static void buildShape(Context context, Boolean fill, int color, Integer tag, Map<Integer, ImageView> points, RelativeLayout parentView, Boolean ellipse, Boolean locked) {
-        Integer shapeArg = 0;
-        Integer shapeTag = tag + 100;
-        if (fill) {
-            shapeArg = (ellipse) ? 3 : 1;
-        }
-        else {
-            shapeArg = (ellipse) ? 2 : 0;
-        }
-
-        float xMin = Float.MAX_VALUE;
-        float xMax = 0;
-        float yMin = Float.MAX_VALUE;
-        float yMax = 0;
-        // Get dimensions of the shape
-        for (int i = 0; i < parentView.getChildCount(); i++) {
-            View subview = parentView.getChildAt(i);
-            if (subview.getTag() == tag) {
-                float xMinSubview = subview.getX();
-                float yMinSubview = subview.getY();
-                float xMaxSubview = xMinSubview + 10;
-                float yMaxSubview = yMinSubview + 10;
-                if ( xMinSubview < xMin ) {
-                    xMin = xMinSubview;
-                }
-                if ( yMinSubview < yMin ) {
-                    yMin = yMinSubview;
-                }
-                if ( xMaxSubview > xMax ) {
-                    xMax = xMaxSubview;
-                }
-                if ( yMaxSubview > yMax ) {
-                    yMax = yMaxSubview;
-                }
-            }
-        }
-        Rect shapeFrame = new Rect(Math.round(xMin), Math.round(yMin), Math.round(xMax), Math.round(yMax));
-
-        // Build the shape
-        View myView = new ShapeView(context, shapeFrame, shapeArg, points, color);
-
-        /*myView.backgroundColor = UIColor(white: 0, alpha: 0)
-        myView.tag = shapeTag
-        parentView.addSubview(myView)
-
-        // Shape is locked ?
-        if locked {
-            let lock = UIImage(named: "lock")
-            let lockView = UIImageView(image: lock!)
-            lockView.center = CGPoint(x: shapeFrame.midX, y: shapeFrame.midY)
-            lockView.tag = shapeTag
-            lockView.layer.zPosition = 105
-            lockView.alpha = 0.5
-            parentView.addSubview(lockView)
-        }*/
-    }
 
     static void createDirectory(String directory) {
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
@@ -148,12 +86,10 @@ class Util {
     }
 
     static Boolean pointInPolygon(Map<Integer, ImageView> points, float touchPointX, float touchPointY) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         // translate from C : http://alienryderflex.com/polygon/
         int polyCorners = points.size();
         int j = polyCorners - 1;
         Boolean oddNodes = false;
-        //pt(TAG, "touchPoint", "(" + touchPointX + ";" + touchPointY + ")");
         for (int i = 0; i < polyCorners; i++) {
             //pt(TAG, "point " + i, points.get(i).getX() + ";" + points.get(i).getY());
             if ( (points.get(i).getY() < touchPointY && points.get(j).getY() >= touchPointY
@@ -170,7 +106,6 @@ class Util {
     }
 
     static String readFromFile(InputStream inputStream) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         String ret = "";
 
         try {

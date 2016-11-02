@@ -238,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
         String imgName = path.substring(path.lastIndexOf("/")+1);
         File cachedImage = new File(cacheDirectory+imgName);
         try {
-            boolean _ = cachedImage.createNewFile();
+            cachedImage.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         }

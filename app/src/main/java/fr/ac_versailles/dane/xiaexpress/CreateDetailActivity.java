@@ -3,6 +3,7 @@ package fr.ac_versailles.dane.xiaexpress;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -50,7 +51,6 @@ import static fr.ac_versailles.dane.xiaexpress.dbg.*;
 
 public class CreateDetailActivity extends AppCompatActivity {
 
-    private String rootDirectory;
     private String imagesDirectory;
     private String xmlDirectory;
     //private String cacheDirectory;
@@ -60,8 +60,6 @@ public class CreateDetailActivity extends AppCompatActivity {
     private String fileName = "";
     private String filePath = "";
     private String fileTitle = "";
-    private float locationX = 0;
-    private float locationY = 0;
     private float movingPoint = -1; // Id of point
     private float movingCoordsX = 0;
     private float movingCoordsY = 0;
@@ -102,7 +100,7 @@ public class CreateDetailActivity extends AppCompatActivity {
 
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
 
-        rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
+        String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
         //cacheDirectory = Constants.getCacheFrom(rootDirectory);
@@ -140,16 +138,13 @@ public class CreateDetailActivity extends AppCompatActivity {
 
         // get masked (not specific to a pointer) action
         int maskedAction = event.getActionMasked();
-        locationX = event.getX();
-        locationY = event.getY() - toolbarHeight * metrics.scaledDensity;
+        float locationX = event.getX();
+        float locationY = event.getY() - toolbarHeight * metrics.scaledDensity;
 
         switch (maskedAction) {
 
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN: {
-                // TODO use data
-                pt(TAG, "touch", String.valueOf(locationX + " ; " + locationY));
-                pt(TAG, "currentDetailTag", currentDetailTag);
                 if (createDetail) {
                     // TODO create details :-)
                 }
@@ -169,8 +164,8 @@ public class CreateDetailActivity extends AppCompatActivity {
                             currentDetailTag = touchedTag;
                             movingCoordsX = locationX;
                             movingCoordsY = locationY;
-                            moveDetail = (detailPoints.locked) ? false : true;
-                            // TODO changeDetailColor(editDetail)
+                            moveDetail = !detailPoints.locked;
+                            changeDetailColor(Math.round(editDetail));
                             break;
                         }
                     }
@@ -184,7 +179,6 @@ public class CreateDetailActivity extends AppCompatActivity {
 
                             float dist = distance(locationX, locationY, point.getX(), point.getY());
                             if (dist < 80) { // We are close to an exiting point, move it
-                                ImageView toMove = point;
                                 /*switch (details.get(currentDetailTag).constraint) {
                                     case Constant.constraintEllipse:
                                         toMove.center = ploc
@@ -193,10 +187,10 @@ public class CreateDetailActivity extends AppCompatActivity {
                                         toMove.center = location
                                         break
                                 }*/ // TODO why the switch before and not this 2 lines ?
-                                toMove.setX(locationX);
-                                toMove.setY(locationY);
+                                point.setX(locationX);
+                                point.setY(locationY);
 
-                                details.get(currentDetailTag).points.put(id, toMove);
+                                details.get(currentDetailTag).points.put(id, point);
                                 movingPoint = id;
                                 moveDetail = false;
                                 break;
@@ -236,14 +230,12 @@ public class CreateDetailActivity extends AppCompatActivity {
                 break;
             }
             case MotionEvent.ACTION_MOVE: { // a pointer was moved
-                // TODO use data
                 if ( movingPoint != -1 && currentDetailTag != 0 && !details.get(currentDetailTag).locked ) {
                     movingPoint = Math.round(movingPoint);
                     float plocX = details.get(currentDetailTag).points.get(Math.round(movingPoint)).getX();
                     float plocY = details.get(currentDetailTag).points.get(Math.round(movingPoint)).getY();
 
                     float dist = distance(locationX, locationY, plocX, plocY);
-                    pt(TAG, "dist", dist);
                     if ( dist < 200 ) {
                         ImageView toMove = details.get(currentDetailTag).points.get(Math.round(movingPoint));
                         int previousPoint = Math.round(mod(Math.round(movingPoint + 3), 4));
@@ -340,9 +332,6 @@ public class CreateDetailActivity extends AppCompatActivity {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_CANCEL: {
-                // TODO use data
-                pt(TAG, "onTouch action", "up");
-                pt(TAG, "currentDetailTag", currentDetailTag);
                 if (currentDetailTag > 99) {
                     if (details.get(currentDetailTag).points.size() > 2) {
                         // rebuild points & shape
@@ -356,10 +345,12 @@ public class CreateDetailActivity extends AppCompatActivity {
                             }
                         }
 
-                        Boolean drawEllipse = (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse)) ? true : false;
-                        // TODO buildshape & virtpoints
-                    /*buildShape(true, color: editColor, tag: detailTag, points: details["\(currentDetailTag)"]!.points, parentView: imgView, ellipse: drawEllipse, locked: details["\(currentDetailTag)"]!.locked)
-                    let locked = details["\(currentDetailTag)"]!.locked
+                        Boolean drawEllipse = (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse));
+                        ImageView testView = details.get(currentDetailTag).createShape(this,true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, drawEllipse, details.get(currentDetailTag).locked);
+                        detailsArea.addView(testView);
+                        // TODO virtpoints
+
+                    /*let locked = details["\(currentDetailTag)"]!.locked
                     if (details["\(currentDetailTag)"]?.constraint == constraintPolygon && !locked) {
                         virtPoints = details["\(currentDetailTag)"]!.makeVirtPoints()
                         for virtPoint in virtPoints {
@@ -390,7 +381,7 @@ public class CreateDetailActivity extends AppCompatActivity {
                 }
                 else {
                     if (editDetail == -1 && movingPoint == -1) {
-                        // TODO changeDetailColor(-1)
+                        changeDetailColor(-1);
                         currentDetailTag = 0;
                         moveDetail = false;
                     }
@@ -415,8 +406,59 @@ public class CreateDetailActivity extends AppCompatActivity {
         setBtnsIcons();
     }
 
+    private void changeDetailColor(Integer tag) {
+        // Change other details color
+        for(Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
+            Integer thisDetailTag = entry.getKey();
+            xiaDetail detail = entry.getValue();
+            // Remove and rebuild the shape to avoid the overlay on alpha channel
+            for (int i = 0; i < detailsArea.getChildCount(); i++) {
+                View child = detailsArea.getChildAt(i);
+                Integer childTag = (Integer) child.getTag();
+                if (childTag.equals(thisDetailTag + 100)) { // polygon
+                    detailsArea.removeView(child);
+                }
+                if (childTag.equals(thisDetailTag)) { // points
+                    if (thisDetailTag.equals(tag)) {
+                        child.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        child.setVisibility(View.GONE);
+                    }
+                }
+            }
+
+            if (detail.points.size() > 2) {
+                Boolean drawEllipse = (detail.constraint.equals(Constants.constraintEllipse));
+                if (thisDetailTag.equals(tag)) {
+                    ImageView detailShape = detail.createShape(this, true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, drawEllipse, detail.locked);
+                    detailsArea.addView(detailShape);
+                }
+                else {
+                    ImageView detailShape = detail.createShape(this, true, Color.GREEN, cornerWidth, cornerHeight, metrics, toolbarHeight, drawEllipse, detail.locked);
+                    detailsArea.addView(detailShape);
+                }
+            }
+            else { // only 1 or 2 points, remove them
+                for (int i = 0; i < detailsArea.getChildCount(); i++) {
+                    View child = detailsArea.getChildAt(i);
+                    if (child.getTag() == thisDetailTag) {
+                        detailsArea.removeView(child);
+                    }
+                }
+            }
+        }
+        /* TODO toolbar color for polygon creation
+        if createDetail && details["\(tag)"]?.constraint == constraintPolygon {
+            imgTopBarBkgd.backgroundColor = editColor
+        }
+        else {
+            imgTopBarBkgd.backgroundColor = blueColor
+        }*/
+        cleanOldViews();
+    }
+
     private void cleaningDetails() {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         for(Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
             Integer detailTag = entry.getKey();
             xiaDetail detail = entry.getValue();
@@ -426,13 +468,21 @@ public class CreateDetailActivity extends AppCompatActivity {
         }
     }
 
+    private void cleanOldViews() {
+        // Remove old (hidden) subviews
+        for (int i = 0; i < detailsArea.getChildCount(); i++) {
+            View child = detailsArea.getChildAt(i);
+            if ((Integer) child.getTag() > 299) {
+                detailsArea.removeView(child);
+            }
+        }
+    }
+
     private float distance(float xA, float yA, float xB, float yB) {
         return (float) Math.sqrt((xA-xB)*(xA-xB)+(yA-yB)*(yA-yB));
     }
 
     private void loadBackground(String imagePath) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-
         ImageView imageView = (ImageView) findViewById(R.id.image);
 
         float availableWidth = metrics.widthPixels;
@@ -485,6 +535,7 @@ public class CreateDetailActivity extends AppCompatActivity {
                             Float y = Float.parseFloat(coords[1]) * scale + yMin - cornerHeight / 2;
                             ImageView newPoint = details.get(detailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
                             // TODO check for zPosition & hidden
+                            newPoint.setVisibility(View.INVISIBLE);
                             detailsArea.addView(newPoint);
                             pointIndex = pointIndex + 1;
                         }
@@ -498,11 +549,21 @@ public class CreateDetailActivity extends AppCompatActivity {
                     }
                     Boolean drawEllipse = (details.get(detailTag).constraint.equals(Constants.constraintEllipse));
                     details.get(detailTag).locked = (detailAttr.getNamedItem("locked").getTextContent().equals("true"));
-                    buildShape(this, true, R.color.green, detailTag, details.get(detailTag).points, detailsArea, drawEllipse, details.get(detailTag).locked);
+
+
+                    // test on shape
+
+                    ImageView testView = details.get(detailTag).createShape(this,true, Color.GREEN, cornerWidth, cornerHeight, metrics, toolbarHeight, drawEllipse, details.get(detailTag).locked);
+                    detailsArea.addView(testView);
+
+                    //buildShape(this, true, R.color.green, detailTag, details.get(detailTag).points, detailsArea, drawEllipse, details.get(detailTag).locked);
                     // TODO attainable points
                 }
             }
         }
+
+
+
     }
 
     private void setBtnsIcons() {

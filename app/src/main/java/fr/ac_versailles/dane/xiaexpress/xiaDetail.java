@@ -1,12 +1,20 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.content.Context;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
+import android.graphics.drawable.shapes.PathShape;
+import android.util.DisplayMetrics;
 import android.widget.ImageView;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import static fr.ac_versailles.dane.xiaexpress.dbg.pt;
 
 /**
  * xiaDetail.java
@@ -69,6 +77,58 @@ class xiaDetail {
         image.setTag(this.tag);
         points.put(index, image);
         return image;
+    }
+
+    public  ImageView createShape(Context ctx, Boolean fill, int color, float cornerWidth, float cornerHeight, DisplayMetrics metrics, float toolbarHeight, Boolean drawEllipse, Boolean locked) {
+        ImageView shapeView = new ImageView(ctx);
+        ShapeDrawable shape;
+        if (drawEllipse) {
+            shape = new ShapeDrawable (new OvalShape());
+            int width = Math.abs(Math.round(points.get(1).getX() - points.get(3).getX()));
+            int height = Math.abs(Math.round(points.get(0).getY() - points.get(2).getY()));
+            shape.setIntrinsicWidth(width);
+            shape.setIntrinsicHeight(height);
+            shapeView.setX(points.get(3).getX() + cornerWidth / 2);
+            shapeView.setY(points.get(0).getY() + cornerHeight / 2);
+        }
+        else {
+            Path p = new Path();
+            p.reset();
+
+            ImageView endPoint = new ImageView(ctx);
+            SortedSet<Integer> keys = new TreeSet<>(points.keySet());
+            for (Integer key : keys) {
+                ImageView point = points.get(key);
+
+                float x = point.getX() + cornerWidth / 2;
+                float y = point.getY() + cornerHeight / 2;
+
+                if (key != 0) {
+                    p.lineTo(x, y);
+                } else {
+                    p.moveTo(x, y);
+                    endPoint = point;
+                }
+            }
+            p.lineTo(endPoint.getX() + cornerWidth / 2, endPoint.getY() + cornerHeight / 2);
+            shape = new ShapeDrawable(new PathShape(p, metrics.widthPixels, metrics.heightPixels - Math.round(toolbarHeight * metrics.scaledDensity)));
+            shape.setIntrinsicWidth(metrics.widthPixels);
+            shape.setIntrinsicHeight(metrics.heightPixels);
+        }
+        shape.getPaint().setColor(color);
+        if (fill) {
+            shape.getPaint().setStyle(Paint.Style.FILL);
+        }
+        else {
+            shape.getPaint().setStyle(Paint.Style.STROKE);
+            shape.getPaint().setStrokeWidth(3);
+        }
+        shape.getPaint().setAlpha(150); // 150 / 255 = 80%
+
+        shapeView.setBackground(shape);
+        shapeView.setTag(this.tag + 100);
+
+        return shapeView;
     }
 
 }
