@@ -12,9 +12,12 @@ import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListPopupWindow;
 import android.widget.RelativeLayout;
 
 import org.w3c.dom.Document;
@@ -49,7 +52,7 @@ import static fr.ac_versailles.dane.xiaexpress.dbg.*;
  *  @author : guillaume.barre@ac-versailles.fr
  */
 
-public class CreateDetailActivity extends AppCompatActivity {
+public class CreateDetailActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private String imagesDirectory;
     private String xmlDirectory;
@@ -87,12 +90,19 @@ public class CreateDetailActivity extends AppCompatActivity {
     float cornerHeight = 0;
 
     //private menu: UIAlertController!
+    ListPopupWindow listPopupWindow;
+    String[] detailsType;
     private int btnTag = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_detail);
+
+        String rectangle = getResources().getString(R.string.rectangle);
+        String ellipse = getResources().getString(R.string.ellipse);
+        String polygon = getResources().getString(R.string.polygon);
+        detailsType = new String[]{rectangle, ellipse, polygon};
 
         setBtnsIcons();
 
@@ -402,6 +412,134 @@ public class CreateDetailActivity extends AppCompatActivity {
     private void addDetail() {
         createDetail = true;
         setBtnsIcons();
+
+        // Prepare new detail
+        for (int i = 100; i < 200; i++) {
+            if (details.get(i) == null) {
+                currentDetailTag = i;
+                break;
+            }
+        }
+        // TODO send alert if i = 200
+
+        xiaDetail newDetail = new xiaDetail(currentDetailTag, scale);
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("tag", currentDetailTag.toString());
+        attributes.put("zoom", "true");
+        attributes.put("title", "");
+        attributes.put("path", "0;0");
+
+        /*
+        // Build menu
+        menu = UIAlertController(title: "", message: nil, preferredStyle: .actionSheet)
+        let rectangleAction = UIAlertAction(title: NSLocalizedString("RECTANGLE", comment: ""), style: .default, handler: { action in
+            // Create new detail
+            self.details["\(self.currentDetailTag)"] = newDetail
+            self.details["\(self.currentDetailTag)"]?.constraint = constraintRectangle
+
+            let _ = self.xml["xia"]["details"].addChild("detail", value: "", attributes: attributes)
+            self.createDetail = true
+            self.changeDetailColor(self.currentDetailTag)
+
+            // Now build the rectangle
+            let newPoint0 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 100, y: 30), imageName: "corner", index: 0)
+            newPoint0?.layer.zPosition = 1
+            self.imgView.addSubview(newPoint0!)
+            let newPoint1 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 300, y: 30), imageName: "corner", index: 1)
+            newPoint1?.layer.zPosition = 1
+            self.imgView.addSubview(newPoint1!)
+            let newPoint2 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 300, y: 150), imageName: "corner", index: 2)
+            newPoint2?.layer.zPosition = 1
+            self.imgView.addSubview(newPoint2!)
+            let newPoint3 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 100, y: 150), imageName: "corner", index: 3)
+            newPoint3?.layer.zPosition = 1
+            self.imgView.addSubview(newPoint3!)
+            buildShape(true, color: editColor, tag: self.currentDetailTag, points: self.details["\(self.currentDetailTag)"]!.points, parentView: self.imgView, locked: self.details["\(self.currentDetailTag)"]!.locked)
+
+            self.stopCreation()
+
+            // Save the detail in xml
+            if let detail = self.xml["xia"]["details"]["detail"].allWithAttributes(["tag" : "\(self.currentDetailTag)"]) {
+                for d in detail {
+                    d.attributes["path"] = (self.details["\(self.currentDetailTag)"]?.createPath())!
+                            d.attributes["constraint"] = self.details["\(self.currentDetailTag)"]?.constraint
+                }
+            }
+            let _ = writeXML(self.xml, path: "\(self.filePath).xml")
+        })
+        let ellipseAction = UIAlertAction(title: NSLocalizedString("ELLIPSE", comment: ""), style: .default, handler: { action in
+            // Create new detail
+            self.details["\(self.currentDetailTag)"] = newDetail
+            self.details["\(self.currentDetailTag)"]?.constraint = constraintEllipse
+
+            let _ = self.xml["xia"]["details"].addChild("detail", value: "", attributes: attributes)
+            self.createDetail = true
+            self.changeDetailColor(self.currentDetailTag)
+
+            // Now build the rectangle
+            let newPoint0 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 300, y: 50), imageName: "corner", index: 0)
+            newPoint0?.layer.zPosition = 1
+            self.imgView.addSubview(newPoint0!)
+            let newPoint1 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 400, y: 110), imageName: "corner", index: 1)
+            newPoint1?.layer.zPosition = 1
+            self.imgView.addSubview(newPoint1!)
+            let newPoint2 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 300, y: 170), imageName: "corner", index: 2)
+            newPoint2?.layer.zPosition = 1
+            self.imgView.addSubview(newPoint2!)
+            let newPoint3 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 200, y: 110), imageName: "corner", index: 3)
+            newPoint3?.layer.zPosition = 1
+            self.imgView.addSubview(newPoint3!)
+            buildShape(true, color: editColor, tag: self.currentDetailTag, points: self.details["\(self.currentDetailTag)"]!.points, parentView: self.imgView, ellipse: true, locked: self.details["\(self.currentDetailTag)"]!.locked)
+
+            self.stopCreation()
+
+            // Save the detail in xml
+            if let detail = self.xml["xia"]["details"]["detail"].allWithAttributes(["tag" : "\(self.currentDetailTag)"]) {
+                for d in detail {
+                    d.attributes["path"] = (self.details["\(self.currentDetailTag)"]?.createPath())!
+                            d.attributes["constraint"] = self.details["\(self.currentDetailTag)"]?.constraint
+                }
+            }
+            let _ = writeXML(self.xml, path: "\(self.filePath).xml")
+        })
+        let polygonAction = UIAlertAction(title: NSLocalizedString("POLYGON", comment: ""), style: .default, handler: { action in
+            // Create new detail object
+            self.details["\(self.currentDetailTag)"] = newDetail
+            self.details["\(self.currentDetailTag)"]?.constraint = constraintPolygon
+            let _ = self.xml["xia"]["details"].addChild("detail", value: "", attributes: attributes)
+            self.createDetail = true
+            self.changeDetailColor(self.currentDetailTag)
+            self.setBtnsIcons()
+
+            // Disable other gesture
+            if let recognizers = self.view.gestureRecognizers {
+                for recognizer in recognizers {
+                    self.view.removeGestureRecognizer(recognizer)
+                }
+            }
+        })
+        let attributedTitle = NSAttributedString(string: NSLocalizedString("CREATE_DETAIL", comment: ""), attributes: [
+        NSFontAttributeName : UIFont.boldSystemFont(ofSize: 18),
+        NSForegroundColorAttributeName : UIColor.black
+        ])
+        menu.setValue(attributedTitle, forKey: "attributedTitle")
+
+        rectangleAction.setValue(UIImage(named: "rectangle"), forKey: "image")
+        ellipseAction.setValue(UIImage(named: "ellipse"), forKey: "image")
+        polygonAction.setValue(UIImage(named: "polygon"), forKey: "image")
+        menu.addAction(rectangleAction)
+        menu.addAction(ellipseAction)
+        menu.addAction(polygonAction)
+
+        if let ppc = menu.popoverPresentationController {
+            ppc.barButtonItem = sender
+            ppc.permittedArrowDirections = .up
+        }
+
+        present(menu, animated: true, completion: nil)
+
+*/
+
     }
 
     private void changeDetailColor(Integer tag) {
@@ -576,6 +714,18 @@ public class CreateDetailActivity extends AppCompatActivity {
         ImageButton btEdit = (ImageButton) findViewById(R.id.edit);
         ImageButton btTrash = (ImageButton) findViewById(R.id.trash);
 
+        // Build the addDetail menu
+        listPopupWindow = new ListPopupWindow(this);
+        pt("setBtnIcons", "detailsType", detailsType);
+        listPopupWindow.setAdapter(new ArrayAdapter(CreateDetailActivity.this, R.layout.list_item, detailsType));
+        listPopupWindow.setAnchorView(btAddDetail);
+        listPopupWindow.setWidth(185);
+        //listPopupWindow.setHeight(500);
+        listPopupWindow.setVerticalOffset(10);
+        listPopupWindow.setModal(true);
+        listPopupWindow.setOnItemClickListener(this);
+
+
         if (createDetail) {
             btAddDetail.setVisibility(View.GONE);
             btPlay.setVisibility(View.GONE);
@@ -603,7 +753,8 @@ public class CreateDetailActivity extends AppCompatActivity {
         btAddDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addDetail();
+                //addDetail();
+                listPopupWindow.show();
             }
         });
 
@@ -661,4 +812,8 @@ public class CreateDetailActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+    }
 }

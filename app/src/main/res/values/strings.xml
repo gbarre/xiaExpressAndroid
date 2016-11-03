@@ -11,5 +11,8 @@
     <string name="export">Export</string>
     <string name="edit">Edit</string>
     <string name="bkgimg">Background Image</string>
+    <string name="rectangle">Rectangle</string>
+    <string name="ellipse">Ellipse</string>
+    <string name="polygon">Polygon</string>
 
 </resources>
