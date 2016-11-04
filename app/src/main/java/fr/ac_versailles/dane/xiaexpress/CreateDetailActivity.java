@@ -21,6 +21,7 @@ import android.widget.ListPopupWindow;
 import android.widget.RelativeLayout;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -159,7 +160,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     // TODO create details :-)
                 }
                 else {
-                    int touchedTag = 0;
+                    int touchedTag;
 
                     // Look if we try to move a detail
                     for(Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
@@ -189,13 +190,13 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
                             float dist = distance(locationX, locationY, point.getX(), point.getY());
                             if (dist < 80) { // We are close to an exiting point, move it
-                                if (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse)) { // avoid that the touch point is moving without constraint
-                                    point.setX(point.getX());
-                                    point.setY(point.getY());
-                                }
-                                else {
+                                if (details.get(currentDetailTag).constraint.equals(Constants.constraintPolygon)) { // avoid that the touch point is moving without constraint
                                     point.setX(locationX);
                                     point.setY(locationY);
+                                }
+                                else {
+                                    point.setX(point.getX());
+                                    point.setY(point.getY());
                                 }
 
                                 details.get(currentDetailTag).points.put(id, point);
@@ -409,7 +410,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
 
 
-    private void addDetail() {
+    private void addDetail(int type) throws InterruptedException {
         createDetail = true;
         setBtnsIcons();
 
@@ -420,52 +421,79 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 break;
             }
         }
-        // TODO send alert if i = 200
+        // TODO send alert if i >= 200
 
-        xiaDetail newDetail = new xiaDetail(currentDetailTag, scale);
+        // prepare new xml detail
         Map<String, String> attributes = new HashMap<>();
         attributes.put("tag", currentDetailTag.toString());
         attributes.put("zoom", "true");
         attributes.put("title", "");
         attributes.put("path", "0;0");
+        attributes.put("locked", "false");
+        attributes.put("constraint", "polygon"); // by default
 
+        Node xmlDetails = xml.getElementsByTagName("details").item(0);
+        Element xmlNewDetail = xml.createElement("detail");
+        for(Map.Entry<String, String> entry : attributes.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            xmlNewDetail.setAttribute(key, value);
+        }
+        xmlDetails.appendChild(xmlNewDetail);
+
+        // Create new detail
+        xiaDetail newDetail = new xiaDetail(currentDetailTag, scale);
+        details.put(currentDetailTag, newDetail);
+
+        changeDetailColor(currentDetailTag);
+
+        switch (type) {
+            case 0: // rectangle
+                details.get(currentDetailTag).constraint = Constants.constraintRectangle;
+
+                // Build the rectangle
+                details.get(currentDetailTag).createPoint(100, 30, R.drawable.corner, 0, CreateDetailActivity.this);
+                details.get(currentDetailTag).createPoint(300, 30, R.drawable.corner, 1, CreateDetailActivity.this);
+                details.get(currentDetailTag).createPoint(300, 150, R.drawable.corner, 2, CreateDetailActivity.this);
+                details.get(currentDetailTag).createPoint(100, 150, R.drawable.corner, 3, CreateDetailActivity.this);
+
+                //details.get(currentDetailTag).createShape(CreateDetailActivity.this, true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, false, false);
+
+                stopCreation();
+
+                // Save the detail in xml
+                NodeList xmlD = xml.getElementsByTagName("detail");
+                for (int i = 0; i < xmlD.getLength(); i++) {
+                    Node d = xmlD.item(i);
+                    NamedNodeMap dAttr = d.getAttributes();
+                    Node t = dAttr.getNamedItem("tag");
+                    int dTag = Integer.valueOf(t.getTextContent());
+                    if (dTag == currentDetailTag) {
+                        Node dPath = dAttr.getNamedItem("path");
+                        dPath.setTextContent(details.get(currentDetailTag).createPath(xMin - cornerWidth/2, yMin - cornerHeight/2));
+                        Node dConstraint = dAttr.getNamedItem("constraint");
+                        dConstraint.setTextContent(details.get(currentDetailTag).constraint);
+                        break;
+                    }
+                }
+
+                writeXML(xml, xmlDirectory + fileTitle + ".xml");
+
+                break;
+            case 1: // ellipse
+                details.get(currentDetailTag).constraint = Constants.constraintEllipse;
+
+                break;
+            case 2: // polygon
+                details.get(currentDetailTag).constraint = Constants.constraintPolygon;
+
+                break;
+        }
         /*
         // Build menu
         menu = UIAlertController(title: "", message: nil, preferredStyle: .actionSheet)
         let rectangleAction = UIAlertAction(title: NSLocalizedString("RECTANGLE", comment: ""), style: .default, handler: { action in
-            // Create new detail
-            self.details["\(self.currentDetailTag)"] = newDetail
-            self.details["\(self.currentDetailTag)"]?.constraint = constraintRectangle
 
-            let _ = self.xml["xia"]["details"].addChild("detail", value: "", attributes: attributes)
-            self.createDetail = true
-            self.changeDetailColor(self.currentDetailTag)
-
-            // Now build the rectangle
-            let newPoint0 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 100, y: 30), imageName: "corner", index: 0)
-            newPoint0?.layer.zPosition = 1
-            self.imgView.addSubview(newPoint0!)
-            let newPoint1 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 300, y: 30), imageName: "corner", index: 1)
-            newPoint1?.layer.zPosition = 1
-            self.imgView.addSubview(newPoint1!)
-            let newPoint2 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 300, y: 150), imageName: "corner", index: 2)
-            newPoint2?.layer.zPosition = 1
-            self.imgView.addSubview(newPoint2!)
-            let newPoint3 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 100, y: 150), imageName: "corner", index: 3)
-            newPoint3?.layer.zPosition = 1
-            self.imgView.addSubview(newPoint3!)
-            buildShape(true, color: editColor, tag: self.currentDetailTag, points: self.details["\(self.currentDetailTag)"]!.points, parentView: self.imgView, locked: self.details["\(self.currentDetailTag)"]!.locked)
-
-            self.stopCreation()
-
-            // Save the detail in xml
-            if let detail = self.xml["xia"]["details"]["detail"].allWithAttributes(["tag" : "\(self.currentDetailTag)"]) {
-                for d in detail {
-                    d.attributes["path"] = (self.details["\(self.currentDetailTag)"]?.createPath())!
-                            d.attributes["constraint"] = self.details["\(self.currentDetailTag)"]?.constraint
-                }
-            }
-            let _ = writeXML(self.xml, path: "\(self.filePath).xml")
         })
         let ellipseAction = UIAlertAction(title: NSLocalizedString("ELLIPSE", comment: ""), style: .default, handler: { action in
             // Create new detail
@@ -552,7 +580,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 View child = detailsArea.getChildAt(i);
                 Integer childTag = (Integer) child.getTag();
                 if (childTag.equals(thisDetailTag + 100)) { // polygon
-                    detailsArea.removeView(child);
+                    child.setTag(thisDetailTag + 300);
+                    child.setVisibility(View.GONE);
                 }
                 if (childTag.equals(thisDetailTag)) { // points
                     if (thisDetailTag.equals(tag)) {
@@ -591,7 +620,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         else {
             imgTopBarBkgd.backgroundColor = blueColor
         }*/
-        cleanOldViews();
+        cleanOldViews(299);
     }
 
     private void cleaningDetails() {
@@ -604,11 +633,11 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         }
     }
 
-    private void cleanOldViews() {
+    private void cleanOldViews(int minTag) {
         // Remove old (hidden) subviews
         for (int i = 0; i < detailsArea.getChildCount(); i++) {
             View child = detailsArea.getChildAt(i);
-            if ((Integer) child.getTag() > 299) {
+            if ((Integer) child.getTag() > minTag) {
                 detailsArea.removeView(child);
             }
         }
@@ -639,8 +668,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     }
 
     private void loadDetails(Document xml) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-
         NodeList xmlDetails = xml.getElementsByTagName("detail");
         for (int i = 0; i < xmlDetails.getLength(); i++) {
             Node detail = xmlDetails.item(i);
@@ -686,13 +713,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     Boolean drawEllipse = (details.get(detailTag).constraint.equals(Constants.constraintEllipse));
                     details.get(detailTag).locked = (detailAttr.getNamedItem("locked").getTextContent().equals("true"));
 
-
-                    // test on shape
-
                     ImageView testView = details.get(detailTag).createShape(this,true, Color.GREEN, cornerWidth, cornerHeight, metrics, toolbarHeight, drawEllipse, details.get(detailTag).locked);
                     detailsArea.addView(testView);
 
-                    //buildShape(this, true, R.color.green, detailTag, details.get(detailTag).points, detailsArea, drawEllipse, details.get(detailTag).locked);
                     // TODO attainable points
                 }
             }
@@ -716,7 +739,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
         // Build the addDetail menu
         listPopupWindow = new ListPopupWindow(this);
-        pt("setBtnIcons", "detailsType", detailsType);
         listPopupWindow.setAdapter(new ArrayAdapter(CreateDetailActivity.this, R.layout.list_item, detailsType));
         listPopupWindow.setAnchorView(btAddDetail);
         listPopupWindow.setWidth(185);
@@ -753,7 +775,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         btAddDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //addDetail();
                 listPopupWindow.show();
             }
         });
@@ -764,8 +785,16 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 stopCreation();
             }
         });
+    }
 
-
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        listPopupWindow.dismiss();
+        try {
+            addDetail(position);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
 
 
@@ -773,7 +802,20 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     private void stopCreation() {
         createDetail = false;
+        // TODO performFullDetailRemove(currentDetailTag)
+        if (details.get(currentDetailTag).constraint.equals(Constants.constraintPolygon)) {
+            currentDetailTag = 0;
+            changeDetailColor(-1);
+        }
+        //imgTopBarBkgd.backgroundColor = blueColor
         setBtnsIcons();
+
+        /* TODO Add double tap gesture
+        let dSelector : Selector = #selector(ViewCreateDetails.detailInfos)
+        let doubleTapGesture = UITapGestureRecognizer(target: self, action: dSelector)
+        doubleTapGesture.numberOfTapsRequired = 2
+        view.addGestureRecognizer(doubleTapGesture)
+        */
     }
 
     public void showPopUp() {
@@ -781,39 +823,33 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         AlertDialog.Builder helpBuilder = new AlertDialog.Builder(this);
         helpBuilder.setTitle("Pop Up");
         helpBuilder.setMessage("This is a Simple Pop Up");
-        helpBuilder.setPositiveButton("Positive",
-                new DialogInterface.OnClickListener() {
-
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Do nothing but close the dialog
-
-                    }
-                });
-
-        helpBuilder.setNegativeButton("Negative", new DialogInterface.OnClickListener() {
+        helpBuilder.setPositiveButton("Rectangle", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Do nothing but close the dialog
+             //   addDetail(0);
+            }
+        });
+        helpBuilder.setNegativeButton("Ellipse", new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Do nothing
+               // addDetail(1);
             }
         });
 
-        helpBuilder.setNeutralButton("Neutral", new DialogInterface.OnClickListener() {
+        helpBuilder.setNeutralButton("Polygon", new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Do nothing
+               // addDetail(2);
             }
         });
 
         // Remember, create doesn't show the dialog
         AlertDialog helpDialog = helpBuilder.create();
         helpDialog.show();
-
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
     }
 }

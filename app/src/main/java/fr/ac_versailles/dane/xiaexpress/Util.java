@@ -3,6 +3,7 @@ package fr.ac_versailles.dane.xiaexpress;
 import android.widget.ImageView;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
@@ -10,11 +11,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -85,6 +88,19 @@ class Util {
         return result < 0? result + y : result;
     }
 
+    static String nodeToString(Node node) {
+        StringWriter sw = new StringWriter();
+        try {
+            Transformer t = TransformerFactory.newInstance().newTransformer();
+            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            t.setOutputProperty(OutputKeys.INDENT, "yes");
+            t.transform(new DOMSource(node), new StreamResult(sw));
+        } catch (TransformerException te) {
+            System.out.println("nodeToString Transformer Exception");
+        }
+        return sw.toString();
+    }
+
     static Boolean pointInPolygon(Map<Integer, ImageView> points, float touchPointX, float touchPointY) {
         // translate from C : http://alienryderflex.com/polygon/
         int polyCorners = points.size();
@@ -131,6 +147,7 @@ class Util {
     }
 
     static void writeXML(Document xml, String filepath) {
+        //pt("writeXML", "xml", nodeToString(xml.getDocumentElement()));
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
