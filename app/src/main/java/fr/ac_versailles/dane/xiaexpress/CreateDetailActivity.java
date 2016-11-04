@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static fr.ac_versailles.dane.xiaexpress.Util.*;
-import static fr.ac_versailles.dane.xiaexpress.dbg.*;
 
 /**
  *  CreateDetailActivity.java
@@ -462,9 +461,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 stopCreation();
 
                 // Save the detail in xml
-                NodeList xmlD = xml.getElementsByTagName("detail");
-                for (int i = 0; i < xmlD.getLength(); i++) {
-                    Node d = xmlD.item(i);
+                NodeList xmlR = xml.getElementsByTagName("detail");
+                for (int i = 0; i < xmlR.getLength(); i++) {
+                    Node d = xmlR.item(i);
                     NamedNodeMap dAttr = d.getAttributes();
                     Node t = dAttr.getNamedItem("tag");
                     int dTag = Integer.valueOf(t.getTextContent());
@@ -483,6 +482,34 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             case 1: // ellipse
                 details.get(currentDetailTag).constraint = Constants.constraintEllipse;
 
+                // Build the "ellipse"
+                details.get(currentDetailTag).createPoint(300, 50, R.drawable.corner, 0, CreateDetailActivity.this);
+                details.get(currentDetailTag).createPoint(400, 110, R.drawable.corner, 1, CreateDetailActivity.this);
+                details.get(currentDetailTag).createPoint(300, 170, R.drawable.corner, 2, CreateDetailActivity.this);
+                details.get(currentDetailTag).createPoint(200, 110, R.drawable.corner, 3, CreateDetailActivity.this);
+
+                //details.get(currentDetailTag).createShape(CreateDetailActivity.this, true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, true, false);
+
+                stopCreation();
+
+                // Save the detail in xml
+                NodeList xmlE = xml.getElementsByTagName("detail");
+                for (int i = 0; i < xmlE.getLength(); i++) {
+                    Node d = xmlE.item(i);
+                    NamedNodeMap dAttr = d.getAttributes();
+                    Node t = dAttr.getNamedItem("tag");
+                    int dTag = Integer.valueOf(t.getTextContent());
+                    if (dTag == currentDetailTag) {
+                        Node dPath = dAttr.getNamedItem("path");
+                        dPath.setTextContent(details.get(currentDetailTag).createPath(xMin - cornerWidth/2, yMin - cornerHeight/2));
+                        Node dConstraint = dAttr.getNamedItem("constraint");
+                        dConstraint.setTextContent(details.get(currentDetailTag).constraint);
+                        break;
+                    }
+                }
+
+                writeXML(xml, xmlDirectory + fileTitle + ".xml");
+
                 break;
             case 2: // polygon
                 details.get(currentDetailTag).constraint = Constants.constraintPolygon;
@@ -496,39 +523,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
         })
         let ellipseAction = UIAlertAction(title: NSLocalizedString("ELLIPSE", comment: ""), style: .default, handler: { action in
-            // Create new detail
-            self.details["\(self.currentDetailTag)"] = newDetail
-            self.details["\(self.currentDetailTag)"]?.constraint = constraintEllipse
 
-            let _ = self.xml["xia"]["details"].addChild("detail", value: "", attributes: attributes)
-            self.createDetail = true
-            self.changeDetailColor(self.currentDetailTag)
-
-            // Now build the rectangle
-            let newPoint0 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 300, y: 50), imageName: "corner", index: 0)
-            newPoint0?.layer.zPosition = 1
-            self.imgView.addSubview(newPoint0!)
-            let newPoint1 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 400, y: 110), imageName: "corner", index: 1)
-            newPoint1?.layer.zPosition = 1
-            self.imgView.addSubview(newPoint1!)
-            let newPoint2 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 300, y: 170), imageName: "corner", index: 2)
-            newPoint2?.layer.zPosition = 1
-            self.imgView.addSubview(newPoint2!)
-            let newPoint3 = self.details["\(self.currentDetailTag)"]?.createPoint(CGPoint(x: 200, y: 110), imageName: "corner", index: 3)
-            newPoint3?.layer.zPosition = 1
-            self.imgView.addSubview(newPoint3!)
-            buildShape(true, color: editColor, tag: self.currentDetailTag, points: self.details["\(self.currentDetailTag)"]!.points, parentView: self.imgView, ellipse: true, locked: self.details["\(self.currentDetailTag)"]!.locked)
-
-            self.stopCreation()
-
-            // Save the detail in xml
-            if let detail = self.xml["xia"]["details"]["detail"].allWithAttributes(["tag" : "\(self.currentDetailTag)"]) {
-                for d in detail {
-                    d.attributes["path"] = (self.details["\(self.currentDetailTag)"]?.createPath())!
-                            d.attributes["constraint"] = self.details["\(self.currentDetailTag)"]?.constraint
-                }
-            }
-            let _ = writeXML(self.xml, path: "\(self.filePath).xml")
         })
         let polygonAction = UIAlertAction(title: NSLocalizedString("POLYGON", comment: ""), style: .default, handler: { action in
             // Create new detail object
