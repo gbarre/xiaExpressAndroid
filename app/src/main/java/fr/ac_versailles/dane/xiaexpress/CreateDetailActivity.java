@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static fr.ac_versailles.dane.xiaexpress.Util.*;
+import static fr.ac_versailles.dane.xiaexpress.dbg.pt;
 
 /**
  *  CreateDetailActivity.java
@@ -111,7 +113,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
         setBtnsIcons();
 
-        detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
 
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
 
@@ -128,14 +129,15 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     public void onWindowFocusChanged(boolean hasFocus){
         // This is done after onCreate
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbarHeight = myToolbar.getHeight();
-
+        toolbarHeight = myToolbar.getBottom();
         metrics = getResources().getDisplayMetrics();
         Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
         cornerWidth = corner.getWidth();
         cornerHeight = corner.getHeight();
 
         loadBackground(imagesDirectory + fileName);
+        detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
+
         xml = getXMLFromPath(xmlDirectory + fileTitle + ".xml");
         loadDetails(xml);
         cleaningDetails(); // remove details with 1 or 2 points
@@ -154,7 +156,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         // get masked (not specific to a pointer) action
         int maskedAction = event.getActionMasked();
         float locationX = event.getX();
-        float locationY = event.getY() - toolbarHeight * metrics.scaledDensity;
+        float locationY = event.getY() - toolbarHeight;
 
         switch (maskedAction) {
 
@@ -353,14 +355,30 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                             if ((Integer) child.getTag() == currentDetailTag + 100) { // remove shape
                                 detailsArea.removeView(child);
                             }
-                            if (child.getTag() == currentDetailTag) {
-                                // TODO place this child @ zPosition = 1
-                            }
                         }
 
                         Boolean drawEllipse = (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse));
                         ImageView testView = details.get(currentDetailTag).createShape(this,true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, drawEllipse, details.get(currentDetailTag).locked);
                         detailsArea.addView(testView);
+
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) { // redraw points
+                            String[] pointsArray = details.get(currentDetailTag).path.split(" ");
+                            if (pointsArray.length > 2) {
+                                Integer pointIndex = 0;
+                                for (String aPointsArray : pointsArray) {
+                                    String[] coords = aPointsArray.split(";");
+                                    if (coords.length == 2) {
+                                        Float x = Float.parseFloat(coords[0]) * scale + xMin - cornerWidth / 2;
+                                        Float y = Float.parseFloat(coords[1]) * scale + yMin - cornerHeight / 2;
+                                        ImageView newPoint = details.get(currentDetailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
+                                        newPoint.setVisibility(View.VISIBLE);
+                                        detailsArea.addView(newPoint);
+                                        pointIndex = pointIndex + 1;
+                                    }
+                                }
+                            }
+                        }
+
                         // TODO virtpoints
 
                     /*let locked = details["\(currentDetailTag)"]!.locked
@@ -570,13 +588,14 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     }
 
+
     private void changeDetailColor(Integer tag) {
-        // Change other details color
+        pt("changeDetailColor", "for tag", tag);
         for(Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
             Integer thisDetailTag = entry.getKey();
             xiaDetail detail = entry.getValue();
             // Remove and rebuild the shape to avoid the overlay on alpha channel
-            for (int i = 0; i < detailsArea.getChildCount(); i++) {
+            for (Integer i = 0; i < detailsArea.getChildCount(); i++) {
                 View child = detailsArea.getChildAt(i);
                 Integer childTag = (Integer) child.getTag();
                 if (childTag.equals(thisDetailTag + 100)) { // polygon
@@ -586,6 +605,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 if (childTag.equals(thisDetailTag)) { // points
                     if (thisDetailTag.equals(tag)) {
                         child.setVisibility(View.VISIBLE);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            child.setTranslationZ(1);
+                        }
                     }
                     else {
                         child.setVisibility(View.GONE);
@@ -613,6 +635,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 }
             }
         }
+
         /* TODO toolbar color for polygon creation
         if createDetail && details["\(tag)"]?.constraint == constraintPolygon {
             imgTopBarBkgd.backgroundColor = editColor
@@ -620,7 +643,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         else {
             imgTopBarBkgd.backgroundColor = blueColor
         }*/
-        cleanOldViews(299);
+        //cleanOldViews(299);
     }
 
     private void cleaningDetails() {
@@ -651,7 +674,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         ImageView imageView = (ImageView) findViewById(R.id.image);
 
         float availableWidth = metrics.widthPixels;
-        float availableHeight = metrics.heightPixels - toolbarHeight * metrics.scaledDensity;
+        float availableHeight = metrics.heightPixels - toolbarHeight;
 
         //final BitmapFactory.Options options = new BitmapFactory.Options();
         //options.inJustDecodeBounds = false;
@@ -687,6 +710,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 }
                 xiaDetail newDetail = new xiaDetail(detailTag, scale);
                 details.put(detailTag, newDetail);
+                details.get(detailTag).path = path;
                 // Add points to detail
                 String[] pointsArray = path.split(" ");
                 if (pointsArray.length > 2) {

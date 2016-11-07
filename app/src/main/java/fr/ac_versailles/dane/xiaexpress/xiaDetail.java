@@ -43,6 +43,7 @@ class xiaDetail {
     public float scale = 1;
     public String constraint = "";
     public Boolean locked = false;
+    public String path = "";
 
     public xiaDetail(Integer tag, float scale) {
         this.tag = tag;
@@ -113,7 +114,7 @@ class xiaDetail {
                 }
             }
             p.lineTo(endPoint.getX() + cornerWidth / 2, endPoint.getY() + cornerHeight / 2);
-            shape = new ShapeDrawable(new PathShape(p, metrics.widthPixels, metrics.heightPixels - Math.round(toolbarHeight * metrics.scaledDensity)));
+            shape = new ShapeDrawable(new PathShape(p, metrics.widthPixels, metrics.heightPixels - Math.round(toolbarHeight)));
             shape.setIntrinsicWidth(metrics.widthPixels);
             shape.setIntrinsicHeight(metrics.heightPixels);
         }
