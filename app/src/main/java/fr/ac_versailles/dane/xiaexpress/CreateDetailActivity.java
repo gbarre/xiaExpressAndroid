@@ -210,7 +210,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                                 moveDetail = false;
                                 break;
                             } else { // No point here, just move the detail
-                                //moveDetail = (details["\(currentDetailTag)"] !.locked)?false:true
+                                moveDetail = !details.get(currentDetailTag).locked;
                             }
                         }
                     }
@@ -306,7 +306,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         }
                     }
                 }
-/*
+
                 if (createDetail) {
                     // TODO
                 }
@@ -314,34 +314,41 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     if ( editDetail != -1) {
                         if (moveDetail) {
                             movingPoint = -1;
-                            let deltaX = location.x - movingCoords.x
-                            let deltaY = location.y - movingCoords.y
-                            for subview in imgView.subviews {
-                                if ( subview.tag == currentDetailTag || subview.tag == (currentDetailTag + 100) ) {
-                                    let origin = subview.frame.origin
-                                    let destination = CGPoint(x: origin.x + deltaX, y: origin.y + deltaY)
-                                    subview.frame.origin = destination
+                            float deltaX = locationX - movingCoordsX;
+                            float deltaY = locationY - movingCoordsY;
+                            for (int j = 0; j < detailsArea.getChildCount(); j++) {
+                                View child = detailsArea.getChildAt(j);
+                                Integer childTag = (Integer) child.getTag();
+                                if (childTag.equals(currentDetailTag) || childTag.equals(currentDetailTag + 100)) {
+                                    float destX = child.getX() + deltaX;
+                                    float destY = child.getY() + deltaY;
+                                    child.setX(destX);
+                                    child.setY(destY);
                                 }
                             }
-                            movingCoords = location
+                            movingCoordsX = locationX;
+                            movingCoordsY = locationY;
                         }
                     }
-                }*/
+                }
 
-                /* TODO after buildShape
-                if details["\(currentDetailTag)"]?.points.count > 2 {
+                if (details.get(currentDetailTag).points.size() > 2) {
                     // rebuild points & shape
-                    for subview in imgView.subviews {
-                        if subview.tag == (currentDetailTag + 100) {
-                            subview.removeFromSuperview()
+                    for (int j = 0; j < detailsArea.getChildCount(); j++) {
+                        View child = detailsArea.getChildAt(j);
+                        Integer childTag = (Integer) child.getTag();
+                        if (childTag.equals(currentDetailTag + 100)) { // remove shape
+                            detailsArea.removeView(child);
                         }
-                        if subview.tag == currentDetailTag {
-                            subview.layer.zPosition = 1
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && childTag.equals(currentDetailTag)) { // points to top
+                            child.setTranslationZ(1);
                         }
                     }
-                    let drawEllipse: Bool = (details["\(currentDetailTag)"]?.constraint == constraintEllipse) ? true : false
-                    buildShape(true, color: editColor, tag: currentDetailTag, points: details["\(currentDetailTag)"]!.points, parentView: imgView, ellipse: drawEllipse, locked: details["\(currentDetailTag)"]!.locked)
-                }*/
+
+                    Boolean drawEllipse = (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse));
+                    ImageView testView = details.get(currentDetailTag).createShape(this,true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, drawEllipse, details.get(currentDetailTag).locked);
+                    detailsArea.addView(testView);
+                }
                 break;
             }
             case MotionEvent.ACTION_UP:
@@ -352,7 +359,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         // rebuild points & shape
                         for (int j = 0; j < detailsArea.getChildCount(); j++) {
                             View child = detailsArea.getChildAt(j);
-                            if ((Integer) child.getTag() == currentDetailTag + 100) { // remove shape
+                            Integer childTag = (Integer) child.getTag();
+                            if (childTag.equals(currentDetailTag + 100)) { // remove shape
                                 detailsArea.removeView(child);
                             }
                         }
