@@ -167,6 +167,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN: {
                 if (createDetail) {
+                    details.get(currentDetailTag).constraint = Constants.constraintPolygon;
                     Integer detailPoints = details.get(currentDetailTag).points.size();
                     Boolean addPoint = false;
 
@@ -485,6 +486,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                                 detailPath.setTextContent(details.get(currentDetailTag).createPath(xMin - cornerWidth/2, yMin - cornerHeight/2));
                                 Node detailConstraint = detailAttr.getNamedItem("constraint");
                                 detailConstraint.setTextContent(details.get(currentDetailTag).constraint);
+                                pt("touchUp", "detail " + currentDetailTag + " constraint", details.get(currentDetailTag).constraint);
                             }
                         }
                         writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
@@ -514,7 +516,15 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         return true;
     }
 
-
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        listPopupWindow.dismiss();
+        try {
+            addDetail(position);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void addDetail(int type) throws InterruptedException {
         createDetail = true;
@@ -693,6 +703,52 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         }
     }
 
+    private void deleteDetail() {
+        final Integer detailTag = currentDetailTag;
+        pt("deleteDetail", "detailTag", detailTag);
+        if ( detailTag != 0 ) {
+            // Alert
+            AlertDialog.Builder controller = new AlertDialog.Builder(this);
+            controller.setTitle("WARNING");
+            controller.setMessage("DELETE_DETAIL");
+            controller.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    performFullDetailRemove(detailTag, true);
+                    stopCreation();
+                    setBtnsIcons();
+                }
+            });
+            controller.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // Do nothing
+                    // addDetail(1);
+                }
+            });
+
+            // Show the alert controller
+            AlertDialog alertController = controller.create();
+            alertController.show();
+        }
+    }
+
+    /* TODO detailInfos() {
+        moveDetail = false
+        movingPoint = -1
+        let tmpDetailTag = currentDetailTag
+        stopCreation()
+        currentDetailTag = tmpDetailTag
+        if currentDetailTag == 0 {
+            performSegue(withIdentifier: "viewMetas", sender: self)
+        }
+        else {
+            detailToSegue = currentDetailTag
+            currentDetailTag = 0
+            performSegue(withIdentifier: "ViewDetailInfos", sender: self)
+        }
+    }*/
+
     private float distance(float xA, float yA, float xB, float yB) {
         return (float) Math.sqrt((xA-xB)*(xA-xB)+(yA-yB)*(yA-yB));
     }
@@ -783,7 +839,10 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 View child = detailsArea.getChildAt(i);
                 Integer childTag = (Integer) child.getTag();
                 if (childTag.equals(tag) || childTag.equals(tag + 100)) {
+                    child.setVisibility(View.INVISIBLE);
                     detailsArea.removeView(child);
+
+                    pt("performFullDetailRemove", "remove child", tag);
                 }
             }
 
@@ -801,11 +860,51 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         }
     }
 
+    private void polygonUndo() {
+        Integer detailTag = currentDetailTag;
+        pt("polygonUndo", "detailTag", detailTag);
+        if (details.get(detailTag).points.size() > 3) {
+            // remove last point
+            Integer lastPoint = polygonPointsOrder.size() - 1;
+            detailsArea.removeView(details.get(detailTag).points.get(lastPoint));
+            details.get(detailTag).points.remove(lastPoint);
+
+            // Update polygonPointsOrder indexes
+            for (Integer id : polygonPointsOrder) {
+                if (id > (lastPoint - 1) && id != polygonPointsOrder.size()) {
+                    Integer newValue = polygonPointsOrder.get(id) - 1;
+                    polygonPointsOrder.set(id, newValue);
+                }
+            }
+
+            // Update points index
+            Integer iMax = polygonPointsOrder.size() - 1;
+            for (Integer i = lastPoint; i < iMax; i++){
+                details.get(detailTag).points.put(i, details.get(detailTag).points.get(i + 1));
+            }
+
+            // remove last point
+            polygonPointsOrder.remove(polygonPointsOrder.size() - 1);
+
+            // Remove old polygon
+            for (int j = 0; j < detailsArea.getChildCount(); j++) {
+                View child = detailsArea.getChildAt(j);
+                Integer childTag = (Integer) child.getTag();
+                if (childTag.equals(currentDetailTag + 100)) {
+                    detailsArea.removeView(child);
+                }
+            }
+            ImageView newShape = details.get(currentDetailTag).createShape(this,true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, false, details.get(currentDetailTag).locked);
+            detailsArea.addView(newShape);
+        }
+        setBtnsIcons();
+    }
+
     private void setBtnsIcons() {
 
         // Buttons
         Button btCollection = (Button) findViewById(R.id.collection);
-        final ImageButton btAddDetail = (ImageButton) findViewById(R.id.addDetail);
+        ImageButton btAddDetail = (ImageButton) findViewById(R.id.addDetail);
         ImageButton btUndo = (ImageButton) findViewById(R.id.undo);
         ImageButton btPlay = (ImageButton) findViewById(R.id.play);
         Button btOK = (Button) findViewById(R.id.ok);
@@ -828,16 +927,29 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             btAddDetail.setVisibility(View.GONE);
             btPlay.setVisibility(View.GONE);
 
-            btUndo.setVisibility(View.VISIBLE);
             btOK.setVisibility(View.VISIBLE);
-            btTrash.setVisibility(View.VISIBLE);
+
         }
         else {
             btAddDetail.setVisibility(View.VISIBLE);
             btPlay.setVisibility(View.VISIBLE);
 
-            btUndo.setVisibility(View.GONE);
             btOK.setVisibility(View.GONE);
+        }
+
+        if (currentDetailTag != 0 &&
+                createDetail &&
+                details.get(currentDetailTag).constraint.equals(Constants.constraintPolygon) &&
+                details.get(currentDetailTag).points.size() > 3) {
+            btUndo.setVisibility(View.VISIBLE);
+        }
+        else {
+            btUndo.setVisibility(View.GONE);
+        }
+
+        if (currentDetailTag != 0 && !details.get(currentDetailTag).locked) {
+            btTrash.setVisibility(View.VISIBLE);
+        }else {
             btTrash.setVisibility(View.GONE);
         }
 
@@ -855,27 +967,32 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             }
         });
 
+        btUndo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                polygonUndo();
+            }
+        });
+
         btOK.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 stopCreation();
             }
         });
-    }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        listPopupWindow.dismiss();
-        try {
-            addDetail(position);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        btTrash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteDetail();
+            }
+        });
     }
 
     private void stopCreation() {
         createDetail = false;
-        // TODO performFullDetailRemove(currentDetailTag)
+
+        performFullDetailRemove(currentDetailTag, false);
         if (details.get(currentDetailTag).constraint.equals(Constants.constraintPolygon)) {
             currentDetailTag = 0;
             changeDetailColor(-1);
@@ -889,6 +1006,22 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         doubleTapGesture.numberOfTapsRequired = 2
         view.addGestureRecognizer(doubleTapGesture)
         */
+    }
+
+    private float touchesVirtPoint(float locationX, float locationY) {
+        float touched = -1;
+        for(Map.Entry<Integer, ImageView> entry : virtPoints.entrySet()) {
+            Integer id = entry.getKey();
+            ImageView point = entry.getValue();
+
+            float dist = distance(locationX, locationY, point.getX()+cornerWidth/2, point.getY()+cornerHeight/2);
+            if (dist < precisionDist) {
+                touched = id;
+                break;
+            }
+        }
+
+        return touched;
     }
 
     public void showPopUp() {
