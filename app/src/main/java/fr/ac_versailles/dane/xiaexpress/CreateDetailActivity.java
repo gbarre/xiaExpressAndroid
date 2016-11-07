@@ -140,8 +140,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         loadBackground(imagesDirectory + fileName);
         detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
 
-        xml = getXMLFromPath(xmlDirectory + fileTitle + ".xml");
-        loadDetails(xml);
+        this.xml = getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+        loadDetails(this.xml);
         cleaningDetails(); // remove details with 1 or 2 points
     }
 
@@ -473,20 +473,21 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     }*/
 
                         // Save the detail in xml
-                        NodeList xmlDetails = xml.getElementsByTagName("detail");
+                        NodeList xmlDetails = this.xml.getElementsByTagName("detail");
                         for (int i = 0; i < xmlDetails.getLength(); i++) {
                             Node detail = xmlDetails.item(i);
                             NamedNodeMap detailAttr = detail.getAttributes();
                             Node tag = detailAttr.getNamedItem("tag");
                             int detailTag = Integer.valueOf(tag.getTextContent());
                             if (detailTag == currentDetailTag) {
+
                                 Node detailPath = detailAttr.getNamedItem("path");
                                 detailPath.setTextContent(details.get(currentDetailTag).createPath(xMin - cornerWidth/2, yMin - cornerHeight/2));
                                 Node detailConstraint = detailAttr.getNamedItem("constraint");
                                 detailConstraint.setTextContent(details.get(currentDetailTag).constraint);
                             }
                         }
-                        writeXML(xml, xmlDirectory + fileTitle + ".xml");
+                        writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
                     }
                 }
 
@@ -537,8 +538,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         attributes.put("locked", "false");
         attributes.put("constraint", "polygon"); // by default
 
-        Node xmlDetails = xml.getElementsByTagName("details").item(0);
-        Element xmlNewDetail = xml.createElement("detail");
+        Node xmlDetails = this.xml.getElementsByTagName("details").item(0);
+        Element xmlNewDetail = this.xml.createElement("detail");
         for(Map.Entry<String, String> entry : attributes.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
@@ -566,24 +567,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
                 stopCreation();
 
-                // Save the detail in xml
-                NodeList xmlR = xml.getElementsByTagName("detail");
-                for (int i = 0; i < xmlR.getLength(); i++) {
-                    Node d = xmlR.item(i);
-                    NamedNodeMap dAttr = d.getAttributes();
-                    Node t = dAttr.getNamedItem("tag");
-                    int dTag = Integer.valueOf(t.getTextContent());
-                    if (dTag == currentDetailTag) {
-                        Node dPath = dAttr.getNamedItem("path");
-                        dPath.setTextContent(details.get(currentDetailTag).createPath(xMin - cornerWidth/2, yMin - cornerHeight/2));
-                        Node dConstraint = dAttr.getNamedItem("constraint");
-                        dConstraint.setTextContent(details.get(currentDetailTag).constraint);
-                        break;
-                    }
-                }
-
-                writeXML(xml, xmlDirectory + fileTitle + ".xml");
-
                 break;
             case 1: // ellipse
                 details.get(currentDetailTag).constraint = Constants.constraintEllipse;
@@ -597,24 +580,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 //details.get(currentDetailTag).createShape(CreateDetailActivity.this, true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, true, false);
 
                 stopCreation();
-
-                // Save the detail in xml
-                NodeList xmlE = xml.getElementsByTagName("detail");
-                for (int i = 0; i < xmlE.getLength(); i++) {
-                    Node d = xmlE.item(i);
-                    NamedNodeMap dAttr = d.getAttributes();
-                    Node t = dAttr.getNamedItem("tag");
-                    int dTag = Integer.valueOf(t.getTextContent());
-                    if (dTag == currentDetailTag) {
-                        Node dPath = dAttr.getNamedItem("path");
-                        dPath.setTextContent(details.get(currentDetailTag).createPath(xMin - cornerWidth/2, yMin - cornerHeight/2));
-                        Node dConstraint = dAttr.getNamedItem("constraint");
-                        dConstraint.setTextContent(details.get(currentDetailTag).constraint);
-                        break;
-                    }
-                }
-
-                writeXML(xml, xmlDirectory + fileTitle + ".xml");
 
                 break;
             case 2: // polygon
@@ -630,6 +595,25 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 }*/
                 break;
         }
+
+        // Save the detail in xml
+        NodeList xmlR = this.xml.getElementsByTagName("detail");
+        for (int i = 0; i < xmlR.getLength(); i++) {
+            Node d = xmlR.item(i);
+            NamedNodeMap dAttr = d.getAttributes();
+            Node t = dAttr.getNamedItem("tag");
+            int dTag = Integer.valueOf(t.getTextContent());
+            if (dTag == currentDetailTag) {
+                Node dPath = dAttr.getNamedItem("path");
+                dPath.setTextContent(details.get(currentDetailTag).createPath(xMin - cornerWidth/2, yMin - cornerHeight/2));
+                Node dConstraint = dAttr.getNamedItem("constraint");
+                dConstraint.setTextContent(details.get(currentDetailTag).constraint);
+                break;
+            }
+        }
+
+        writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
+
     }
 
     private void changeDetailColor(Integer tag) {
@@ -734,7 +718,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     }
 
     private void loadDetails(Document xml) {
-        NodeList xmlDetails = xml.getElementsByTagName("detail");
+        NodeList xmlDetails = this.xml.getElementsByTagName("detail");
         for (int i = 0; i < xmlDetails.getLength(); i++) {
             Node detail = xmlDetails.item(i);
             NamedNodeMap detailAttr = detail.getAttributes();
@@ -790,6 +774,31 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
 
 
+    }
+
+    private void performFullDetailRemove(int tag, Boolean force) {
+        if (details.get(tag).points.size() < 3 || force) {
+            // remove point & polygon
+            for (int i = 0; i < detailsArea.getChildCount(); i++) {
+                View child = detailsArea.getChildAt(i);
+                Integer childTag = (Integer) child.getTag();
+                if (childTag.equals(tag) || childTag.equals(tag + 100)) {
+                    detailsArea.removeView(child);
+                }
+            }
+
+            // remove detail object
+            details.remove(tag);
+
+            /* TODO remove detail in xml
+            if let detail = xml["xia"]["details"]["detail"].allWithAttributes(["tag" : "\(tag)"]) {
+                for d in detail {
+                    d.removeFromParent()
+                }
+            }
+            let _ = writeXML(xml, path: "\(filePath).xml")*/
+            currentDetailTag = 0;
+        }
     }
 
     private void setBtnsIcons() {
