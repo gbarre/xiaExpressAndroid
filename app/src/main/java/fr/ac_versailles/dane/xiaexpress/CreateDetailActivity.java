@@ -129,20 +129,22 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus){
-        // This is done after onCreate
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbarHeight = myToolbar.getBottom();
-        metrics = getResources().getDisplayMetrics();
-        Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
-        cornerWidth = corner.getWidth();
-        cornerHeight = corner.getHeight();
+        if (hasFocus) {
+            // This is done after onCreate
+            Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+            toolbarHeight = myToolbar.getBottom();
+            metrics = getResources().getDisplayMetrics();
+            Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
+            cornerWidth = corner.getWidth();
+            cornerHeight = corner.getHeight();
 
-        loadBackground(imagesDirectory + fileName);
-        detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
+            loadBackground(imagesDirectory + fileName);
+            detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
 
-        this.xml = getXMLFromPath(xmlDirectory + fileTitle + ".xml");
-        loadDetails(this.xml);
-        cleaningDetails(); // remove details with 1 or 2 points
+            this.xml = getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+            loadDetails(this.xml);
+            cleaningDetails(); // remove details with 1 or 2 points
+        }
     }
 
     @Override
@@ -759,9 +761,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         float availableWidth = metrics.widthPixels;
         float availableHeight = metrics.heightPixels - toolbarHeight;
 
-        //final BitmapFactory.Options options = new BitmapFactory.Options();
-        //options.inJustDecodeBounds = false;
-        Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
 
         float scaleX = availableWidth / bitmap.getWidth();
         float scaleY = availableHeight / bitmap.getHeight();
@@ -770,7 +771,13 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         xMin = (scaleX == scale) ? 0 : (availableWidth - bitmap.getWidth()*scale) / 2;
         yMin = (scaleY == scale) ? 0 : (availableHeight - bitmap.getHeight()*scale) / 2;
 
-        imageView.setImageBitmap(bitmap);
+        bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_4444);
+
+        options.inSampleSize = calculateInSampleSize(options, Math.round(availableWidth) - 1, Math.round(availableHeight) - 1);
+        options.inJustDecodeBounds = false;
+        Bitmap image = BitmapFactory.decodeFile(imagePath, options);
+
+        imageView.setImageBitmap(image);
     }
 
     private void loadDetails(Document xml) {
