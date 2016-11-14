@@ -83,6 +83,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private Boolean moveDetail = false;
     private Map<Integer, ImageView> virtPoints = new HashMap<>();
     private ArrayList<Integer> polygonPointsOrder;
+    private Boolean detailsLoaded = false;
 
     //private ImageView imgView;// = new ImageView(this); // UIImageView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
     //private img = UIImage()
@@ -129,7 +130,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus){
-        if (hasFocus) {
+        if (hasFocus && !detailsLoaded) {
             // This is done after onCreate
             Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
             toolbarHeight = myToolbar.getBottom();
@@ -772,7 +773,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     }
 
     private void loadDetails(Document xml) {
-        NodeList xmlDetails = this.xml.getElementsByTagName("detail");
+        NodeList xmlDetails = xml.getElementsByTagName("detail");
         for (int i = 0; i < xmlDetails.getLength(); i++) {
             Node detail = xmlDetails.item(i);
             NamedNodeMap detailAttr = detail.getAttributes();
@@ -825,9 +826,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 }
             }
         }
-
-
-
+        detailsLoaded = true;
     }
 
     private void performFullDetailRemove(int tag, Boolean force) {
