@@ -562,13 +562,17 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 details.get(currentDetailTag).constraint = Constants.constraintRectangle;
 
                 // Build the rectangle
-                details.get(currentDetailTag).createPoint(100, 30, R.drawable.corner, 0, CreateDetailActivity.this);
-                details.get(currentDetailTag).createPoint(300, 30, R.drawable.corner, 1, CreateDetailActivity.this);
-                details.get(currentDetailTag).createPoint(300, 150, R.drawable.corner, 2, CreateDetailActivity.this);
-                details.get(currentDetailTag).createPoint(100, 150, R.drawable.corner, 3, CreateDetailActivity.this);
+                ImageView newPointR0 = details.get(currentDetailTag).createPoint(100, 30, R.drawable.corner, 0, CreateDetailActivity.this);
+                ImageView newPointR1 = details.get(currentDetailTag).createPoint(300, 30, R.drawable.corner, 1, CreateDetailActivity.this);
+                ImageView newPointR2 = details.get(currentDetailTag).createPoint(300, 150, R.drawable.corner, 2, CreateDetailActivity.this);
+                ImageView newPointR3 = details.get(currentDetailTag).createPoint(100, 150, R.drawable.corner, 3, CreateDetailActivity.this);
+                ImageView newShapeR = details.get(currentDetailTag).createShape(CreateDetailActivity.this, true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, false, false);
 
-                //details.get(currentDetailTag).createShape(CreateDetailActivity.this, true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, false, false);
-
+                detailsArea.addView(newShapeR);
+                detailsArea.addView(newPointR0);
+                detailsArea.addView(newPointR1);
+                detailsArea.addView(newPointR2);
+                detailsArea.addView(newPointR3);
                 stopCreation();
 
                 break;
@@ -576,13 +580,18 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 details.get(currentDetailTag).constraint = Constants.constraintEllipse;
 
                 // Build the "ellipse"
-                details.get(currentDetailTag).createPoint(300, 50, R.drawable.corner, 0, CreateDetailActivity.this);
-                details.get(currentDetailTag).createPoint(400, 110, R.drawable.corner, 1, CreateDetailActivity.this);
-                details.get(currentDetailTag).createPoint(300, 170, R.drawable.corner, 2, CreateDetailActivity.this);
-                details.get(currentDetailTag).createPoint(200, 110, R.drawable.corner, 3, CreateDetailActivity.this);
+                ImageView newPointE0 = details.get(currentDetailTag).createPoint(300, 50, R.drawable.corner, 0, CreateDetailActivity.this);
+                ImageView newPointE1 = details.get(currentDetailTag).createPoint(400, 110, R.drawable.corner, 1, CreateDetailActivity.this);
+                ImageView newPointE2 = details.get(currentDetailTag).createPoint(300, 170, R.drawable.corner, 2, CreateDetailActivity.this);
+                ImageView newPointE3 = details.get(currentDetailTag).createPoint(200, 110, R.drawable.corner, 3, CreateDetailActivity.this);
 
-                //details.get(currentDetailTag).createShape(CreateDetailActivity.this, true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, true, false);
+                ImageView newShapeE = details.get(currentDetailTag).createShape(CreateDetailActivity.this, true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, true, false);
 
+                detailsArea.addView(newShapeE);
+                detailsArea.addView(newPointE0);
+                detailsArea.addView(newPointE1);
+                detailsArea.addView(newPointE2);
+                detailsArea.addView(newPointE3);
                 stopCreation();
 
                 break;
