@@ -707,7 +707,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     private void deleteDetail() {
         final Integer detailTag = currentDetailTag;
-        pt("deleteDetail", "detailTag", detailTag);
         if ( detailTag != 0 ) {
             // Alert
             AlertDialog.Builder controller = new AlertDialog.Builder(this);
@@ -715,8 +714,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             controller.setMessage("DELETE_DETAIL");
             controller.setPositiveButton("YES", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    performFullDetailRemove(detailTag, true);
                     stopCreation();
+                    performFullDetailRemove(detailTag, true);
                     setBtnsIcons();
                 }
             });
@@ -725,7 +724,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     // Do nothing
-                    // addDetail(1);
                 }
             });
 
@@ -847,21 +845,25 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 if (childTag.equals(tag) || childTag.equals(tag + 100)) {
                     child.setVisibility(View.INVISIBLE);
                     detailsArea.removeView(child);
-
-                    pt("performFullDetailRemove", "remove child", tag);
                 }
             }
 
             // remove detail object
             details.remove(tag);
 
-            /* TODO remove detail in xml
-            if let detail = xml["xia"]["details"]["detail"].allWithAttributes(["tag" : "\(tag)"]) {
-                for d in detail {
-                    d.removeFromParent()
+            // remove detail in xml
+            Node dets = this.xml.getElementsByTagName("details").item(0);
+            NodeList xmlDetails = this.xml.getElementsByTagName("detail");
+            for (int i = 0; i < xmlDetails.getLength(); i++) {
+                Node detail = xmlDetails.item(i);
+                NamedNodeMap detailAttr = detail.getAttributes();
+                Node t = detailAttr.getNamedItem("tag");
+                int detailTag = Integer.valueOf(t.getTextContent());
+                if (detailTag == tag) {
+                    dets.removeChild(detail);
                 }
             }
-            let _ = writeXML(xml, path: "\(filePath).xml")*/
+            writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
             currentDetailTag = 0;
         }
     }
