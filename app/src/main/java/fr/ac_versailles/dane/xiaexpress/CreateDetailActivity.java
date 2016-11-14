@@ -1,6 +1,7 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -33,9 +34,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import static fr.ac_versailles.dane.xiaexpress.Util.*;
-import static fr.ac_versailles.dane.xiaexpress.dbg.pt;
 
 /**
  *  CreateDetailActivity.java
@@ -145,7 +143,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             loadBackground(imagesDirectory + fileName);
             detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
 
-            this.xml = getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+            this.xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
             loadDetails(this.xml);
             cleaningDetails(); // remove details with 1 or 2 points
         }
@@ -180,7 +178,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     if ( detailPoints != 0 && touchedVirtPoint == -1) { // Points exists
                         // Are we in the polygon ?
                         if (detailPoints > 2) {
-                            if (pointInPolygon(details.get(currentDetailTag).points, locationX, locationY)) {
+                            if (Util.pointInPolygon(details.get(currentDetailTag).points, locationX, locationY)) {
                                 // beginTouchLocation = location old bad idea
                                 movingCoordsX = locationX;
                                 movingCoordsY = locationY;
@@ -260,7 +258,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         Integer detailTag = entry.getKey();
                         xiaDetail detailPoints = entry.getValue();
 
-                        Boolean touchIn = pointInPolygon(detailPoints.points, locationX, locationY);
+                        Boolean touchIn = Util.pointInPolygon(detailPoints.points, locationX, locationY);
                         if (touchIn) {
                             touchedTag = detailTag;
                             //beginTouchLocation = location; // old bad idea
@@ -340,9 +338,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     float dist = distance(locationX, locationY, plocX, plocY);
                     if ( dist < 200 ) {
                         ImageView toMove = details.get(currentDetailTag).points.get(Math.round(movingPoint));
-                        int previousPoint = Math.round(mod(Math.round(movingPoint + 3), 4));
-                        int nextPoint = Math.round(mod(Math.round(movingPoint + 1), 4));
-                        int oppositePoint = Math.round(mod(Math.round(movingPoint + 2), 4));
+                        int previousPoint = Math.round(Util.mod(Math.round(movingPoint + 3), 4));
+                        int nextPoint = Math.round(Util.mod(Math.round(movingPoint + 1), 4));
+                        int oppositePoint = Math.round(Util.mod(Math.round(movingPoint + 2), 4));
 
                         // Are there any constraint ?
                         if (details.get(currentDetailTag).constraint.equals(Constants.constraintRectangle)) {
@@ -486,7 +484,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                                 detailConstraint.setTextContent(details.get(currentDetailTag).constraint);
                             }
                         }
-                        writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
+                        Util.writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
                     }
                 }
 
@@ -629,7 +627,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             }
         }
 
-        writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
+        Util.writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
 
     }
 
@@ -739,12 +737,21 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     }
 
     private void detailInfos() {
+        moveDetail = false;
+        movingPoint = -1;
+        Integer tmpDetailTag = currentDetailTag;
+        stopCreation();
+        currentDetailTag = tmpDetailTag;
+
+        //Create intent
+        Intent intent = new Intent(CreateDetailActivity.this, DetailInfos.class);
+        intent.putExtra("fileTitle", fileTitle);
+        intent.putExtra("tag", currentDetailTag.toString());
+
+        //Start details activity
+        startActivity(intent);
+
         /* TODO
-        moveDetail = false
-        movingPoint = -1
-        let tmpDetailTag = currentDetailTag
-        stopCreation()
-        currentDetailTag = tmpDetailTag
         if currentDetailTag == 0 {
             performSegue(withIdentifier: "viewMetas", sender: self)
         }
@@ -777,7 +784,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
         bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_4444);
 
-        options.inSampleSize = calculateInSampleSize(options, Math.round(availableWidth) - 1, Math.round(availableHeight) - 1);
+        options.inSampleSize = Util.calculateInSampleSize(options, Math.round(availableWidth) - 1, Math.round(availableHeight) - 1);
         options.inJustDecodeBounds = false;
         Bitmap image = BitmapFactory.decodeFile(imagePath, options);
 
@@ -867,7 +874,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     dets.removeChild(detail);
                 }
             }
-            writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
+            Util.writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
             currentDetailTag = 0;
         }
     }
@@ -992,6 +999,13 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             }
         });
 
+        btEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                detailInfos();
+            }
+        });
+
         btTrash.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1033,40 +1047,5 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         }
 
         return touched;
-    }
-
-    public void showPopUp() {
-
-        AlertDialog.Builder helpBuilder = new AlertDialog.Builder(this);
-        helpBuilder.setTitle("Pop Up");
-        helpBuilder.setMessage("This is a Simple Pop Up");
-        helpBuilder.setPositiveButton("Rectangle", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                // Do nothing but close the dialog
-             //   addDetail(0);
-            }
-        });
-        helpBuilder.setNegativeButton("Ellipse", new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // Do nothing
-               // addDetail(1);
-            }
-        });
-
-        helpBuilder.setNeutralButton("Polygon", new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // Do nothing
-               // addDetail(2);
-            }
-        });
-
-        // Remember, create doesn't show the dialog
-        AlertDialog helpDialog = helpBuilder.create();
-        helpDialog.show();
-
     }
 }

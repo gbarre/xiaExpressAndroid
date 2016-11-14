@@ -22,9 +22,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
-import static fr.ac_versailles.dane.xiaexpress.Util.*;
-import static fr.ac_versailles.dane.xiaexpress.dbg.*;
-
 /**
  *  MainActivity.java
  *  xia-android
@@ -74,9 +71,9 @@ public class MainActivity extends AppCompatActivity {
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
         cacheDirectory = Constants.getCacheFrom(rootDirectory);
 
-        createDirectory(imagesDirectory);
-        createDirectory(xmlDirectory);
-        createDirectory(cacheDirectory);
+        Util.createDirectory(imagesDirectory);
+        Util.createDirectory(xmlDirectory);
+        Util.createDirectory(cacheDirectory);
 
         // Load the collection in grid view
         gridView = (GridView) findViewById(R.id.gridView);
@@ -231,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
         BitmapFactory.decodeFile(path, options);
 
         // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        options.inSampleSize = Util.calculateInSampleSize(options, reqWidth, reqHeight);
 
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
