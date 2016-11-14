@@ -88,6 +88,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     //private ImageView imgView;// = new ImageView(this); // UIImageView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
     //private img = UIImage()
     private float toolbarHeight = 0;
+    ImageView imgTopBarBkgd;
     private RelativeLayout detailsArea;
     private float scale = 1;
     private float xMin = 0;
@@ -114,6 +115,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         String polygon = getResources().getString(R.string.polygon);
         detailsType = new String[]{rectangle, ellipse, polygon};
 
+        imgTopBarBkgd = (ImageView) findViewById(R.id.imgTopBarBkgd);
+        imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
         setBtnsIcons();
 
 
@@ -599,6 +602,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 details.get(currentDetailTag).constraint = Constants.constraintPolygon;
                 createDetail = true;
                 setBtnsIcons();
+                imgTopBarBkgd.setBackgroundColor(Color.RED);
 
                 /* TODO Disable other gesture
                 if let recognizers = self.view.gestureRecognizers {
@@ -675,13 +679,12 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             }
         }
 
-        /* TODO toolbar color for polygon creation
-        if createDetail && details["\(tag)"]?.constraint == constraintPolygon {
-            imgTopBarBkgd.backgroundColor = editColor
+        if (createDetail && details.get(tag).constraint.equals(Constants.constraintPolygon)) {
+            imgTopBarBkgd.setBackgroundColor(Color.RED);
         }
         else {
-            imgTopBarBkgd.backgroundColor = blueColor
-        }*/
+            imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
+        }
         cleanOldViews(299);
     }
 
@@ -714,7 +717,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             controller.setMessage("DELETE_DETAIL");
             controller.setPositiveButton("YES", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    stopCreation();
+                    createDetail = false;
+                    changeDetailColor(-1);
+                    imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
                     performFullDetailRemove(detailTag, true);
                     setBtnsIcons();
                 }
@@ -810,7 +815,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                             Float x = Float.parseFloat(coords[0]) * scale + xMin - cornerWidth / 2;
                             Float y = Float.parseFloat(coords[1]) * scale + yMin - cornerHeight / 2;
                             ImageView newPoint = details.get(detailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
-                            // TODO check for zPosition & hidden
                             newPoint.setVisibility(View.INVISIBLE);
                             detailsArea.addView(newPoint);
                             pointIndex = pointIndex + 1;
@@ -998,13 +1002,13 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     private void stopCreation() {
         createDetail = false;
-
-        performFullDetailRemove(currentDetailTag, false);
+        Integer tempTag = currentDetailTag;
         if (details.get(currentDetailTag).constraint.equals(Constants.constraintPolygon)) {
             currentDetailTag = 0;
             changeDetailColor(-1);
         }
-        //imgTopBarBkgd.backgroundColor = blueColor
+        performFullDetailRemove(tempTag, false); // avoid polygons with 1 ou 2 points
+        imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
         setBtnsIcons();
 
         /* TODO Add double tap gesture
