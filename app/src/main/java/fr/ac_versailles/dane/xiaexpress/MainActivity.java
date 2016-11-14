@@ -1,6 +1,5 @@
 package fr.ac_versailles.dane.xiaexpress;
 
-import android.app.ActivityManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

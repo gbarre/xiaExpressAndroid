@@ -419,7 +419,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                             detailsArea.removeView(child);
                         }
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && childTag.equals(currentDetailTag)) { // points to top
-                            child.setTranslationZ(1);
+                            child.setZ(1);
                         }
                     }
 
@@ -447,20 +447,12 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         ImageView newShape = details.get(currentDetailTag).createShape(this,true, Color.RED, cornerWidth, cornerHeight, metrics, toolbarHeight, drawEllipse, details.get(currentDetailTag).locked);
                         detailsArea.addView(newShape);
 
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) { // redraw points
-                            String[] pointsArray = details.get(currentDetailTag).path.split(" ");
-                            if (pointsArray.length > 2) {
-                                Integer pointIndex = 0;
-                                for (String aPointsArray : pointsArray) {
-                                    String[] coords = aPointsArray.split(";");
-                                    if (coords.length == 2) {
-                                        Float x = Float.parseFloat(coords[0]) * scale + xMin - cornerWidth / 2;
-                                        Float y = Float.parseFloat(coords[1]) * scale + yMin - cornerHeight / 2;
-                                        ImageView newPoint = details.get(currentDetailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
-                                        newPoint.setVisibility(View.VISIBLE);
-                                        detailsArea.addView(newPoint);
-                                        pointIndex = pointIndex + 1;
-                                    }
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) { // show points
+                            for (Integer i = 0; i < detailsArea.getChildCount(); i++) {
+                                View child = detailsArea.getChildAt(i);
+                                Integer childTag = (Integer) child.getTag();
+                                if (childTag.equals(currentDetailTag)) {
+                                    child.setVisibility(View.VISIBLE);
                                 }
                             }
                         }
@@ -488,7 +480,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                                 detailPath.setTextContent(details.get(currentDetailTag).createPath(xMin - cornerWidth/2, yMin - cornerHeight/2));
                                 Node detailConstraint = detailAttr.getNamedItem("constraint");
                                 detailConstraint.setTextContent(details.get(currentDetailTag).constraint);
-                                pt("touchUp", "detail " + currentDetailTag + " constraint", details.get(currentDetailTag).constraint);
                             }
                         }
                         writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
@@ -629,7 +620,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     }
 
     private void changeDetailColor(Integer tag) {
-        pt("changeDetailColor", "for tag", tag);
         for(Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
             Integer thisDetailTag = entry.getKey();
             xiaDetail detail = entry.getValue();
@@ -645,7 +635,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     if (thisDetailTag.equals(tag)) {
                         child.setVisibility(View.VISIBLE);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            child.setTranslationZ(1);
+                            child.setZ(1);
                         }
                     }
                     else {
@@ -682,7 +672,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         else {
             imgTopBarBkgd.backgroundColor = blueColor
         }*/
-        //cleanOldViews(299);
+        cleanOldViews(299);
     }
 
     private void cleaningDetails() {
@@ -735,7 +725,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         }
     }
 
-    /* TODO detailInfos() {
+    private void detailInfos() {
+        /* TODO
         moveDetail = false
         movingPoint = -1
         let tmpDetailTag = currentDetailTag
@@ -748,8 +739,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             detailToSegue = currentDetailTag
             currentDetailTag = 0
             performSegue(withIdentifier: "ViewDetailInfos", sender: self)
-        }
-    }*/
+        }*/
+    }
 
     private float distance(float xA, float yA, float xB, float yB) {
         return (float) Math.sqrt((xA-xB)*(xA-xB)+(yA-yB)*(yA-yB));
@@ -869,7 +860,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     private void polygonUndo() {
         Integer detailTag = currentDetailTag;
-        pt("polygonUndo", "detailTag", detailTag);
         if (details.get(detailTag).points.size() > 3) {
             // remove last point
             Integer lastPoint = polygonPointsOrder.size() - 1;
