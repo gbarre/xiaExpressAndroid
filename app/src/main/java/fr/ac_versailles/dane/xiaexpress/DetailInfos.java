@@ -43,7 +43,6 @@ public class DetailInfos extends AppCompatActivity {
     private String detailTitle = "";
     private String detailDescription = "";
     private Document xml;
-    private Integer index = 0;
     private String fileTitle = "";
     private String xmlDirectory = "";
 
@@ -97,6 +96,7 @@ public class DetailInfos extends AppCompatActivity {
         checkBoxZoom.setChecked(zoom);
         checkBoxLocked.setChecked(lock);
         txtDesc.setText(detailDescription);
+        txtDesc.requestFocus();
 
     }
 
