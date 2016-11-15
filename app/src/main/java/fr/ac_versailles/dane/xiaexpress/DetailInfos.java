@@ -3,6 +3,8 @@ package fr.ac_versailles.dane.xiaexpress;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
@@ -45,10 +47,19 @@ public class DetailInfos extends AppCompatActivity {
     private String fileTitle = "";
     private String xmlDirectory = "";
 
+    private Button btnDone = null;
+    private Button btnCancel = null;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_infos);
+
+        btnDone = (Button) findViewById(R.id.done);
+        btnCancel = (Button) findViewById(R.id.cancel);
+
+        btnDone.setOnClickListener(doneListener);
+        btnCancel.setOnClickListener(cancelListener);
 
         String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
@@ -84,4 +95,33 @@ public class DetailInfos extends AppCompatActivity {
         txtDesc.setText(detailDescription);
 
     }
+
+    private View.OnClickListener cancelListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            finish();
+        }
+    };
+
+    private View.OnClickListener doneListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            // Save the detail in xml
+            /* TODO
+            if let detail = xml["xia"]["details"]["detail"].allWithAttributes(["tag" : "\(tag)"]) {
+                for d in detail {
+                    d.attributes["zoom"] = "\(switchZoom.isOn)"
+                    d.attributes["locked"] = "\(switchLock.isOn)"
+                    d.attributes["title"] = txtTitle.text
+                    //d.value = attributedString2pikipiki(txtDesc.attributedText)
+                    d.value = txtDesc.text
+                }
+            }
+            let _ = writeXML(xml, path: "\(filePath).xml")
+            */
+
+            finish();
+        }
+    };
+
 }
