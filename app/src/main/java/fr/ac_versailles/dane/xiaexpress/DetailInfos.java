@@ -49,6 +49,10 @@ public class DetailInfos extends AppCompatActivity {
 
     private Button btnDone = null;
     private Button btnCancel = null;
+    CheckBox checkBoxZoom = null;
+    CheckBox checkBoxLocked = null;
+    EditText txtTitle = null;
+    EditText txtDesc = null;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -84,10 +88,10 @@ public class DetailInfos extends AppCompatActivity {
             }
         }
 
-        EditText txtTitle = (EditText) findViewById(R.id.detailTitle);
-        CheckBox checkBoxZoom = (CheckBox) findViewById(R.id.zoom);
-        CheckBox checkBoxLocked = (CheckBox) findViewById(R.id.locked);
-        EditText txtDesc = (EditText) findViewById(R.id.description);
+        txtTitle = (EditText) findViewById(R.id.detailTitle);
+        checkBoxZoom = (CheckBox) findViewById(R.id.zoom);
+        checkBoxLocked = (CheckBox) findViewById(R.id.locked);
+        txtDesc = (EditText) findViewById(R.id.description);
 
         txtTitle.setText(detailTitle);
         checkBoxZoom.setChecked(zoom);
@@ -107,18 +111,25 @@ public class DetailInfos extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             // Save the detail in xml
-            /* TODO
-            if let detail = xml["xia"]["details"]["detail"].allWithAttributes(["tag" : "\(tag)"]) {
-                for d in detail {
-                    d.attributes["zoom"] = "\(switchZoom.isOn)"
-                    d.attributes["locked"] = "\(switchLock.isOn)"
-                    d.attributes["title"] = txtTitle.text
-                    //d.value = attributedString2pikipiki(txtDesc.attributedText)
-                    d.value = txtDesc.text
+            NodeList xmlDetails = xml.getElementsByTagName("detail");
+            for (int i = 0; i < xmlDetails.getLength(); i++) {
+                Node detail = xmlDetails.item(i);
+                NamedNodeMap detailAttr = detail.getAttributes();
+                Node t = detailAttr.getNamedItem("tag");
+                Integer detailTag = Integer.valueOf(t.getTextContent());
+                if (detailTag.equals(tag)) {
+                    Node detailZoom = detailAttr.getNamedItem("zoom");
+                    detailZoom.setTextContent(String.valueOf(checkBoxZoom.isChecked()));
+                    Node detailLocked = detailAttr.getNamedItem("locked");
+                    detailLocked.setTextContent(String.valueOf(checkBoxLocked.isChecked()));
+                    Node detailTitle = detailAttr.getNamedItem("title");
+                    detailTitle.setTextContent(String.valueOf(txtTitle.getText()));
+
+                    detail.setTextContent(String.valueOf(txtDesc.getText()));
+
                 }
             }
-            let _ = writeXML(xml, path: "\(filePath).xml")
-            */
+            Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
 
             finish();
         }
