@@ -37,23 +37,23 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
+        android:orientation="horizontal"
+        android:background="@color/blue"
+        android:paddingLeft="20dp">
+        <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Enable Zoom"/>
-        <CheckBox
+            android:id="@+id/zoom"
+            android:text="Enable Zoom"
+            android:height="35dp"/>
+        <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/zoom"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Lock detail"/>
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/locked"/>
+            android:id="@+id/locked"
+            android:text="Lock detail"
+           android:height="35dp"
+            android:paddingLeft="20dp"/>
+
     </LinearLayout>
 
     <EditText

@@ -5,8 +5,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Switch;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -48,8 +48,8 @@ public class DetailInfos extends AppCompatActivity {
 
     private Button btnDone = null;
     private Button btnCancel = null;
-    CheckBox checkBoxZoom = null;
-    CheckBox checkBoxLocked = null;
+    Switch checkBoxZoom = null;
+    Switch checkBoxLocked = null;
     EditText txtTitle = null;
     EditText txtDesc = null;
 
@@ -88,8 +88,8 @@ public class DetailInfos extends AppCompatActivity {
         }
 
         txtTitle = (EditText) findViewById(R.id.detailTitle);
-        checkBoxZoom = (CheckBox) findViewById(R.id.zoom);
-        checkBoxLocked = (CheckBox) findViewById(R.id.locked);
+        checkBoxZoom = (Switch) findViewById(R.id.zoom);
+        checkBoxLocked = (Switch) findViewById(R.id.locked);
         txtDesc = (EditText) findViewById(R.id.description);
 
         txtTitle.setText(detailTitle);
