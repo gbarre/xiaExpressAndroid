@@ -2,7 +2,6 @@ package fr.ac_versailles.dane.xiaexpress;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -75,7 +74,6 @@ public class PlayXia extends AppCompatActivity {
 
         fileTitle = getIntent().getStringExtra("fileTitle");
         xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
-        dbg.pt("PlayXia", "xml", Util.nodeToString(xml.getDocumentElement()));
     }
 
     @Override
@@ -109,10 +107,6 @@ public class PlayXia extends AppCompatActivity {
 
         xMin = (scaleX == scale) ? 0 : (availableWidth - bitmap.getWidth()*scale) / 2;
         yMin = (scaleY == scale) ? 0 : (availableHeight - bitmap.getHeight()*scale) / 2;
-
-        dbg.pt("PlayXia", "xMin", xMin);
-        dbg.pt("PlayXia", "yMin", yMin);
-
 
         bitmap = null;
 
@@ -155,8 +149,6 @@ public class PlayXia extends AppCompatActivity {
                     String[] coords = aPointsArray.split(";");
                     Float x = Float.parseFloat(coords[0]) * scale + xMin - cornerWidth / 2;
                     Float y = Float.parseFloat(coords[1]) * scale + yMin - cornerHeight / 2;
-                    dbg.pt("PlayXia", "coords " + pointIndex, Float.parseFloat(coords[0]) + ";" + Float.parseFloat(coords[1]));
-                    dbg.pt("PlayXia", "point " + pointIndex, x + ";" + y);
                     ImageView newPoint = details.get(detailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
                     newPoint.setVisibility(View.INVISIBLE);
                     detailsArea.addView(newPoint);

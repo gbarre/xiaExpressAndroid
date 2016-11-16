@@ -1,8 +1,11 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.graphics.drawable.shapes.PathShape;
@@ -13,8 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import static fr.ac_versailles.dane.xiaexpress.dbg.pt;
 
 /**
  * xiaDetail.java
@@ -82,17 +83,22 @@ class xiaDetail {
 
     public  ImageView createShape(Context ctx, Boolean fill, int color, float cornerWidth, float cornerHeight, DisplayMetrics metrics, float toolbarHeight, Boolean drawEllipse, Boolean locked) {
         ImageView shapeView = new ImageView(ctx);
-        ShapeDrawable shape;
+        ShapeDrawable shape = new ShapeDrawable();
+        GradientDrawable drawable = new GradientDrawable();
+
         if (drawEllipse) {
-            shape = new ShapeDrawable (new OvalShape());
             int width = Math.abs(Math.round(points.get(1).getX() - points.get(3).getX()));
             int height = Math.abs(Math.round(points.get(0).getY() - points.get(2).getY()));
-            shape.setIntrinsicWidth(width);
-            shape.setIntrinsicHeight(height);
             float x = Math.min(points.get(1).getX(), points.get(3).getX());
             float y = Math.min(points.get(0).getY(), points.get(2).getY());
+
+            drawable.setShape(GradientDrawable.OVAL);
+            drawable.setSize(width, height);
             shapeView.setX(x + cornerWidth / 2);
             shapeView.setY(y + cornerHeight / 2);
+
+            shapeView.setBackground(drawable);
+
         }
         else {
             Path p = new Path();
@@ -117,18 +123,26 @@ class xiaDetail {
             shape = new ShapeDrawable(new PathShape(p, metrics.widthPixels, metrics.heightPixels - Math.round(toolbarHeight)));
             shape.setIntrinsicWidth(metrics.widthPixels);
             shape.setIntrinsicHeight(metrics.heightPixels);
+            shape.getPaint().setColor(color);
+            shapeView.setBackground(shape);
         }
-        shape.getPaint().setColor(color);
         if (fill) {
             shape.getPaint().setStyle(Paint.Style.FILL);
+            drawable.setColor(color);
+            drawable.setAlpha(150);
+            shape.getPaint().setAlpha(150); // 150 / 255 = 80%
+
         }
         else {
             shape.getPaint().setStyle(Paint.Style.STROKE);
+            shape.getPaint().setPathEffect(new DashPathEffect(new float[] {10,5}, 0));
             shape.getPaint().setStrokeWidth(3);
-        }
-        shape.getPaint().setAlpha(150); // 150 / 255 = 80%
 
-        shapeView.setBackground(shape);
+            drawable.setStroke(3, color, 10, 5);
+
+        }
+
+
         shapeView.setTag(this.tag + 100);
 
         return shapeView;

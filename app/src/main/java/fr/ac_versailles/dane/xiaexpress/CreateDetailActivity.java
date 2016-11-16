@@ -134,22 +134,40 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         // Always lok for xml on focus changed
         this.xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
 
+        if (hasFocus) {
+            if (!detailsLoaded) {
+                // This is done after onCreate
+                Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+                toolbarHeight = myToolbar.getBottom();
+                metrics = getResources().getDisplayMetrics();
+                Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
+                cornerWidth = corner.getWidth();
+                cornerHeight = corner.getHeight();
 
-        if (hasFocus && !detailsLoaded) {
-            // This is done after onCreate
-            Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
-            toolbarHeight = myToolbar.getBottom();
-            metrics = getResources().getDisplayMetrics();
-            Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
-            cornerWidth = corner.getWidth();
-            cornerHeight = corner.getHeight();
+                loadBackground(imagesDirectory + fileName);
+                detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
 
-            loadBackground(imagesDirectory + fileName);
-            detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
-
-            loadDetails(this.xml);
-            cleaningDetails(); // remove details with 1 or 2 points
+                loadDetails(this.xml);
+                cleaningDetails(); // remove details with 1 or 2 points
+            }
+            else {
+                // Just update currentDetail locked attribute in details
+                dbg.pt("onWindowFocusChanged", "currentDetailTag", currentDetailTag);
+                NodeList xmlDetails = this.xml.getElementsByTagName("detail");
+                for (int i = 0; i < xmlDetails.getLength(); i++) {
+                    Node detail = xmlDetails.item(i);
+                    NamedNodeMap detailAttr = detail.getAttributes();
+                    Node tag = detailAttr.getNamedItem("tag");
+                    Integer detailTag = Integer.valueOf(tag.getTextContent());
+                    if (detailTag.equals(currentDetailTag)) {
+                        details.get(detailTag).locked = (detailAttr.getNamedItem("locked").getTextContent().equals("true"));
+                        break;
+                    }
+                }
+                setBtnsIcons();
+            }
         }
+
     }
 
     @Override
