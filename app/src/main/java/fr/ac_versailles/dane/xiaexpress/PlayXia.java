@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -92,6 +93,51 @@ public class PlayXia extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+
+        // get pointer index from the event object
+        int pointerIndex = event.getActionIndex();
+
+        // get pointer ID
+        int pointerId = event.getPointerId(pointerIndex);
+
+        // get masked (not specific to a pointer) action
+        int maskedAction = event.getActionMasked();
+        float locationX = event.getX();
+        float locationY = event.getY();
+
+        switch (maskedAction) {
+
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN: {
+
+                // Look if we try to move a detail
+                for(Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
+                    Integer detailTag = entry.getKey();
+                    xiaDetail detailPoints = entry.getValue();
+
+                    Boolean touchIn = Util.pointInPolygon(detailPoints.points, locationX, locationY);
+                    if (touchIn) {
+                        showDetail(detailTag);
+                        break;
+                    }
+                }
+                break;
+            }
+            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_CANCEL: {
+                break;
+            }
+        }
+
+
+        return true;
+    }
+
     private void loadBackground(String imagePath) {
         ImageView imageView = (ImageView) findViewById(R.id.image);
 
@@ -139,8 +185,7 @@ public class PlayXia extends AppCompatActivity {
                 xiaDetail newDetail = new xiaDetail(detailTag, scale);
                 details.put(detailTag, newDetail);
                 details.get(detailTag).path = path;
-                String constraint = detailAttr.getNamedItem("constraint").getTextContent();
-                details.get(detailTag).constraint = constraint;
+                details.get(detailTag).constraint = detailAttr.getNamedItem("constraint").getTextContent();
 
                 // Add points to detail
                 String[] pointsArray = path.split(" ");
@@ -163,5 +208,9 @@ public class PlayXia extends AppCompatActivity {
             }
         }
         detailsLoaded = true;
+    }
+
+    private void showDetail(Integer tag) {
+        dbg.pt("PlayXia", "show", tag);
     }
 }
