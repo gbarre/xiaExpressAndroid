@@ -131,6 +131,10 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus){
+        // Always lok for xml on focus changed
+        this.xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+
+
         if (hasFocus && !detailsLoaded) {
             // This is done after onCreate
             Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -143,7 +147,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             loadBackground(imagesDirectory + fileName);
             detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
 
-            this.xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
             loadDetails(this.xml);
             cleaningDetails(); // remove details with 1 or 2 points
         }
@@ -743,23 +746,24 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         stopCreation();
         currentDetailTag = tmpDetailTag;
 
-        //Create intent
-        Intent intent = new Intent(CreateDetailActivity.this, DetailInfos.class);
-        intent.putExtra("fileTitle", fileTitle);
-        intent.putExtra("tag", currentDetailTag.toString());
-
-        //Start details activity
-        startActivity(intent);
-
-        /* TODO
-        if currentDetailTag == 0 {
-            performSegue(withIdentifier: "viewMetas", sender: self)
+        if (currentDetailTag.equals(0)) {
+            // TODO after viewMetas...
         }
         else {
-            detailToSegue = currentDetailTag
-            currentDetailTag = 0
-            performSegue(withIdentifier: "ViewDetailInfos", sender: self)
-        }*/
+            //Create intent
+            Intent intent = new Intent(CreateDetailActivity.this, DetailInfos.class);
+            intent.putExtra("fileTitle", fileTitle);
+            intent.putExtra("tag", currentDetailTag.toString());
+
+            //Start details activity
+            startActivity(intent);
+        }
+
+
+
+
+
+
     }
 
     private float distance(float xA, float yA, float xB, float yB) {
@@ -1017,13 +1021,15 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private void stopCreation() {
         createDetail = false;
         Integer tempTag = currentDetailTag;
-        if (details.get(currentDetailTag).constraint.equals(Constants.constraintPolygon)) {
-            currentDetailTag = 0;
-            changeDetailColor(-1);
+        if (currentDetailTag != 0) {
+            if (details.get(currentDetailTag).constraint.equals(Constants.constraintPolygon)) {
+                currentDetailTag = 0;
+                changeDetailColor(-1);
+            }
+            performFullDetailRemove(tempTag, false); // avoid polygons with 1 ou 2 points
+            imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
+            setBtnsIcons();
         }
-        performFullDetailRemove(tempTag, false); // avoid polygons with 1 ou 2 points
-        imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
-        setBtnsIcons();
 
         /* TODO Add double tap gesture
         let dSelector : Selector = #selector(ViewCreateDetails.detailInfos)
