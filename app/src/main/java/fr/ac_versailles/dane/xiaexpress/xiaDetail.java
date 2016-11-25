@@ -1,13 +1,12 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
 import android.graphics.drawable.shapes.PathShape;
 import android.util.DisplayMetrics;
 import android.widget.ImageView;
@@ -50,6 +49,41 @@ class xiaDetail {
         this.tag = tag;
         points.clear();
         this.scale = scale;
+    }
+
+    public Rect bezierFrame() {
+        Rect rect = new Rect();
+        float xMin = 99999999;
+        float xMax = 0;
+        float yMin = 99999999;
+        float yMax = 0;
+        // Get dimensions of the shape
+        SortedSet<Integer> keys = new TreeSet<>(points.keySet());
+        for (Integer key : keys) {
+            ImageView point = points.get(key);
+            float xPoint = point.getX();
+            float yPoint = point.getY();
+            dbg.pt("bezierFrame", "point " + key, xPoint + ";" + yPoint);
+            if ( xPoint < xMin ) {
+                xMin = xPoint;
+            }
+            if ( yPoint < yMin ) {
+                yMin = yPoint;
+            }
+            if ( xPoint > xMax ) {
+                xMax = xPoint;
+            }
+            if ( yPoint > yMax ) {
+                yMax = yPoint;
+            }
+        }
+        rect.set(Math.round(xMin / scale - 1),
+                Math.round(yMin / scale - 1),
+                Math.round(xMax / scale + 1),
+                Math.round(yMax / scale + 1));
+        dbg.pt("bezierFrame", "rect", rect.toString());
+
+        return rect;
     }
 
     public String createPath(float xMin, float ymin){

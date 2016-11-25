@@ -2,16 +2,27 @@ package fr.ac_versailles.dane.xiaexpress;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.PathShape;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -21,6 +32,8 @@ import org.w3c.dom.NodeList;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * PlayXia.java
@@ -60,6 +73,13 @@ public class PlayXia extends AppCompatActivity {
     private RelativeLayout detailsArea;
     private Boolean detailsLoaded = false;
 
+    private Boolean showPopup = false;
+
+    private ImageView background = null;
+    private LinearLayout playDetail = null;
+    private RelativeLayout zoomDetail = null;
+    Bitmap fullSizeBackground = null;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,6 +95,14 @@ public class PlayXia extends AppCompatActivity {
 
         fileTitle = getIntent().getStringExtra("fileTitle");
         xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+
+        playDetail = (LinearLayout) findViewById(R.id.playDetail);
+        playDetail.setVisibility(View.INVISIBLE);
+
+        zoomDetail = (RelativeLayout) findViewById(R.id.zoomDetail);
+        zoomDetail.setVisibility(View.INVISIBLE);
+
+        //fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + ".jpg");
     }
 
     @Override
@@ -113,15 +141,24 @@ public class PlayXia extends AppCompatActivity {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN: {
 
-                // Look if we try to move a detail
-                for(Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
-                    Integer detailTag = entry.getKey();
-                    xiaDetail detailPoints = entry.getValue();
+                if (!showPopup) {
+                    // Look if we try to move a detail
+                    for (Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
+                        Integer detailTag = entry.getKey();
+                        xiaDetail detailPoints = entry.getValue();
 
-                    Boolean touchIn = Util.pointInPolygon(detailPoints.points, locationX, locationY);
-                    if (touchIn) {
-                        showDetail(detailTag);
-                        break;
+                        Boolean touchIn = Util.pointInPolygon(detailPoints.points, locationX, locationY);
+                        if (touchIn) {
+                            showDetail(detailTag);
+                            break;
+                        }
+                    }
+                }
+                else {
+                    if (locationX < playDetail.getLeft() || locationX > playDetail.getRight() ||
+                            locationY < playDetail.getTop() || locationY > playDetail.getBottom()) {
+                        // Touch out the popup, close it !
+                        showDetail(0);
                     }
                 }
                 break;
@@ -139,13 +176,14 @@ public class PlayXia extends AppCompatActivity {
     }
 
     private void loadBackground(String imagePath) {
-        ImageView imageView = (ImageView) findViewById(R.id.image);
+        background = (ImageView) findViewById(R.id.image);
 
         float availableWidth = metrics.widthPixels;
         float availableHeight = metrics.heightPixels;
 
         final BitmapFactory.Options options = new BitmapFactory.Options();
         Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
+        fullSizeBackground = bitmap;
 
         float scaleX = availableWidth / bitmap.getWidth();
         float scaleY = availableHeight / bitmap.getHeight();
@@ -160,7 +198,7 @@ public class PlayXia extends AppCompatActivity {
         options.inJustDecodeBounds = false;
         Bitmap image = BitmapFactory.decodeFile(imagePath, options);
 
-        imageView.setImageBitmap(image);
+        background.setImageBitmap(image);
     }
 
     private void loadDetails(Document xml) {
@@ -211,6 +249,158 @@ public class PlayXia extends AppCompatActivity {
     }
 
     private void showDetail(Integer tag) {
-        dbg.pt("PlayXia", "show", tag);
+        if (showPopup) {
+            playDetail.setVisibility(View.INVISIBLE);
+            zoomDetail.setVisibility(View.INVISIBLE);
+            background.setVisibility(View.VISIBLE);
+            detailsArea.setVisibility(View.VISIBLE);
+        }
+        else {
+            Boolean zoom = true;
+            String detailTitle = "";
+            String detailDescription = "";
+
+            // Load detail infos from xml
+            NodeList xmlDetails = xml.getElementsByTagName("detail");
+            for (int i = 0; i < xmlDetails.getLength(); i++) {
+                Node detail = xmlDetails.item(i);
+                NamedNodeMap detailAttr = detail.getAttributes();
+                Integer thisTag = Integer.valueOf(detailAttr.getNamedItem("tag").getTextContent());
+                if (thisTag.equals(tag)) { // we got it !
+                    zoom = detailAttr.getNamedItem("zoom").getTextContent().equals("true");
+                    detailTitle = detailAttr.getNamedItem("title").getTextContent();
+                    detailDescription = detail.getTextContent();
+                    break;
+                }
+            }
+
+            playDetail.setVisibility(View.VISIBLE);
+            Integer width = metrics.widthPixels * 8 / 10;
+            Integer left = metrics.widthPixels * 1 / 10;
+            Integer height = metrics.heightPixels * 8 / 10;
+            Integer top = metrics.heightPixels * 1 / 10;
+
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(width, height);
+            lp.setMargins(left, top, left, top);
+            playDetail.setLayoutParams(lp);
+
+            TextView title = (TextView) findViewById(R.id.detailTitle);
+            title.setText(detailTitle);
+
+            TextView desc = (TextView) findViewById(R.id.detalDescription);
+            desc.setMovementMethod(new ScrollingMovementMethod());
+            desc.setText(detailDescription);
+
+            ImageView detailThumb = (ImageView) findViewById(R.id.detailThumb);
+
+            Rect frame = details.get(tag).bezierFrame();
+            dbg.pt("showDetail", "fullSizeBackground", fullSizeBackground.getWidth() + " x " + fullSizeBackground.getHeight());
+            dbg.pt("showDetail", "metrics", metrics.widthPixels + " x " + metrics.heightPixels);
+            int xOri = Math.max(0, Math.round(frame.left - xMin / scale));
+            int yOri = Math.max(0, Math.round(frame.top - yMin / scale));
+            int wOri = (frame.width() + xOri > fullSizeBackground.getWidth()) ? fullSizeBackground.getWidth() - xOri : frame.width();
+            int hOri = (frame.height() + yOri > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
+            dbg.pt("shoDetail", "Ori", xOri + ", " + yOri + ", " + wOri + ", " + hOri);
+            Bitmap original = Bitmap.createBitmap(fullSizeBackground, xOri, yOri, wOri, hOri);
+            /*ImageView newShape = getShape(tag);
+            Bitmap mask = getMask(newShape);
+            Bitmap result = Bitmap.createBitmap(original.getWidth(), original.getHeight(), Bitmap.Config.ARGB_8888);
+
+            Canvas mCanvas = new Canvas(result);
+            Paint paint = new Paint();
+            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+            mCanvas.drawBitmap(original, 0, 0, null);
+            mCanvas.drawBitmap(mask, newShape.getX(), newShape.getY(), paint);
+            paint.setXfermode(null);
+            detailThumb.setImageBitmap(result);*/
+            detailThumb.setImageBitmap(original);
+
+            dbg.pt("showDetail", "tag", tag);
+
+            playDetail.setVisibility(View.VISIBLE);
+            background.setVisibility(View.INVISIBLE);
+            detailsArea.setVisibility(View.INVISIBLE);
+            zoomDetail.setVisibility(View.INVISIBLE);
+
+
+
+        }
+        showPopup = !showPopup;
+    }
+
+    private Bitmap getMask(ImageView im) {
+        im.setDrawingCacheEnabled(true);
+        im.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        im.layout(0, 0, im.getMeasuredWidth(), im.getMeasuredHeight());
+        im.buildDrawingCache(true);
+        Bitmap m = Bitmap.createBitmap(im.getDrawingCache());
+        im.setDrawingCacheEnabled(false);
+
+        return m;
+    }
+
+    private ImageView getShape(Integer tag) {
+        Boolean drawEllipse = details.get(tag).constraint.equals(Constants.constraintEllipse);
+
+        ImageView shapeView = new ImageView(this);
+        ShapeDrawable shape = new ShapeDrawable();
+        GradientDrawable drawable = new GradientDrawable();
+        Rect frame = details.get(tag).bezierFrame();
+        Map<Integer, ImageView> points = details.get(tag).points;
+
+        if (drawEllipse) {
+            int width = Math.abs(Math.round(points.get(1).getX() - points.get(3).getX()));
+            int height = Math.abs(Math.round(points.get(0).getY() - points.get(2).getY()));
+            float x = Math.min(points.get(1).getX(), points.get(3).getX()) - frame.left;
+            float y = Math.min(points.get(0).getY(), points.get(2).getY()) - frame.top;
+
+            drawable.setShape(GradientDrawable.OVAL);
+            drawable.setSize(width, height);
+            shapeView.setX(x - cornerWidth);
+            shapeView.setY(y - cornerHeight);
+
+            shapeView.setBackground(drawable);
+
+        }
+        else {
+            Path p = new Path();
+            p.reset();
+
+            ImageView endPoint = new ImageView(this);
+            SortedSet<Integer> keys = new TreeSet<>(points.keySet());
+            for (Integer key : keys) {
+                ImageView point = points.get(key);
+
+                float x = point.getX() + cornerWidth / 2 - frame.left;
+                float y = point.getY() + cornerHeight / 2 - frame.top;
+
+                if (key != 0) {
+                    p.lineTo(x, y);
+                } else {
+                    p.moveTo(x, y);
+                    endPoint = point;
+                }
+            }
+            p.lineTo(endPoint.getX() + cornerWidth / 2 - frame.left, endPoint.getY() + cornerHeight / 2 - frame.top);
+            shape = new ShapeDrawable(new PathShape(p, frame.width(), frame.height()));
+            shape.setIntrinsicWidth(frame.width());
+            shape.setIntrinsicHeight(frame.height());
+            shapeView.setBackground(shape);
+        }
+
+        shape.getPaint().setStyle(Paint.Style.FILL);
+        shape.getPaint().setColor(Constants.white);
+        drawable.setColor(Constants.white);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            shapeView.setZ(2);
+        }
+        shapeView.setVisibility(View.VISIBLE);
+        shapeView.setTag(100);
+
+        return shapeView;
+
+        //return details.get(tag).createShape(this, true, Constants.white, cornerWidth, cornerHeight, metrics, 0, drawEllipse, false);
+
     }
 }

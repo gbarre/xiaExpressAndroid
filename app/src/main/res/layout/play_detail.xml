@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/white"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/playDetail"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@color/blue"
+        android:orientation="horizontal">
+        <FrameLayout
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:background="@color/grey">
+            <ImageView
+                android:layout_width="180dp"
+                android:layout_height="180dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:id="@+id/detailThumb"/>
+        </FrameLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Detail title"
+                android:id="@id/detailTitle"
+                android:textSize="36sp"
+                android:textColor="@color/white"
+                android:textStyle="normal|bold"
+                android:paddingLeft="20dp"
+                android:layout_marginBottom="20dp"
+                android:textIsSelectable="false"
+                android:scrollbars="none"
+                android:linksClickable="false"
+                android:longClickable="false"
+                android:textAlignment="gravity"
+                android:layout_alignParentBottom="true"
+                android:maxLines="3"/>
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:background="@color/darkBlue"
+                android:layout_alignParentBottom="true"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+    <TextView
+        android:id="@+id/detalDescription"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="8dp"
+        android:autoLink="all"
+        android:scrollbars="vertical"/>
+</LinearLayout>

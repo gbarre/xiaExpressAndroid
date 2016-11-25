@@ -17,5 +17,9 @@
         android:id="@+id/detailsArea">
     </RelativeLayout>
 
+    <include layout="@layout/play_detail"></include>
+
+    <include layout="@layout/zoom_detail"></include>
+
 
 </FrameLayout>
