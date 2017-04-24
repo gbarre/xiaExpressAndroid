@@ -2,8 +2,11 @@ package fr.ac_versailles.dane.xiaexpress;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -296,14 +299,20 @@ public class PlayXia extends AppCompatActivity {
             Rect frame = details.get(tag).bezierFrame();
             dbg.pt("showDetail", "fullSizeBackground", fullSizeBackground.getWidth() + " x " + fullSizeBackground.getHeight());
             dbg.pt("showDetail", "metrics", metrics.widthPixels + " x " + metrics.heightPixels);
+
+            // extract part of image into the frame
             int xOri = Math.max(0, Math.round(frame.left - xMin / scale));
             int yOri = Math.max(0, Math.round(frame.top - yMin / scale));
             int wOri = (frame.width() + xOri > fullSizeBackground.getWidth()) ? fullSizeBackground.getWidth() - xOri : frame.width();
             int hOri = (frame.height() + yOri > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
-            dbg.pt("shoDetail", "Ori", xOri + ", " + yOri + ", " + wOri + ", " + hOri);
+            dbg.pt("showDetail", "Ori frame", "x=" + xOri + ", y=" + yOri + ", width=" + wOri + ", height=" + hOri);
             Bitmap original = Bitmap.createBitmap(fullSizeBackground, xOri, yOri, wOri, hOri);
-            /*ImageView newShape = getShape(tag);
+
+            // prepare the mask
+            ImageView newShape = getShape(tag);
+            newShape.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             Bitmap mask = getMask(newShape);
+            //Bitmap mask = getBitmapFromView(newShape);
             Bitmap result = Bitmap.createBitmap(original.getWidth(), original.getHeight(), Bitmap.Config.ARGB_8888);
 
             Canvas mCanvas = new Canvas(result);
@@ -312,12 +321,12 @@ public class PlayXia extends AppCompatActivity {
             mCanvas.drawBitmap(original, 0, 0, null);
             mCanvas.drawBitmap(mask, newShape.getX(), newShape.getY(), paint);
             paint.setXfermode(null);
-            detailThumb.setImageBitmap(result);*/
-            detailThumb.setImageBitmap(original);
+            detailThumb.setImageBitmap(result);
+            //detailThumb.setImageBitmap(original);
 
-            dbg.pt("showDetail", "tag", tag);
+            //dbg.pt("showDetail", "tag", tag);
 
-            playDetail.setVisibility(View.VISIBLE);
+            //playDetail.setVisibility(View.INVISIBLE);
             background.setVisibility(View.INVISIBLE);
             detailsArea.setVisibility(View.INVISIBLE);
             zoomDetail.setVisibility(View.INVISIBLE);
@@ -331,13 +340,27 @@ public class PlayXia extends AppCompatActivity {
     private Bitmap getMask(ImageView im) {
         im.setDrawingCacheEnabled(true);
         im.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        //im.measure(metrics.widthPixels, metrics.heightPixels);
+        //dbg.pt("getMask", "View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)", View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
         im.layout(0, 0, im.getMeasuredWidth(), im.getMeasuredHeight());
+        dbg.pt("getMask", "im size", im.getMeasuredWidth() + " x " + im.getMeasuredHeight());
         im.buildDrawingCache(true);
         Bitmap m = Bitmap.createBitmap(im.getDrawingCache());
         im.setDrawingCacheEnabled(false);
 
         return m;
     }
+
+    private Bitmap getBitmapFromView(ImageView v) {
+        v.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        v.layout(0, 0, v.getMeasuredWidth(), v.getMeasuredWidth());
+        Bitmap b = Bitmap.createBitmap(v.getMeasuredWidth(), v.getMeasuredWidth(), Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(b);
+        v.draw(c);
+        return b;
+    }
+
 
     private ImageView getShape(Integer tag) {
         Boolean drawEllipse = details.get(tag).constraint.equals(Constants.constraintEllipse);
@@ -349,15 +372,15 @@ public class PlayXia extends AppCompatActivity {
         Map<Integer, ImageView> points = details.get(tag).points;
 
         if (drawEllipse) {
-            int width = Math.abs(Math.round(points.get(1).getX() - points.get(3).getX()));
-            int height = Math.abs(Math.round(points.get(0).getY() - points.get(2).getY()));
-            float x = Math.min(points.get(1).getX(), points.get(3).getX()) - frame.left;
-            float y = Math.min(points.get(0).getY(), points.get(2).getY()) - frame.top;
+            int width = Math.abs(Math.round((points.get(1).getX() - points.get(3).getX())/scale));
+            int height = Math.abs(Math.round((points.get(0).getY() - points.get(2).getY())/scale));
+            float x = Math.min(points.get(1).getX(), points.get(3).getX())/scale - frame.left;
+            float y = Math.min(points.get(0).getY(), points.get(2).getY())/scale - frame.top;
 
             drawable.setShape(GradientDrawable.OVAL);
             drawable.setSize(width, height);
-            shapeView.setX(x - cornerWidth);
-            shapeView.setY(y - cornerHeight);
+            shapeView.setX(x - 0*cornerWidth);
+            shapeView.setY(y - 0*cornerHeight);
 
             shapeView.setBackground(drawable);
 
@@ -371,8 +394,9 @@ public class PlayXia extends AppCompatActivity {
             for (Integer key : keys) {
                 ImageView point = points.get(key);
 
-                float x = point.getX() + cornerWidth / 2 - frame.left;
-                float y = point.getY() + cornerHeight / 2 - frame.top;
+                float x = point.getX()/scale + cornerWidth / 2 - frame.left;
+                float y = point.getY()/scale + cornerHeight / 2 - frame.top;
+                dbg.pt("getShape", "point " + key, x + ";" + y);
 
                 if (key != 0) {
                     p.lineTo(x, y);
@@ -381,10 +405,14 @@ public class PlayXia extends AppCompatActivity {
                     endPoint = point;
                 }
             }
-            p.lineTo(endPoint.getX() + cornerWidth / 2 - frame.left, endPoint.getY() + cornerHeight / 2 - frame.top);
-            shape = new ShapeDrawable(new PathShape(p, frame.width(), frame.height()));
-            shape.setIntrinsicWidth(frame.width());
-            shape.setIntrinsicHeight(frame.height());
+            p.lineTo(endPoint.getX()/scale + cornerWidth / 2 - frame.left, endPoint.getY()/scale + cornerHeight / 2 - frame.top);
+            //p.lineTo(endPoint.getX()/scale + cornerWidth / 2, endPoint.getY()/scale + cornerHeight / 2);
+            shape = new ShapeDrawable(new PathShape(p, Math.min(Math.round(frame.width()/scale), metrics.widthPixels/scale), Math.min(Math.round(frame.height()/scale), metrics.heightPixels/scale)));
+            //dbg.pt("getShape", "Intrinsic size", Math.round(frame.width()/scale) + " x " + Math.round(frame.height()/scale));
+            //shape.setIntrinsicWidth(Math.round(frame.width()/scale));
+            //shape.setIntrinsicHeight(Math.round(frame.height()/scale));
+            shape.setIntrinsicWidth(Math.round(Math.min(frame.width()/scale, metrics.widthPixels/scale)));
+            shape.setIntrinsicHeight(Math.round(Math.min(frame.height()/scale, metrics.heightPixels)));
             shapeView.setBackground(shape);
         }
 
@@ -392,15 +420,6 @@ public class PlayXia extends AppCompatActivity {
         shape.getPaint().setColor(Constants.white);
         drawable.setColor(Constants.white);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            shapeView.setZ(2);
-        }
-        shapeView.setVisibility(View.VISIBLE);
-        shapeView.setTag(100);
-
         return shapeView;
-
-        //return details.get(tag).createShape(this, true, Constants.white, cornerWidth, cornerHeight, metrics, 0, drawEllipse, false);
-
     }
 }

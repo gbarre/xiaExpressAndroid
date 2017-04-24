@@ -77,10 +77,10 @@ class xiaDetail {
                 yMax = yPoint;
             }
         }
-        rect.set(Math.round(xMin / scale - 1),
-                Math.round(yMin / scale - 1),
-                Math.round(xMax / scale + 1),
-                Math.round(yMax / scale + 1));
+        rect.set(Math.round((xMin- 1) / scale),
+                Math.round((yMin- 1) / scale),
+                Math.round((xMax + 1) / scale),
+                Math.round((yMax + 1) / scale));
         dbg.pt("bezierFrame", "rect", rect.toString());
 
         return rect;
