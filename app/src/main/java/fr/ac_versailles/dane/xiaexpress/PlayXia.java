@@ -13,7 +13,6 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.PathShape;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.util.LruCache;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
@@ -32,10 +31,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
@@ -81,10 +77,12 @@ public class PlayXia extends AppCompatActivity {
     private Boolean detailsLoaded = false;
 
     private Boolean showPopup = false;
+    private Boolean showZoom = false;
 
     private ImageView background = null;
     private LinearLayout playDetail = null;
     private RelativeLayout zoomDetail = null;
+    private ImageView detailThumb = null;
     Bitmap fullSizeBackground = null;
 
 
@@ -110,6 +108,9 @@ public class PlayXia extends AppCompatActivity {
         zoomDetail = (RelativeLayout) findViewById(R.id.zoomDetail);
         zoomDetail.setVisibility(View.INVISIBLE);
 
+        detailThumb = (ImageView) findViewById(R.id.detailThumb);
+        detailThumb.setVisibility(View.INVISIBLE);
+
         //fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + ".jpg");
     }
 
@@ -131,8 +132,9 @@ public class PlayXia extends AppCompatActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         // get pointer index from the event object
-        int pointerIndex = event.getActionIndex();
+        //int pointerIndex = event.getActionIndex();
 
         // get pointer ID
         //int pointerId = event.getPointerId(pointerIndex);
@@ -147,8 +149,10 @@ public class PlayXia extends AppCompatActivity {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN: {
 
-                if (!showPopup) {
-                    // Look if we try to move a detail
+                if (showZoom) {
+                    zoomDetail(!showZoom, detailThumb);
+                } else if (!showPopup) {
+                    // Look if touch a detail
                     for (Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
                         Integer detailTag = entry.getKey();
                         xiaDetail detailPoints = entry.getValue();
@@ -159,12 +163,14 @@ public class PlayXia extends AppCompatActivity {
                             break;
                         }
                     }
-                }
-                else {
+                } else {
                     if (locationX < playDetail.getLeft() || locationX > playDetail.getRight() ||
                             locationY < playDetail.getTop() || locationY > playDetail.getBottom()) {
                         // Touch out the popup, close it !
                         showDetail(0);
+                    } else if (locationX > playDetail.getLeft() && locationX < (playDetail.getLeft() + detailThumb.getWidth()) &&
+                            locationY > playDetail.getTop() && locationY < (playDetail.getTop() + detailThumb.getHeight())) {
+                        zoomDetail(!showZoom, detailThumb);
                     }
                 }
                 break;
@@ -254,11 +260,13 @@ public class PlayXia extends AppCompatActivity {
     }
 
     private void showDetail(Integer tag) {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         if (showPopup) {
             playDetail.setVisibility(View.INVISIBLE);
             zoomDetail.setVisibility(View.INVISIBLE);
             background.setVisibility(View.VISIBLE);
             detailsArea.setVisibility(View.VISIBLE);
+            detailThumb.setVisibility(View.INVISIBLE);
         }
         else {
             Boolean zoom = true;
@@ -299,8 +307,6 @@ public class PlayXia extends AppCompatActivity {
             desc.setMovementMethod(new ScrollingMovementMethod());
             desc.setText(detailDescription);
 
-            // Here is the detail
-            ImageView detailThumb = (ImageView) findViewById(R.id.detailThumb);
             Rect frame = details.get(tag).bezierFrame();
 
             // Extract part of image into the frame
@@ -332,9 +338,23 @@ public class PlayXia extends AppCompatActivity {
             background.setVisibility(View.INVISIBLE);
             detailsArea.setVisibility(View.INVISIBLE);
             zoomDetail.setVisibility(View.INVISIBLE);
+            detailThumb.setVisibility(View.VISIBLE);
 
         }
         showPopup = !showPopup;
+    }
+
+    private void zoomDetail(Boolean show, ImageView im) {
+        if (show) {
+            ImageView detail_zoom = (ImageView) findViewById(R.id.detail_zoom);
+            detail_zoom.setImageDrawable(im.getDrawable());
+            playDetail.setVisibility(View.INVISIBLE);
+            zoomDetail.setVisibility(View.VISIBLE);
+        } else {
+            playDetail.setVisibility(View.VISIBLE);
+            zoomDetail.setVisibility(View.INVISIBLE);
+        }
+        showZoom = !showZoom;
     }
 
     private Bitmap getMask(ImageView im) {
@@ -350,8 +370,6 @@ public class PlayXia extends AppCompatActivity {
 
         return m;
     }
-
-
 
     private ImageView getShape(Integer tag, Bitmap bitmap) {
         // Extract the shape from the detail path
