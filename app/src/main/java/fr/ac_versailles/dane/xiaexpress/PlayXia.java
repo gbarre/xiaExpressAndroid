@@ -81,7 +81,6 @@ public class PlayXia extends AppCompatActivity {
     private Boolean detailsLoaded = false;
 
     private Boolean showPopup = false;
-    private Boolean firstLoad = true;
 
     private ImageView background = null;
     private LinearLayout playDetail = null;
@@ -126,15 +125,7 @@ public class PlayXia extends AppCompatActivity {
             loadBackground(imagesDirectory + fileTitle + ".jpg");
             detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
 
-            loadDetails(this.xml, firstLoad);
-        }
-        if (!hasFocus) {
-            // remove old detail cache
-            for(int i = 100; i < 200; i++) {
-                if (new File(cacheDirectory + "detail_" + i + ".png").exists()) {
-                    new File(cacheDirectory + "detail_" + i + ".png").delete();
-                }
-            }
+            loadDetails(this.xml);
         }
     }
 
@@ -216,7 +207,7 @@ public class PlayXia extends AppCompatActivity {
         background.setImageBitmap(image);
     }
 
-    private void loadDetails(Document xml, Boolean rebuildCache) {
+    private void loadDetails(Document xml) {
         NodeList xmlDetails = xml.getElementsByTagName("detail");
         for (int i = 0; i < xmlDetails.getLength(); i++) {
             Node detail = xmlDetails.item(i);
@@ -257,38 +248,6 @@ public class PlayXia extends AppCompatActivity {
 
                 ImageView newShape = details.get(detailTag).createShape(this,false, Constants.blue, cornerWidth, cornerHeight, metrics, 0, drawEllipse, details.get(detailTag).locked);
                 detailsArea.addView(newShape);
-
-                if (rebuildCache) {
-                    Rect frame = details.get(detailTag).bezierFrame();
-                    // extract part of image into the frame
-                    int xOri = Math.max(0, Math.round(frame.left - xMin / scale));
-                    int yOri = Math.max(0, Math.round(frame.top - yMin / scale));
-                    int wOri = (frame.width() + xOri > fullSizeBackground.getWidth()) ? fullSizeBackground.getWidth() - xOri : frame.width();
-                    int hOri = (frame.height() + yOri > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
-
-                    Bitmap bitmap = Bitmap.createBitmap(fullSizeBackground, xOri, yOri, wOri, hOri);
-
-                    File cachedImage = new File(cacheDirectory+"detail_"+detailTag+".png");
-                    try {
-                        cachedImage.createNewFile();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, bos);
-                    byte[] bitmapData = bos.toByteArray();
-
-                    try {
-                        FileOutputStream fos = new FileOutputStream(cachedImage);
-                        fos.write(bitmapData);
-                        fos.flush();
-                        fos.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
             }
         }
         detailsLoaded = true;
@@ -320,6 +279,7 @@ public class PlayXia extends AppCompatActivity {
                 }
             }
 
+            // Prepare the detail "popup"
             playDetail.setVisibility(View.VISIBLE);
             Integer width = metrics.widthPixels * 8 / 10;
             Integer left = metrics.widthPixels * 1 / 10;
@@ -330,23 +290,34 @@ public class PlayXia extends AppCompatActivity {
             lp.setMargins(left, top, left, top);
             playDetail.setLayoutParams(lp);
 
+            // Put detail title
             TextView title = (TextView) findViewById(R.id.detailTitle);
             title.setText(detailTitle);
 
+            // Put detail description
             TextView desc = (TextView) findViewById(R.id.detalDescription);
             desc.setMovementMethod(new ScrollingMovementMethod());
             desc.setText(detailDescription);
 
+            // Here is the detail
             ImageView detailThumb = (ImageView) findViewById(R.id.detailThumb);
+            Rect frame = details.get(tag).bezierFrame();
 
-            Bitmap bitmap = BitmapFactory.decodeFile(cacheDirectory+"detail_"+tag+".png");
+            // Extract part of image into the frame
+            int xOri = Math.max(0, Math.round(frame.left - xMin / scale));
+            int yOri = Math.max(0, Math.round(frame.top - yMin / scale));
+            int wOri = (frame.width() + xOri > fullSizeBackground.getWidth()) ? fullSizeBackground.getWidth() - xOri : frame.width();
+            int hOri = (frame.height() + yOri > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
 
-            // prepare the mask
+            Bitmap bitmap = Bitmap.createBitmap(fullSizeBackground, xOri, yOri, wOri, hOri);
+
+            // Prepare the mask
             ImageView newShapeMask = getShape(tag, bitmap);
             newShapeMask.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             Bitmap mask = getMask(newShapeMask);
             Bitmap result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
 
+            // Put mask & original in canvas
             Canvas mCanvas = new Canvas(result);
             Paint paint = new Paint();
             paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
@@ -354,6 +325,7 @@ public class PlayXia extends AppCompatActivity {
             mCanvas.drawBitmap(mask, 0, 0, paint);
             paint.setXfermode(null);
 
+            // The thumbnail is ready !
             detailThumb.setImageBitmap(result);
 
             //playDetail.setVisibility(View.INVISIBLE);
@@ -361,13 +333,12 @@ public class PlayXia extends AppCompatActivity {
             detailsArea.setVisibility(View.INVISIBLE);
             zoomDetail.setVisibility(View.INVISIBLE);
 
-
-
         }
         showPopup = !showPopup;
     }
 
     private Bitmap getMask(ImageView im) {
+        // This "convert" the im ImageView, from cache, into a Bitmap
         im.setDrawingCacheEnabled(true);
         im.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
         im.layout(0, 0, im.getMeasuredWidth(), im.getMeasuredHeight());
@@ -383,6 +354,8 @@ public class PlayXia extends AppCompatActivity {
 
 
     private ImageView getShape(Integer tag, Bitmap bitmap) {
+        // Extract the shape from the detail path
+        // Similar to the xiaDetail.createShape method
         Boolean drawEllipse = details.get(tag).constraint.equals(Constants.constraintEllipse);
 
         ImageView shapeView = new ImageView(this);
