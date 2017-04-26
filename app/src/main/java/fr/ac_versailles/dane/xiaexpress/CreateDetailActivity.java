@@ -59,7 +59,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     private String imagesDirectory;
     private String xmlDirectory;
-    //private String cacheDirectory;
+    private String cacheDirectory;
 
     private Integer index = 0;
     private Document xml;
@@ -123,7 +123,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
-        //cacheDirectory = Constants.getCacheFrom(rootDirectory);
+        cacheDirectory = Constants.getCacheFrom(rootDirectory);
 
         fileName = getIntent().getStringExtra("title");
         fileTitle = fileName.replace(".jpg", "");
@@ -165,6 +165,14 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     }
                 }
                 setBtnsIcons();
+            }
+        } else {
+
+            // remove old detail cache
+            for(int i = 100; i < 200; i++) {
+                if (new File(cacheDirectory + "detail_" + i + ".jpg").exists()) {
+                    new File(cacheDirectory + "detail_" + i + ".jpg").delete();
+                }
             }
         }
 

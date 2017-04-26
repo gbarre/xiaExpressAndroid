@@ -63,7 +63,6 @@ class xiaDetail {
             ImageView point = points.get(key);
             float xPoint = point.getX();
             float yPoint = point.getY();
-            dbg.pt("bezierFrame", "point " + key, xPoint + ";" + yPoint);
             if ( xPoint < xMin ) {
                 xMin = xPoint;
             }
@@ -77,11 +76,10 @@ class xiaDetail {
                 yMax = yPoint;
             }
         }
-        rect.set(Math.round((xMin- 1) / scale),
-                Math.round((yMin- 1) / scale),
-                Math.round((xMax + 1) / scale),
-                Math.round((yMax + 1) / scale));
-        dbg.pt("bezierFrame", "rect", rect.toString());
+        rect.set(Math.round((xMin) / scale)-1,
+                Math.round((yMin) / scale)-1,
+                Math.round((xMax) / scale)+1,
+                Math.round((yMax) / scale)+1);
 
         return rect;
     }
