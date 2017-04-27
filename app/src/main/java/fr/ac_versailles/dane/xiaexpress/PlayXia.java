@@ -78,6 +78,7 @@ public class PlayXia extends AppCompatActivity {
 
     private Boolean showPopup = false;
     private Boolean showZoom = false;
+    private Boolean enableZoom = true;
 
     private ImageView background = null;
     private LinearLayout playDetail = null;
@@ -111,7 +112,7 @@ public class PlayXia extends AppCompatActivity {
         detailThumb = (ImageView) findViewById(R.id.detailThumb);
         detailThumb.setVisibility(View.INVISIBLE);
 
-        //fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + ".jpg");
+        fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + ".jpg");
     }
 
     @Override
@@ -169,7 +170,8 @@ public class PlayXia extends AppCompatActivity {
                         // Touch out the popup, close it !
                         showDetail(0);
                     } else if (locationX > playDetail.getLeft() && locationX < (playDetail.getLeft() + detailThumb.getWidth()) &&
-                            locationY > playDetail.getTop() && locationY < (playDetail.getTop() + detailThumb.getHeight())) {
+                            locationY > playDetail.getTop() && locationY < (playDetail.getTop() + detailThumb.getHeight())
+                            && enableZoom) {
                         zoomDetail(!showZoom, detailThumb);
                     }
                 }
@@ -183,7 +185,6 @@ public class PlayXia extends AppCompatActivity {
             }
         }
 
-
         return true;
     }
 
@@ -195,7 +196,7 @@ public class PlayXia extends AppCompatActivity {
 
         final BitmapFactory.Options options = new BitmapFactory.Options();
         Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
-        fullSizeBackground = bitmap;
+        //fullSizeBackground = bitmap;
 
         float scaleX = availableWidth / bitmap.getWidth();
         float scaleY = availableHeight / bitmap.getHeight();
@@ -269,9 +270,10 @@ public class PlayXia extends AppCompatActivity {
             detailThumb.setVisibility(View.INVISIBLE);
         }
         else {
-            Boolean zoom = true;
+            //Boolean zoom = true;
             String detailTitle = "";
             String detailDescription = "";
+            Boolean drawEllipse = false;
 
             // Load detail infos from xml
             NodeList xmlDetails = xml.getElementsByTagName("detail");
@@ -280,7 +282,8 @@ public class PlayXia extends AppCompatActivity {
                 NamedNodeMap detailAttr = detail.getAttributes();
                 Integer thisTag = Integer.valueOf(detailAttr.getNamedItem("tag").getTextContent());
                 if (thisTag.equals(tag)) { // we got it !
-                    zoom = detailAttr.getNamedItem("zoom").getTextContent().equals("true");
+                    drawEllipse = details.get(tag).constraint.equals(Constants.constraintEllipse);
+                    enableZoom = detailAttr.getNamedItem("zoom").getTextContent().equals("true");
                     detailTitle = detailAttr.getNamedItem("title").getTextContent();
                     detailDescription = detail.getTextContent();
                     break;
@@ -315,8 +318,10 @@ public class PlayXia extends AppCompatActivity {
             int wOri = (frame.width() + xOri > fullSizeBackground.getWidth()) ? fullSizeBackground.getWidth() - xOri : frame.width();
             int hOri = (frame.height() + yOri > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
 
-            wOri = (int) (wOri + cornerWidth/2);
-            hOri = (int) (hOri + cornerHeight/2);
+            if (!drawEllipse) {
+                wOri = (int) (wOri + cornerWidth/2);
+                hOri = (int) (hOri + cornerHeight/2);
+            }
             Bitmap bitmap = Bitmap.createBitmap(fullSizeBackground, xOri, yOri, wOri, hOri);
 
             // Prepare the mask
