@@ -315,6 +315,8 @@ public class PlayXia extends AppCompatActivity {
             int wOri = (frame.width() + xOri > fullSizeBackground.getWidth()) ? fullSizeBackground.getWidth() - xOri : frame.width();
             int hOri = (frame.height() + yOri > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
 
+            wOri = (int) (wOri + cornerWidth/2);
+            hOri = (int) (hOri + cornerHeight/2);
             Bitmap bitmap = Bitmap.createBitmap(fullSizeBackground, xOri, yOri, wOri, hOri);
 
             // Prepare the mask
