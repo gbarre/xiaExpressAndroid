@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -22,6 +23,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListPopupWindow;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import org.w3c.dom.Document;
@@ -57,10 +59,15 @@ import java.util.Map;
 
 public class CreateDetailActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
+    ImageView imgTopBarBkgd;
+    float cornerWidth = 0;
+    float cornerHeight = 0;
+    //private menu: UIAlertController!
+    ListPopupWindow listPopupWindow;
+    String[] detailsType;
     private String imagesDirectory;
     private String xmlDirectory;
     private String cacheDirectory;
-
     private Integer index = 0;
     private Document xml;
     private String fileName = "";
@@ -71,7 +78,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private float movingCoordsY = 0;
     private Boolean landscape = false;
     private float precisionDist = 20;
-
     private Map<Integer, xiaDetail> details = new HashMap<>();
     private Integer currentDetailTag = 0;
     private Integer detailToSegue = 0;
@@ -82,23 +88,15 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private Map<Integer, ImageView> virtPoints = new HashMap<>();
     private ArrayList<Integer> polygonPointsOrder;
     private Boolean detailsLoaded = false;
-
-    //private ImageView imgView;// = new ImageView(this); // UIImageView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
-    //private img = UIImage()
+    private ImageView background;
     private float toolbarHeight = 0;
-    ImageView imgTopBarBkgd;
     private RelativeLayout detailsArea;
     private float scale = 1;
     private float xMin = 0;
     private float yMin = 0;
     private DisplayMetrics metrics;
-    float cornerWidth = 0;
-    float cornerHeight = 0;
-
-    //private menu: UIAlertController!
-    ListPopupWindow listPopupWindow;
-    String[] detailsType;
     private int btnTag = 0;
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -116,7 +114,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         imgTopBarBkgd = (ImageView) findViewById(R.id.imgTopBarBkgd);
         imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
         setBtnsIcons();
-
 
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
 
@@ -139,20 +136,24 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 // This is done after onCreate
                 Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
                 toolbarHeight = myToolbar.getBottom();
+                // Get device infos
                 metrics = getResources().getDisplayMetrics();
+                // Get corner size
                 Bitmap corner = BitmapFactory.decodeResource(getResources(), R.drawable.corner);
                 cornerWidth = corner.getWidth();
                 cornerHeight = corner.getHeight();
-
-                loadBackground(imagesDirectory + fileName);
+                // Load elements from res
                 detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
+                mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+                background = (ImageView) findViewById(R.id.image);
+                // AsyncTask loading => background resizing + details
+                loadResource loading = new loadResource(background);
+                loading.execute();
 
-                loadDetails(this.xml);
                 cleaningDetails(); // remove details with 1 or 2 points
             }
             else {
                 // Just update currentDetail locked attribute in details
-                dbg.pt("onWindowFocusChanged", "currentDetailTag", currentDetailTag);
                 NodeList xmlDetails = this.xml.getElementsByTagName("detail");
                 for (int i = 0; i < xmlDetails.getLength(); i++) {
                     Node detail = xmlDetails.item(i);
@@ -166,16 +167,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 }
                 setBtnsIcons();
             }
-        } else {
-
-            // remove old detail cache
-            for(int i = 100; i < 200; i++) {
-                if (new File(cacheDirectory + "detail_" + i + ".jpg").exists()) {
-                    new File(cacheDirectory + "detail_" + i + ".jpg").delete();
-                }
-            }
         }
-
     }
 
     @Override
@@ -806,31 +798,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         startActivity(intent);
     }
 
-    private void loadBackground(String imagePath) {
-        ImageView imageView = (ImageView) findViewById(R.id.image);
-
-        float availableWidth = metrics.widthPixels;
-        float availableHeight = metrics.heightPixels - toolbarHeight;
-
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
-
-        float scaleX = availableWidth / bitmap.getWidth();
-        float scaleY = availableHeight / bitmap.getHeight();
-        scale = Math.min(scaleX, scaleY);
-
-        xMin = (scaleX == scale) ? 0 : (availableWidth - bitmap.getWidth()*scale) / 2;
-        yMin = (scaleY == scale) ? 0 : (availableHeight - bitmap.getHeight()*scale) / 2;
-
-        bitmap = null;
-
-        options.inSampleSize = Util.calculateInSampleSize(options, Math.round(availableWidth) - 1, Math.round(availableHeight) - 1);
-        options.inJustDecodeBounds = false;
-        Bitmap image = BitmapFactory.decodeFile(imagePath, options);
-
-        imageView.setImageBitmap(image);
-    }
-
     private void loadDetails(Document xml) {
         NodeList xmlDetails = xml.getElementsByTagName("detail");
         for (int i = 0; i < xmlDetails.getLength(); i++) {
@@ -1096,5 +1063,50 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         }
 
         return touched;
+    }
+
+    private class loadResource extends AsyncTask<Void, Void, Bitmap> {
+        private ImageView image;
+
+        loadResource(ImageView im) {
+            image = im;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressBar.setVisibility(View.VISIBLE);
+
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... arg0) {
+            // Load background
+            String imagePath = imagesDirectory + fileName;
+            float availableWidth = metrics.widthPixels;
+            float availableHeight = metrics.heightPixels - toolbarHeight;
+
+            final BitmapFactory.Options options = new BitmapFactory.Options();
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
+
+            float scaleX = availableWidth / bitmap.getWidth();
+            float scaleY = availableHeight / bitmap.getHeight();
+            scale = Math.min(scaleX, scaleY);
+
+            xMin = (scaleX == scale) ? 0 : (availableWidth - bitmap.getWidth() * scale) / 2;
+            yMin = (scaleY == scale) ? 0 : (availableHeight - bitmap.getHeight() * scale) / 2;
+
+            options.inSampleSize = Util.calculateInSampleSize(options, Math.round(availableWidth) - 1, Math.round(availableHeight) - 1);
+            options.inJustDecodeBounds = false;
+
+            return BitmapFactory.decodeFile(imagePath, options);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            mProgressBar.setVisibility(View.INVISIBLE);
+            image.setImageBitmap(result);
+            loadDetails(xml);
+        }
     }
 }

@@ -4,8 +4,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -44,10 +44,9 @@ import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
+    private static final int SELECT_PICTURE = 1;
     private GridView gridView;
     private GridViewAdapter gridAdapter;
-    private static final int SELECT_PICTURE = 1;
-
     private String[] arrayNames = new String[50];
 
     private String rootDirectory;
@@ -55,6 +54,23 @@ public class MainActivity extends AppCompatActivity {
     private String xmlDirectory;
     private String cacheDirectory;
 
+    /**
+     * Copy file from path src to path dst
+     */
+    public static void copy(InputStream in, File dst) throws IOException {
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName() + "." + Thread.currentThread().getStackTrace()[2].getMethodName();
+        //InputStream in = new FileInputStream(src);
+        OutputStream out = new FileOutputStream(dst);
+
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.close();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
 
                 //Start details activity
                 startActivity(intent);
-
 
             }
         });
@@ -199,24 +214,6 @@ public class MainActivity extends AppCompatActivity {
             imageItems.add(new PhotoThumbnail(bitmap, "New resource..."));
         }
         return imageItems;
-    }
-
-    /**
-     * Copy file from path src to path dst
-     */
-    public static void copy(InputStream in, File dst) throws IOException {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-        //InputStream in = new FileInputStream(src);
-        OutputStream out = new FileOutputStream(dst);
-
-        // Transfer bytes from in to out
-        byte[] buf = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
-        in.close();
-        out.close();
     }
 
     private Bitmap decodeSampledBitmapFromFile(String path, int reqWidth, int reqHeight) {
