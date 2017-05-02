@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.PathShape;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -23,6 +24,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -59,32 +61,29 @@ import java.util.TreeSet;
 
 public class PlayXia extends AppCompatActivity {
 
+    float cornerWidth = 0;
+    float cornerHeight = 0;
+    Bitmap fullSizeBackground = null;
     private Document xml;
     private String fileTitle = "";
     private String imagesDirectory;
     private String xmlDirectory = "";
     private String cacheDirectory;
-
     private DisplayMetrics metrics;
     private float scale = 1;
     private float xMin = 0;
     private float yMin = 0;
-    float cornerWidth = 0;
-    float cornerHeight = 0;
-
     private Map<Integer, xiaDetail> details = new HashMap<>();
     private RelativeLayout detailsArea;
     private Boolean detailsLoaded = false;
-
     private Boolean showPopup = false;
     private Boolean showZoom = false;
     private Boolean enableZoom = true;
-
     private ImageView background = null;
     private LinearLayout playDetail = null;
     private RelativeLayout zoomDetail = null;
     private ImageView detailThumb = null;
-    Bitmap fullSizeBackground = null;
+    private ProgressBar mProgressBar;
 
 
     @Override
@@ -99,6 +98,9 @@ public class PlayXia extends AppCompatActivity {
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
         cacheDirectory = Constants.getCacheFrom(rootDirectory);
+
+        background = (ImageView) findViewById(R.id.image);
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         fileTitle = getIntent().getStringExtra("fileTitle");
         xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
@@ -124,10 +126,10 @@ public class PlayXia extends AppCompatActivity {
             cornerWidth = corner.getWidth();
             cornerHeight = corner.getHeight();
 
-            loadBackground(imagesDirectory + fileTitle + ".jpg");
             detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
-
-            loadDetails(this.xml);
+            // AsyncTask loading => background resizing + details
+            loadResource loading = new loadResource(background);
+            loading.execute();
         }
     }
 
@@ -188,31 +190,6 @@ public class PlayXia extends AppCompatActivity {
         return true;
     }
 
-    private void loadBackground(String imagePath) {
-        background = (ImageView) findViewById(R.id.image);
-
-        float availableWidth = metrics.widthPixels;
-        float availableHeight = metrics.heightPixels;
-
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
-        //fullSizeBackground = bitmap;
-
-        float scaleX = availableWidth / bitmap.getWidth();
-        float scaleY = availableHeight / bitmap.getHeight();
-        scale = Math.min(scaleX, scaleY);
-
-        xMin = (scaleX == scale) ? 0 : (availableWidth - bitmap.getWidth()*scale) / 2;
-        yMin = (scaleY == scale) ? 0 : (availableHeight - bitmap.getHeight()*scale) / 2;
-
-        bitmap = null;
-
-        options.inSampleSize = Util.calculateInSampleSize(options, Math.round(availableWidth) - 1, Math.round(availableHeight) - 1);
-        options.inJustDecodeBounds = false;
-        Bitmap image = BitmapFactory.decodeFile(imagePath, options);
-
-        background.setImageBitmap(image);
-    }
 
     private void loadDetails(Document xml) {
         NodeList xmlDetails = xml.getElementsByTagName("detail");
@@ -438,5 +415,51 @@ public class PlayXia extends AppCompatActivity {
         shapeView.setVisibility(View.VISIBLE);
 
         return shapeView;
+    }
+
+    private class loadResource extends AsyncTask<Void, Void, Bitmap> {
+        private ImageView image;
+
+        loadResource(ImageView im) {
+            image = im;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressBar.setVisibility(View.VISIBLE);
+
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... arg0) {
+            // Load background
+            String imagePath = imagesDirectory + fileTitle + ".jpg";
+            float availableWidth = metrics.widthPixels;
+            float availableHeight = metrics.heightPixels;
+
+            final BitmapFactory.Options options = new BitmapFactory.Options();
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
+            //fullSizeBackground = bitmap;
+
+            float scaleX = availableWidth / bitmap.getWidth();
+            float scaleY = availableHeight / bitmap.getHeight();
+            scale = Math.min(scaleX, scaleY);
+
+            xMin = (scaleX == scale) ? 0 : (availableWidth - bitmap.getWidth() * scale) / 2;
+            yMin = (scaleY == scale) ? 0 : (availableHeight - bitmap.getHeight() * scale) / 2;
+
+            options.inSampleSize = Util.calculateInSampleSize(options, Math.round(availableWidth) - 1, Math.round(availableHeight) - 1);
+            options.inJustDecodeBounds = false;
+
+            return BitmapFactory.decodeFile(imagePath, options);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            mProgressBar.setVisibility(View.INVISIBLE);
+            image.setImageBitmap(result);
+            loadDetails(xml);
+        }
     }
 }
