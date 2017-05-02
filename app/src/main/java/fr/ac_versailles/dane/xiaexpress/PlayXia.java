@@ -1,5 +1,6 @@
 package fr.ac_versailles.dane.xiaexpress;
 
+import android.animation.Animator;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -13,12 +14,14 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.PathShape;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -27,6 +30,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.skyfishjy.library.RippleBackground;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -84,6 +89,7 @@ public class PlayXia extends AppCompatActivity {
     private RelativeLayout zoomDetail = null;
     private ImageView detailThumb = null;
     private ProgressBar mProgressBar;
+    private RippleBackground rippleBackground;
 
 
     @Override
@@ -114,6 +120,8 @@ public class PlayXia extends AppCompatActivity {
         detailThumb = (ImageView) findViewById(R.id.detailThumb);
         detailThumb.setVisibility(View.INVISIBLE);
 
+        rippleBackground = (RippleBackground) findViewById(R.id.content);
+
         fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + ".jpg");
     }
 
@@ -135,7 +143,7 @@ public class PlayXia extends AppCompatActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+        final String TAG = Thread.currentThread().getStackTrace()[2].getClassName() + "." + Thread.currentThread().getStackTrace()[2].getMethodName();
         // get pointer index from the event object
         //int pointerIndex = event.getActionIndex();
 
@@ -157,12 +165,21 @@ public class PlayXia extends AppCompatActivity {
                 } else if (!showPopup) {
                     // Look if touch a detail
                     for (Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
-                        Integer detailTag = entry.getKey();
+                        final Integer detailTag = entry.getKey();
                         xiaDetail detailPoints = entry.getValue();
 
                         Boolean touchIn = Util.pointInPolygon(detailPoints.points, locationX, locationY);
                         if (touchIn) {
-                            showDetail(detailTag);
+                            rippleBackground.setX(locationX - metrics.widthPixels / 2);
+                            rippleBackground.setY(locationY - metrics.heightPixels / 2);
+                            rippleBackground.startRippleAnimation();
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showDetail(detailTag);
+                                    rippleBackground.stopRippleAnimation();
+                                }
+                            }, 500);
                             break;
                         }
                     }
@@ -322,8 +339,24 @@ public class PlayXia extends AppCompatActivity {
             background.setVisibility(View.INVISIBLE);
             detailsArea.setVisibility(View.INVISIBLE);
             zoomDetail.setVisibility(View.INVISIBLE);
-            detailThumb.setVisibility(View.VISIBLE);
 
+            // get the center for the clipping circle
+            int cx = detailThumb.getWidth() / 2;
+            int cy = detailThumb.getHeight() / 2;
+
+            // get the final radius for the clipping circle
+            float finalRadius = (float) Math.hypot(cx, cy);
+
+            // create the animator for this view (the start radius is zero)
+            detailThumb.setVisibility(View.VISIBLE);
+            Animator anim =
+                    null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                anim = ViewAnimationUtils.createCircularReveal(detailThumb, cx, cy, 0, finalRadius);
+                // make the view visible and start the animation
+
+                anim.start();
+            }
         }
         showPopup = !showPopup;
     }
