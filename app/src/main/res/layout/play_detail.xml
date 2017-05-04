@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout  xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@color/white"
+    android:id="@+id/playDetail"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/playDetail"
+    android:background="@color/white"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,46 +15,59 @@
             android:layout_height="200dp"
             android:background="@color/grey">
             <ImageView
+                android:id="@+id/detailThumb"
                 android:layout_width="180dp"
                 android:layout_height="180dp"
                 android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp"
-                android:id="@+id/detailThumb"/>
+                android:layout_marginTop="10dp" />
         </FrameLayout>
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <ImageButton
+                android:id="@+id/close"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:background="@color/blue"
+                android:contentDescription="@string/close"
+                android:paddingTop="4dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/stop" />
+
             <TextView
+                android:id="@id/detailTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Detail title"
-                android:id="@id/detailTitle"
-                android:textSize="36sp"
-                android:textColor="@color/white"
-                android:textStyle="normal|bold"
-                android:paddingLeft="20dp"
+                android:layout_alignParentBottom="true"
                 android:layout_marginBottom="20dp"
-                android:textIsSelectable="false"
-                android:scrollbars="none"
                 android:linksClickable="false"
                 android:longClickable="false"
+                android:maxLines="3"
+                android:paddingLeft="20dp"
+                android:scrollbars="none"
+                android:text="Detail title"
                 android:textAlignment="gravity"
-                android:layout_alignParentBottom="true"
-                android:maxLines="3"/>
+                android:textColor="@color/white"
+                android:textIsSelectable="false"
+                android:textSize="36sp"
+                android:textStyle="normal|bold" />
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="20dp"
-                android:background="@color/darkBlue"
-                android:layout_alignParentBottom="true"/>
+                android:layout_alignParentBottom="true"
+                android:background="@color/darkBlue" />
 
         </RelativeLayout>
 
     </LinearLayout>
     <TextView
         android:id="@+id/detalDescription"
-        android:layout_height="match_parent"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_marginBottom="20dp"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"

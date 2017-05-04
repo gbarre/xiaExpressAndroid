@@ -14,5 +14,6 @@
     <string name="rectangle">Rectangle</string>
     <string name="ellipse">Ellipse</string>
     <string name="polygon">Polygon</string>
+    <string name="close">Close</string>
 
 </resources>

@@ -29,6 +29,7 @@ import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -258,7 +259,7 @@ public class PlayXia extends AppCompatActivity {
         detailsLoaded = true;
     }
 
-    private void showDetail(Integer tag) {
+    private void showDetail(final Integer tag) {
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName() + "." + Thread.currentThread().getStackTrace()[2].getMethodName();
         if (showPopup) {
             playDetail.setVisibility(View.INVISIBLE);
@@ -399,10 +400,17 @@ public class PlayXia extends AppCompatActivity {
                     null;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                 anim = ViewAnimationUtils.createCircularReveal(detailThumb, cx, cy, 0, finalRadius);
-                // make the view visible and start the animation
-
+                // start the animation
                 anim.start();
             }
+
+            ImageButton closeButton = (ImageButton) findViewById(R.id.close);
+            closeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showDetail(tag);
+                }
+            });
         }
         showPopup = !showPopup;
     }
