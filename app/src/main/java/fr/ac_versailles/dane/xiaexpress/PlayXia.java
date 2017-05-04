@@ -22,8 +22,12 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
+import android.view.ViewManager;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -90,7 +94,7 @@ public class PlayXia extends AppCompatActivity {
     private ImageView detailThumb = null;
     private ProgressBar mProgressBar;
     private RippleBackground rippleBackground;
-
+    private int transitionDuration = 500; // in milliseconds
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -126,7 +130,7 @@ public class PlayXia extends AppCompatActivity {
     }
 
     @Override
-    public void onWindowFocusChanged(boolean hasFocus){
+    public void onWindowFocusChanged(boolean hasFocus) {
         if (hasFocus && !detailsLoaded) {
             // This is done after onCreate
             metrics = getResources().getDisplayMetrics();
@@ -179,7 +183,7 @@ public class PlayXia extends AppCompatActivity {
                                     showDetail(detailTag);
                                     rippleBackground.stopRippleAnimation();
                                 }
-                            }, 500);
+                            }, transitionDuration);
                             break;
                         }
                     }
@@ -247,7 +251,7 @@ public class PlayXia extends AppCompatActivity {
                 }
                 Boolean drawEllipse = (details.get(detailTag).constraint.equals(Constants.constraintEllipse));
 
-                ImageView newShape = details.get(detailTag).createShape(this,false, Constants.blue, cornerWidth, cornerHeight, metrics, 0, drawEllipse, details.get(detailTag).locked);
+                ImageView newShape = details.get(detailTag).createShape(this, false, Constants.blue, cornerWidth, cornerHeight, metrics, 0, drawEllipse, details.get(detailTag).locked);
                 detailsArea.addView(newShape);
             }
         }
@@ -255,15 +259,14 @@ public class PlayXia extends AppCompatActivity {
     }
 
     private void showDetail(Integer tag) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
+        String TAG = Thread.currentThread().getStackTrace()[2].getClassName() + "." + Thread.currentThread().getStackTrace()[2].getMethodName();
         if (showPopup) {
             playDetail.setVisibility(View.INVISIBLE);
             zoomDetail.setVisibility(View.INVISIBLE);
             background.setVisibility(View.VISIBLE);
             detailsArea.setVisibility(View.VISIBLE);
             detailThumb.setVisibility(View.INVISIBLE);
-        }
-        else {
+        } else {
             //Boolean zoom = true;
             String detailTitle = "";
             String detailDescription = "";
@@ -285,11 +288,10 @@ public class PlayXia extends AppCompatActivity {
             }
 
             // Prepare the detail "popup"
-            playDetail.setVisibility(View.VISIBLE);
-            Integer width = metrics.widthPixels * 8 / 10;
-            Integer left = metrics.widthPixels * 1 / 10;
-            Integer height = metrics.heightPixels * 8 / 10;
-            Integer top = metrics.heightPixels * 1 / 10;
+            int width = metrics.widthPixels * 8 / 10;
+            int left = metrics.widthPixels * 1 / 10;
+            int height = metrics.heightPixels * 8 / 10;
+            int top = metrics.heightPixels * 1 / 10;
 
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(width, height);
             lp.setMargins(left, top, left, top);
@@ -313,8 +315,8 @@ public class PlayXia extends AppCompatActivity {
             int hOri = (frame.height() + yOri > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
 
             if (!drawEllipse) {
-                wOri = (int) (wOri + cornerWidth/2);
-                hOri = (int) (hOri + cornerHeight/2);
+                wOri = (int) (wOri + cornerWidth / 2);
+                hOri = (int) (hOri + cornerHeight / 2);
             }
             Bitmap bitmap = Bitmap.createBitmap(fullSizeBackground, xOri, yOri, wOri, hOri);
 
@@ -335,10 +337,54 @@ public class PlayXia extends AppCompatActivity {
             // The thumbnail is ready !
             detailThumb.setImageBitmap(result);
 
-            //playDetail.setVisibility(View.INVISIBLE);
-            background.setVisibility(View.INVISIBLE);
-            detailsArea.setVisibility(View.INVISIBLE);
-            zoomDetail.setVisibility(View.INVISIBLE);
+            // Create the moving thumb
+            ImageView movingThumb = new ImageView(this);
+            movingThumb.setImageBitmap(result);
+            detailsArea.addView(movingThumb);
+            movingThumb.getLayoutParams().width = (int) (wOri * scale);
+            movingThumb.getLayoutParams().height = (int) (hOri * scale);
+            float detailX = xOri * scale + xMin + cornerWidth / 2;
+            float detailY = yOri * scale + yMin + cornerHeight / 2;
+            movingThumb.setX(detailX);
+            movingThumb.setY(detailY);
+
+            // Prepare the scaling animation
+            float targetScaleX = detailThumb.getWidth() / (wOri * scale);
+            float targetScaleY = detailThumb.getHeight() / (hOri * scale);
+            float targetScale = Math.min(targetScaleX, targetScaleY);
+            ScaleAnimation scaling = new ScaleAnimation(
+                    1, targetScale,
+                    1, targetScale,
+                    detailX, detailY
+            );
+            scaling.setDuration(transitionDuration);
+
+            // Prepare the translate animation
+            float targetX = left + detailThumb.getX() + cornerWidth / 2;
+            float targetY = top + detailThumb.getY() + cornerHeight / 2;
+
+            // Delta to center the movingThumb in the detailThumb area
+            float deltaX = (wOri > hOri) ? 0 : (detailThumb.getWidth() - wOri * scale * targetScale) / 2;
+            float deltaY = (hOri > wOri) ? 0 : (detailThumb.getHeight() - hOri * scale * targetScale) / 2;
+
+            targetX = targetX + deltaX;
+            targetY = targetY + deltaY;
+
+            TranslateAnimation translate = new TranslateAnimation(0, targetX - detailX, 0, targetY - detailY);
+            translate.setDuration(transitionDuration);
+
+            // Combine animations
+            AnimationSet animation = new AnimationSet(true);
+            animation.addAnimation(scaling);
+            animation.addAnimation(translate);
+            animation.setFillEnabled(true);
+            animation.setFillAfter(true);
+            animation.setFillBefore(false);
+            movingThumb.setAnimation(animation); // This will launch animations automatically
+
+            // After animations, the moving thumb come back, we need to remove it (and other things)
+            finishTransition endTransition = new finishTransition(movingThumb, playDetail, background, detailsArea, zoomDetail);
+            endTransition.execute();
 
             // get the center for the clipping circle
             int cx = detailThumb.getWidth() / 2;
@@ -400,10 +446,10 @@ public class PlayXia extends AppCompatActivity {
         Map<Integer, ImageView> points = details.get(tag).points;
 
         if (drawEllipse) {
-            int width = Math.abs(Math.round((points.get(1).getX() - points.get(3).getX())/scale)) + 2;
-            int height = Math.abs(Math.round((points.get(0).getY() - points.get(2).getY())/scale)) + 2;
-            float x = Math.min(points.get(1).getX(), points.get(3).getX())/scale - frame.left - 1;
-            float y = Math.min(points.get(0).getY(), points.get(2).getY())/scale - frame.top - 1;
+            int width = Math.abs(Math.round((points.get(1).getX() - points.get(3).getX()) / scale)) + 2;
+            int height = Math.abs(Math.round((points.get(0).getY() - points.get(2).getY()) / scale)) + 2;
+            float x = Math.min(points.get(1).getX(), points.get(3).getX()) / scale - frame.left - 1;
+            float y = Math.min(points.get(0).getY(), points.get(2).getY()) / scale - frame.top - 1;
 
             drawable.setShape(GradientDrawable.OVAL);
             drawable.setSize(width, height);
@@ -412,8 +458,7 @@ public class PlayXia extends AppCompatActivity {
 
             shapeView.setBackground(drawable);
 
-        }
-        else {
+        } else {
             Path p = new Path();
             p.reset();
 
@@ -422,8 +467,8 @@ public class PlayXia extends AppCompatActivity {
             for (Integer key : keys) {
                 ImageView point = points.get(key);
 
-                float x = point.getX()/scale + cornerWidth / 2 - frame.left;
-                float y = point.getY()/scale + cornerHeight / 2 - frame.top;
+                float x = point.getX() / scale + cornerWidth / 2 - frame.left;
+                float y = point.getY() / scale + cornerHeight / 2 - frame.top;
 
                 if (key != 0) {
                     p.lineTo(x, y);
@@ -432,7 +477,7 @@ public class PlayXia extends AppCompatActivity {
                     endPoint = point;
                 }
             }
-            p.lineTo(endPoint.getX()/scale + cornerWidth / 2 - frame.left, endPoint.getY()/scale + cornerHeight / 2 - frame.top);
+            p.lineTo(endPoint.getX() / scale + cornerWidth / 2 - frame.left, endPoint.getY() / scale + cornerHeight / 2 - frame.top);
             float stdWidth = bitmap.getWidth();
             float stdHeight = bitmap.getHeight();
 
@@ -493,6 +538,48 @@ public class PlayXia extends AppCompatActivity {
             mProgressBar.setVisibility(View.INVISIBLE);
             image.setImageBitmap(result);
             loadDetails(xml);
+        }
+    }
+
+    private class finishTransition extends AsyncTask<Void, Void, Void> {
+        private ImageView mThumb;
+        private LinearLayout popup;
+        private ImageView bkg;
+        private RelativeLayout dArea;
+        private RelativeLayout zoomD;
+
+        finishTransition(ImageView t, LinearLayout p, ImageView b, RelativeLayout d, RelativeLayout z) {
+            mThumb = t;
+            popup = p;
+            bkg = b;
+            dArea = d;
+            zoomD = z;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                Thread.sleep(transitionDuration);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            //mThumb.setVisibility(View.GONE);
+            ((ViewManager) mThumb.getParent()).removeView(mThumb);
+            popup.setVisibility(View.VISIBLE);
+            bkg.setVisibility(View.INVISIBLE);
+            dArea.setVisibility(View.INVISIBLE);
+            zoomD.setVisibility(View.INVISIBLE);
         }
     }
 }
