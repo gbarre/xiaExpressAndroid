@@ -92,6 +92,7 @@ public class PlayXia extends AppCompatActivity {
     private ImageView background = null;
     private LinearLayout playDetail = null;
     private RelativeLayout zoomDetail = null;
+    private RelativeLayout movingArea = null;
     private ImageView detailThumb = null;
     private ProgressBar mProgressBar;
     private RippleBackground rippleBackground;
@@ -126,6 +127,7 @@ public class PlayXia extends AppCompatActivity {
         detailThumb.setVisibility(View.INVISIBLE);
 
         rippleBackground = (RippleBackground) findViewById(R.id.content);
+        movingArea = (RelativeLayout) findViewById(R.id.movingArea);
 
         fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + ".jpg");
     }
@@ -261,13 +263,18 @@ public class PlayXia extends AppCompatActivity {
 
     private void showDetail(final Integer tag) {
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName() + "." + Thread.currentThread().getStackTrace()[2].getMethodName();
-        if (showPopup) {
+        if (showPopup) { // Hide the popup
+            // Animate the popup
+            TranslateAnimation translatePopup = new TranslateAnimation(0, 0, 0, metrics.heightPixels);
+            translatePopup.setDuration(transitionDuration);
+            playDetail.setAnimation(translatePopup);
             playDetail.setVisibility(View.INVISIBLE);
+
             zoomDetail.setVisibility(View.INVISIBLE);
             background.setVisibility(View.VISIBLE);
             detailsArea.setVisibility(View.VISIBLE);
-            detailThumb.setVisibility(View.INVISIBLE);
-        } else {
+            //detailThumb.setVisibility(View.INVISIBLE);
+        } else { // Show the popup
             //Boolean zoom = true;
             String detailTitle = "";
             String detailDescription = "";
@@ -341,7 +348,7 @@ public class PlayXia extends AppCompatActivity {
             // Create the moving thumb
             ImageView movingThumb = new ImageView(this);
             movingThumb.setImageBitmap(result);
-            detailsArea.addView(movingThumb);
+            movingArea.addView(movingThumb);
             movingThumb.getLayoutParams().width = (int) (wOri * scale);
             movingThumb.getLayoutParams().height = (int) (hOri * scale);
             float detailX = xOri * scale + xMin + cornerWidth / 2;
@@ -361,8 +368,8 @@ public class PlayXia extends AppCompatActivity {
             scaling.setDuration(transitionDuration);
 
             // Prepare the translate animation
-            float targetX = left + detailThumb.getX() + cornerWidth / 2;
-            float targetY = top + detailThumb.getY() + cornerHeight / 2;
+            float targetX = left + detailThumb.getX();
+            float targetY = top + detailThumb.getY();
 
             // Delta to center the movingThumb in the detailThumb area
             float deltaX = (wOri > hOri) ? 0 : (detailThumb.getWidth() - wOri * scale * targetScale) / 2;
@@ -371,17 +378,25 @@ public class PlayXia extends AppCompatActivity {
             targetX = targetX + deltaX;
             targetY = targetY + deltaY;
 
-            TranslateAnimation translate = new TranslateAnimation(0, targetX - detailX, 0, targetY - detailY);
-            translate.setDuration(transitionDuration);
+            TranslateAnimation translateThumb = new TranslateAnimation(0, targetX - detailX, 0, targetY - detailY);
+            translateThumb.setDuration(transitionDuration);
 
             // Combine animations
             AnimationSet animation = new AnimationSet(true);
             animation.addAnimation(scaling);
-            animation.addAnimation(translate);
+            animation.addAnimation(translateThumb);
             animation.setFillEnabled(true);
             animation.setFillAfter(true);
             animation.setFillBefore(false);
             movingThumb.setAnimation(animation); // This will launch animations automatically
+
+            // Animate the popup
+            TranslateAnimation translatePopup = new TranslateAnimation(0, 0, metrics.heightPixels, 0);
+            translatePopup.setDuration(transitionDuration);
+            translatePopup.setFillEnabled(true);
+            translatePopup.setFillBefore(true);
+            translatePopup.setFillAfter(true);
+            playDetail.setAnimation(translatePopup);
 
             // After animations, the moving thumb come back, we need to remove it (and other things)
             finishTransition endTransition = new finishTransition(movingThumb, playDetail, background, detailsArea, zoomDetail);
@@ -582,9 +597,7 @@ public class PlayXia extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
-            //mThumb.setVisibility(View.GONE);
             ((ViewManager) mThumb.getParent()).removeView(mThumb);
-            popup.setVisibility(View.VISIBLE);
             bkg.setVisibility(View.INVISIBLE);
             dArea.setVisibility(View.INVISIBLE);
             zoomD.setVisibility(View.INVISIBLE);
