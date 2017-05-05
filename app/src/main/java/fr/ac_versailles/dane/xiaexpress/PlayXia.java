@@ -229,8 +229,10 @@ public class PlayXia extends AppCompatActivity {
                 // clean all subview with this tag
                 for (int j = 0; j < detailsArea.getChildCount(); j++) {
                     View child = detailsArea.getChildAt(j);
-                    if ((Integer) child.getTag() == detailTag || (Integer) child.getTag() == detailTag + 100) {
-                        detailsArea.removeView(child);
+                    if (!child.getTag().equals("20")) {
+                        if ((Integer) child.getTag() == detailTag || (Integer) child.getTag() == detailTag + 100) {
+                            detailsArea.removeView(child);
+                        }
                     }
                 }
 
