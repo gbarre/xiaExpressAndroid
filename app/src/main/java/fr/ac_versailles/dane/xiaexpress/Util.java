@@ -1,6 +1,8 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.graphics.BitmapFactory;
+import android.text.Html;
+import android.text.Spanned;
 import android.widget.ImageView;
 
 import org.w3c.dom.Document;
@@ -24,8 +26,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
-import static fr.ac_versailles.dane.xiaexpress.dbg.*;
+import static fr.ac_versailles.dane.xiaexpress.dbg.pt;
 
 /**
  *  Util.java
@@ -66,6 +72,19 @@ class Util {
         else {
             pt(TAG, directory, "already exist");
         }
+    }
+
+    static String getNodeValue(Document xml, String node) {
+        String value = "";
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+        try {
+            XPathExpression expr = xpath.compile(node);
+            value = expr.evaluate(xml);
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
+        }
+        return value;
     }
 
     static Document getXMLFromPath(String filepath) {
@@ -180,5 +199,17 @@ class Util {
         }
 
         return inSampleSize;
+    }
+
+    // http://stackoverflow.com/questions/37904739/html-fromhtml-deprecated-in-android-n
+    @SuppressWarnings("deprecation")
+    static Spanned fromHtml(String html) {
+        Spanned result;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            result = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            result = Html.fromHtml(html);
+        }
+        return result;
     }
 }

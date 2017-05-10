@@ -26,32 +26,32 @@
             android:src="@drawable/stop" />
 
         <TextView
-            android:id="@+id/docTitle"
+            android:id="@+id/documentTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_marginTop="8dp"
+            android:autoLink="all"
             android:linksClickable="false"
             android:longClickable="false"
             android:paddingLeft="20dp"
             android:scrollbars="none"
-            android:text="Title:"
             android:textColor="@color/white"
             android:textIsSelectable="false"
             android:textSize="28sp"
             android:textStyle="normal|bold" />
 
         <TextView
-            android:id="@+id/docCreator"
+            android:id="@+id/documentCreator"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="8dp"
+            android:autoLink="all"
             android:linksClickable="false"
             android:longClickable="false"
             android:paddingLeft="20dp"
             android:scrollbars="none"
-            android:text="Creator:"
             android:textColor="@color/white"
             android:textIsSelectable="false"
             android:textSize="18sp"
@@ -60,7 +60,7 @@
     </RelativeLayout>
 
     <TextView
-        android:id="@+id/detailDescription"
+        android:id="@+id/documentDescription"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="173dp"
@@ -83,11 +83,10 @@
         android:paddingLeft="8dp">
 
         <TextView
-            android:id="@+id/license"
+            android:id="@+id/documentLicense"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingTop="8dp"
-            android:text="License:"
             android:textColor="@color/white"
             android:textSize="17sp"
             android:textStyle="normal|bold" />
@@ -108,38 +107,43 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/documentDate"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
                 android:layout_marginTop="8dp"
-                android:text="Date:"
+                android:autoLink="all"
                 android:textSize="14sp" />
 
             <TextView
+                android:id="@+id/documentRights"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
                 android:layout_marginTop="3dp"
-                android:text="Rights:"
+                android:autoLink="all"
                 android:textSize="14sp" />
 
             <TextView
+                android:id="@+id/documentPublisher"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
                 android:layout_marginTop="3dp"
-                android:text="Publisher:"
+                android:autoLink="all"
                 android:textSize="14sp" />
 
             <TextView
+                android:id="@+id/documentSource"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
                 android:layout_marginTop="3dp"
-                android:text="Source:"
+                android:autoLink="all"
                 android:textSize="14sp" />
 
             <TextView
+                android:id="@+id/documentIdentifier"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
                 android:layout_marginTop="3dp"
-                android:text="Identifier:"
+                android:autoLink="all"
                 android:textSize="14sp" />
         </LinearLayout>
 
@@ -150,38 +154,43 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/documentLanguage"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
                 android:layout_marginTop="8dp"
-                android:text="Languages:"
+                android:autoLink="all"
                 android:textSize="14sp" />
 
             <TextView
+                android:id="@+id/documentKeywords"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
                 android:layout_marginTop="3dp"
-                android:text="Keywords:"
+                android:autoLink="all"
                 android:textSize="14sp" />
 
             <TextView
+                android:id="@+id/documentContributors"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
                 android:layout_marginTop="3dp"
-                android:text="Contributors:"
+                android:autoLink="all"
                 android:textSize="14sp" />
 
             <TextView
+                android:id="@+id/documentRelation"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
                 android:layout_marginTop="3dp"
-                android:text="Relation:"
+                android:autoLink="all"
                 android:textSize="14sp" />
 
             <TextView
+                android:id="@+id/documentCoverage"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
                 android:layout_marginTop="3dp"
-                android:text="Coverage:"
+                android:autoLink="all"
                 android:textSize="14sp" />
 
         </LinearLayout>

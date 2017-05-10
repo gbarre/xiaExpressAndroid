@@ -100,6 +100,8 @@ public class PlayXia extends AppCompatActivity {
     private RippleBackground rippleBackground;
     private int transitionDuration = 500; // in milliseconds
 
+    private Map<String, String> xmlElementsDict = new HashMap<>();
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,6 +153,21 @@ public class PlayXia extends AppCompatActivity {
                 showMetas();
             }
         });
+
+        xmlElementsDict.put("license", "License");
+        xmlElementsDict.put("title", "Title");
+        xmlElementsDict.put("date", "Date");
+        xmlElementsDict.put("creator", "Creator");
+        xmlElementsDict.put("rights", "Rights");
+        xmlElementsDict.put("publisher", "Publisher");
+        xmlElementsDict.put("identifier", "Identifier");
+        xmlElementsDict.put("source", "Source");
+        xmlElementsDict.put("relation", "Relation");
+        xmlElementsDict.put("language", "Languages");
+        xmlElementsDict.put("keywords", "Keywords");
+        xmlElementsDict.put("coverage", "Coverage");
+        xmlElementsDict.put("contributors", "Contributors");
+        xmlElementsDict.put("description", "Description");
     }
 
     private void showMetas() {
@@ -163,6 +180,12 @@ public class PlayXia extends AppCompatActivity {
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(width, height);
         lp.setMargins(left, top, left, top);
         playMetas.setLayoutParams(lp);
+
+        // Get metadatas from xml
+        for (Map.Entry<String, String> entry : xmlElementsDict.entrySet()) {
+            String key = entry.getKey();
+            setText(key);
+        }
 
         // Animate the popup
         TranslateAnimation translatePopup = new TranslateAnimation(0, 0, metrics.heightPixels, 0);
@@ -185,6 +208,16 @@ public class PlayXia extends AppCompatActivity {
                 showDetail(0);
             }
         });
+    }
+
+    private void setText(String element) {
+        String id = "document" + element.substring(0, 1).toUpperCase() + element.substring(1).toLowerCase();
+        TextView docElement = (TextView) findViewById(getResources().getIdentifier(id, "id", getPackageName()));
+        String text = Util.getNodeValue(xml, "xia/" + element);
+        if (!element.equals("title") && !element.equals("description") && !element.equals("creator")) {
+            text = "<b>" + xmlElementsDict.get(element) + ": </b>" + text;
+        }
+        docElement.setText(Util.fromHtml(text));
     }
 
     @Override
@@ -319,7 +352,6 @@ public class PlayXia extends AppCompatActivity {
     }
 
     private void showDetail(final Integer tag) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName() + "." + Thread.currentThread().getStackTrace()[2].getMethodName();
         if (showPopup) { // Hide the popup
             // Animate the popup
             TranslateAnimation translatePopup = new TranslateAnimation(0, 0, 0, metrics.heightPixels);
