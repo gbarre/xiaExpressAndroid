@@ -130,6 +130,15 @@ public class PlayXia extends AppCompatActivity {
         movingArea = (RelativeLayout) findViewById(R.id.movingArea);
 
         fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + ".jpg");
+
+        ImageButton showImgInfos = (ImageButton) findViewById(R.id.showImgInfos);
+        showImgInfos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dbg.pt("test", "showInfo", "touched");
+                showDetail(0);
+            }
+        });
     }
 
     @Override
@@ -283,21 +292,6 @@ public class PlayXia extends AppCompatActivity {
             String detailDescription = "";
             Boolean drawEllipse = false;
 
-            // Load detail infos from xml
-            NodeList xmlDetails = xml.getElementsByTagName("detail");
-            for (int i = 0; i < xmlDetails.getLength(); i++) {
-                Node detail = xmlDetails.item(i);
-                NamedNodeMap detailAttr = detail.getAttributes();
-                Integer thisTag = Integer.valueOf(detailAttr.getNamedItem("tag").getTextContent());
-                if (thisTag.equals(tag)) { // we got it !
-                    drawEllipse = details.get(tag).constraint.equals(Constants.constraintEllipse);
-                    enableZoom = detailAttr.getNamedItem("zoom").getTextContent().equals("true");
-                    detailTitle = detailAttr.getNamedItem("title").getTextContent();
-                    detailDescription = detail.getTextContent();
-                    break;
-                }
-            }
-
             // Prepare the detail "popup"
             int width = metrics.widthPixels * 8 / 10;
             int left = metrics.widthPixels * 1 / 10;
@@ -308,6 +302,32 @@ public class PlayXia extends AppCompatActivity {
             lp.setMargins(left, top, left, top);
             playDetail.setLayoutParams(lp);
 
+            if (tag != 0) { // show a detail
+                // Load detail infos from xml
+                NodeList xmlDetails = xml.getElementsByTagName("detail");
+                for (int i = 0; i < xmlDetails.getLength(); i++) {
+                    Node detail = xmlDetails.item(i);
+                    NamedNodeMap detailAttr = detail.getAttributes();
+                    Integer thisTag = Integer.valueOf(detailAttr.getNamedItem("tag").getTextContent());
+                    if (thisTag.equals(tag)) { // we got it !
+                        drawEllipse = details.get(tag).constraint.equals(Constants.constraintEllipse);
+                        enableZoom = detailAttr.getNamedItem("zoom").getTextContent().equals("true");
+                        detailTitle = detailAttr.getNamedItem("title").getTextContent();
+                        detailDescription = detail.getTextContent();
+                        break;
+                    }
+                }
+            } else { // show image infos
+                NodeList images = xml.getElementsByTagName("image");
+                for (int i = 0; i < images.getLength(); i++) {
+                    Node image = images.item(i);
+                    NamedNodeMap imageAttr = image.getAttributes();
+                    detailTitle = imageAttr.getNamedItem("title").getTextContent();
+                    detailDescription = imageAttr.getNamedItem("description").getTextContent();
+                    enableZoom = false;
+                }
+            }
+
             // Put detail title
             TextView title = (TextView) findViewById(R.id.detailTitle);
             title.setText(detailTitle);
@@ -317,33 +337,43 @@ public class PlayXia extends AppCompatActivity {
             desc.setMovementMethod(new ScrollingMovementMethod());
             desc.setText(detailDescription);
 
-            Rect frame = details.get(tag).bezierFrame();
+            int xOri = 0;
+            int yOri = 0;
+            int wOri = fullSizeBackground.getWidth();
+            int hOri = fullSizeBackground.getHeight();
+            Bitmap result;
 
-            // Extract part of image into the frame
-            int xOri = Math.max(0, Math.round(frame.left - xMin / scale));
-            int yOri = Math.max(0, Math.round(frame.top - yMin / scale));
-            int wOri = (frame.width() + xOri > fullSizeBackground.getWidth()) ? fullSizeBackground.getWidth() - xOri : frame.width();
-            int hOri = (frame.height() + yOri > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
+            if (tag != 0) {
+                Rect frame = details.get(tag).bezierFrame();
 
-            if (!drawEllipse) {
-                wOri = (int) (wOri + cornerWidth / 2);
-                hOri = (int) (hOri + cornerHeight / 2);
+                // Extract part of image into the frame
+                xOri = Math.max(0, Math.round(frame.left - xMin / scale));
+                yOri = Math.max(0, Math.round(frame.top - yMin / scale));
+                wOri = (frame.width() + xOri > fullSizeBackground.getWidth()) ? fullSizeBackground.getWidth() - xOri : frame.width();
+                hOri = (frame.height() + yOri > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
+
+                if (!drawEllipse) {
+                    wOri = (int) (wOri + cornerWidth / 2);
+                    hOri = (int) (hOri + cornerHeight / 2);
+                }
+                Bitmap bitmap = Bitmap.createBitmap(fullSizeBackground, xOri, yOri, wOri, hOri);
+
+                // Prepare the mask
+                ImageView newShapeMask = getShape(tag, bitmap);
+                newShapeMask.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                Bitmap mask = getMask(newShapeMask);
+                result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+                // Put mask & original in canvas
+                Canvas mCanvas = new Canvas(result);
+                Paint paint = new Paint();
+                paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+                mCanvas.drawBitmap(bitmap, 0, 0, null);
+                mCanvas.drawBitmap(mask, 0, 0, paint);
+                paint.setXfermode(null);
+            } else {
+                result = fullSizeBackground;
             }
-            Bitmap bitmap = Bitmap.createBitmap(fullSizeBackground, xOri, yOri, wOri, hOri);
-
-            // Prepare the mask
-            ImageView newShapeMask = getShape(tag, bitmap);
-            newShapeMask.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            Bitmap mask = getMask(newShapeMask);
-            Bitmap result = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-
-            // Put mask & original in canvas
-            Canvas mCanvas = new Canvas(result);
-            Paint paint = new Paint();
-            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
-            mCanvas.drawBitmap(bitmap, 0, 0, null);
-            mCanvas.drawBitmap(mask, 0, 0, paint);
-            paint.setXfermode(null);
 
             // The thumbnail is ready !
             detailThumb.setImageBitmap(result);

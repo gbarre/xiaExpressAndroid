@@ -25,7 +25,7 @@
             android:tag="20" />
 
         <ImageButton
-            android:id="@+id/discussButton"
+            android:id="@+id/showImgInfos"
             android:layout_width="55dp"
             android:layout_height="55dp"
             android:layout_alignParentBottom="true"
@@ -45,7 +45,7 @@
             android:tag="20" />
 
         <ImageButton
-            android:id="@+id/infoButton"
+            android:id="@+id/showMetas"
             android:layout_width="55dp"
             android:layout_height="55dp"
             android:layout_alignParentBottom="true"
@@ -63,7 +63,8 @@
     <RelativeLayout
         android:id="@+id/movingArea"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></RelativeLayout>
+        android:layout_height="match_parent"
+        android:elevation="21dp"></RelativeLayout>
 
     <include layout="@layout/zoom_detail"></include>
 
