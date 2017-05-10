@@ -87,10 +87,12 @@ public class PlayXia extends AppCompatActivity {
     private RelativeLayout detailsArea;
     private Boolean detailsLoaded = false;
     private Boolean showPopup = false;
+    private Boolean showMetasPopup = false;
     private Boolean showZoom = false;
     private Boolean enableZoom = true;
     private ImageView background = null;
     private LinearLayout playDetail = null;
+    private RelativeLayout playMetas = null;
     private RelativeLayout zoomDetail = null;
     private RelativeLayout movingArea = null;
     private ImageView detailThumb = null;
@@ -120,6 +122,9 @@ public class PlayXia extends AppCompatActivity {
         playDetail = (LinearLayout) findViewById(R.id.playDetail);
         playDetail.setVisibility(View.INVISIBLE);
 
+        playMetas = (RelativeLayout) findViewById(R.id.playMetas);
+        playMetas.setVisibility(View.INVISIBLE);
+
         zoomDetail = (RelativeLayout) findViewById(R.id.zoomDetail);
         zoomDetail.setVisibility(View.INVISIBLE);
 
@@ -135,7 +140,48 @@ public class PlayXia extends AppCompatActivity {
         showImgInfos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dbg.pt("test", "showInfo", "touched");
+                showDetail(0);
+            }
+        });
+
+        ImageButton showMetas = (ImageButton) findViewById(R.id.showMetas);
+        showMetas.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMetas();
+            }
+        });
+    }
+
+    private void showMetas() {
+        // Prepare the metas "popup"
+        int width = metrics.widthPixels * 8 / 10;
+        int left = metrics.widthPixels * 1 / 10;
+        int height = metrics.heightPixels * 8 / 10;
+        int top = metrics.heightPixels * 1 / 10;
+
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(width, height);
+        lp.setMargins(left, top, left, top);
+        playMetas.setLayoutParams(lp);
+
+        // Animate the popup
+        TranslateAnimation translatePopup = new TranslateAnimation(0, 0, metrics.heightPixels, 0);
+        translatePopup.setDuration(transitionDuration);
+        translatePopup.setFillEnabled(true);
+        translatePopup.setFillBefore(true);
+        translatePopup.setFillAfter(true);
+        playMetas.setAnimation(translatePopup);
+
+        // After animations, the moving thumb come back, we need to remove it (and other things)
+        finishTransition endTransition = new finishTransition(null, background, detailsArea, zoomDetail);
+        endTransition.execute();
+        showMetasPopup = true;
+        showPopup = true;
+
+        ImageButton closeButton = (ImageButton) findViewById(R.id.close2);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 showDetail(0);
             }
         });
@@ -278,8 +324,14 @@ public class PlayXia extends AppCompatActivity {
             // Animate the popup
             TranslateAnimation translatePopup = new TranslateAnimation(0, 0, 0, metrics.heightPixels);
             translatePopup.setDuration(transitionDuration);
-            playDetail.setAnimation(translatePopup);
-            playDetail.setVisibility(View.INVISIBLE);
+            if (!showMetasPopup) {
+                playDetail.setAnimation(translatePopup);
+                playDetail.setVisibility(View.INVISIBLE);
+            } else {
+                playMetas.setAnimation(translatePopup);
+                playMetas.setVisibility(View.INVISIBLE);
+                showMetasPopup = false;
+            }
 
             zoomDetail.setVisibility(View.INVISIBLE);
             //background.setVisibility(View.VISIBLE);
@@ -432,7 +484,7 @@ public class PlayXia extends AppCompatActivity {
             playDetail.setAnimation(translatePopup);
 
             // After animations, the moving thumb come back, we need to remove it (and other things)
-            finishTransition endTransition = new finishTransition(movingThumb, playDetail, background, detailsArea, zoomDetail);
+            finishTransition endTransition = new finishTransition(movingThumb, background, detailsArea, zoomDetail);
             endTransition.execute();
 
             // get the center for the clipping circle
@@ -599,14 +651,12 @@ public class PlayXia extends AppCompatActivity {
 
     private class finishTransition extends AsyncTask<Void, Void, Void> {
         private ImageView mThumb;
-        private LinearLayout popup;
         private ImageView bkg;
         private RelativeLayout dArea;
         private RelativeLayout zoomD;
 
-        finishTransition(ImageView t, LinearLayout p, ImageView b, RelativeLayout d, RelativeLayout z) {
+        finishTransition(ImageView t, ImageView b, RelativeLayout d, RelativeLayout z) {
             mThumb = t;
-            popup = p;
             bkg = b;
             dArea = d;
             zoomD = z;
@@ -630,8 +680,9 @@ public class PlayXia extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
-            ((ViewManager) mThumb.getParent()).removeView(mThumb);
-            //bkg.setVisibility(View.INVISIBLE);
+            if (mThumb != null) {
+                ((ViewManager) mThumb.getParent()).removeView(mThumb);
+            }
             bkg.setAlpha((float) 0.4);
             dArea.setVisibility(View.INVISIBLE);
             zoomD.setVisibility(View.INVISIBLE);

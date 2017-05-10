@@ -60,6 +60,8 @@
 
     <include layout="@layout/play_detail"></include>
 
+    <include layout="@layout/play_metas"></include>
+
     <RelativeLayout
         android:id="@+id/movingArea"
         android:layout_width="match_parent"
