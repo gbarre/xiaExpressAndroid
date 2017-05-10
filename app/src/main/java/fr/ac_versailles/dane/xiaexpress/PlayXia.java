@@ -273,7 +273,8 @@ public class PlayXia extends AppCompatActivity {
             playDetail.setVisibility(View.INVISIBLE);
 
             zoomDetail.setVisibility(View.INVISIBLE);
-            background.setVisibility(View.VISIBLE);
+            //background.setVisibility(View.VISIBLE);
+            background.setAlpha((float) 1.0);
             detailsArea.setVisibility(View.VISIBLE);
             //detailThumb.setVisibility(View.INVISIBLE);
         } else { // Show the popup
@@ -600,7 +601,8 @@ public class PlayXia extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             ((ViewManager) mThumb.getParent()).removeView(mThumb);
-            bkg.setVisibility(View.INVISIBLE);
+            //bkg.setVisibility(View.INVISIBLE);
+            bkg.setAlpha((float) 0.4);
             dArea.setVisibility(View.INVISIBLE);
             zoomD.setVisibility(View.INVISIBLE);
         }
