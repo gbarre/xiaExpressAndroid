@@ -65,7 +65,8 @@
         </RelativeLayout>
 
     </LinearLayout>
-    <TextView
+
+    <WebView
         android:id="@+id/detalDescription"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -75,5 +76,5 @@
         android:layout_marginTop="8dp"
         android:autoLink="all"
         android:background="@color/white"
-        android:scrollbars="vertical"/>
+        android:scrollbars="vertical" />
 </LinearLayout>

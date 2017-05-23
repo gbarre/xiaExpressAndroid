@@ -17,7 +17,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.text.method.ScrollingMovementMethod;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.util.Linkify;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,6 +30,8 @@ import android.view.WindowManager;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -38,16 +42,22 @@ import android.widget.TextView;
 
 import com.skyfishjy.library.RippleBackground;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * PlayXia.java
@@ -416,10 +426,13 @@ public class PlayXia extends AppCompatActivity {
             TextView title = (TextView) findViewById(R.id.detailTitle);
             title.setText(detailTitle);
 
-            // Put detail description
-            TextView desc = (TextView) findViewById(R.id.detalDescription);
-            desc.setMovementMethod(new ScrollingMovementMethod());
-            desc.setText(detailDescription);
+            // Put detail description (with scrolling)
+            WebView desc = (WebView) findViewById(R.id.detalDescription);
+            desc.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
+            desc.loadData(detailDescription, "text/html", "utf-8");
+
+            // look for oembed links
+            new url2html(detailDescription, desc).execute();
 
             int xOri = 0;
             int yOri = 0;
@@ -718,6 +731,61 @@ public class PlayXia extends AppCompatActivity {
             bkg.setAlpha((float) 0.4);
             dArea.setVisibility(View.INVISIBLE);
             zoomD.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private class url2html extends AsyncTask<Void, Void, String> {
+
+        private String text;
+        private WebView webV;
+
+        url2html(String t, WebView wv) {
+            text = t;
+            webV = wv;
+        }
+
+        @Override
+        protected String doInBackground(Void... arg0) {
+            String desc = text;
+            // Search http(s) links
+            Pattern urls = Pattern.compile("\\b(https?://(.[^ ]*))\\b");
+            Matcher urlsMatcher = urls.matcher(text);
+            while (urlsMatcher.find()) {
+                String url = urlsMatcher.group();
+                HttpHandler sh = new HttpHandler();
+                try {
+                    // encode url
+                    String query = URLEncoder.encode(url, "utf-8");
+                    String fullQuery = "https://coyote.jrmv.net:8443/get?url=" + query;
+                    // get the json file (as string)
+                    String jsonStr = sh.makeServiceCall(fullQuery);
+                    // convert string to json
+                    JSONObject json = new JSONObject(jsonStr);
+                    // replace the url by iframe
+                    // TODO look for error before replace
+                    desc = desc.replace(url, json.getString("html"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            return desc;
+        }
+
+        @Override
+        protected void onPostExecute(String desc) {
+            super.onPostExecute(desc);
+            // make other link clickable
+            final String content = desc;
+            Spannable sp = new SpannableString(content);
+            Linkify.addLinks(sp, Linkify.ALL);
+            final String html = "<body>" + sp + "</body>";
+            // load html in the webview
+            webV.loadData(html, "text/html", "utf-8");
+            // enable javascript
+            WebSettings webSettings = webV.getSettings();
+            webSettings.setJavaScriptEnabled(true);
         }
     }
 }
