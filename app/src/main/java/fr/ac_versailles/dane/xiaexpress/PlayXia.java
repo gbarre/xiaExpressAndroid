@@ -429,7 +429,7 @@ public class PlayXia extends AppCompatActivity {
             // Put detail description (with scrolling)
             WebView desc = (WebView) findViewById(R.id.detalDescription);
             desc.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
-            desc.loadData(detailDescription, "text/html", "utf-8");
+            desc.loadData(detailDescription, "text/html; charset=UTF-8", null);
 
             // look for oembed links
             new url2html(detailDescription, desc).execute();
@@ -748,7 +748,7 @@ public class PlayXia extends AppCompatActivity {
         protected String doInBackground(Void... arg0) {
             String desc = text;
             // Search http(s) links
-            Pattern urls = Pattern.compile("\\b(https?://(.[^ ]*))\\b");
+            Pattern urls = Pattern.compile("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
             Matcher urlsMatcher = urls.matcher(text);
             while (urlsMatcher.find()) {
                 String url = urlsMatcher.group();
@@ -763,7 +763,11 @@ public class PlayXia extends AppCompatActivity {
                     JSONObject json = new JSONObject(jsonStr);
                     // replace the url by iframe
                     // TODO look for error before replace
-                    desc = desc.replace(url, json.getString("html"));
+                    String htmlCode = json.getString("html");
+                    if (!htmlCode.equals("Please insert correct URL")) {
+                        htmlCode = htmlCode.replace("src=\"//", "src=\"https://");
+                        desc = desc.replace(url, htmlCode);
+                    }
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 } catch (JSONException e) {
@@ -780,9 +784,9 @@ public class PlayXia extends AppCompatActivity {
             final String content = desc;
             Spannable sp = new SpannableString(content);
             Linkify.addLinks(sp, Linkify.ALL);
-            final String html = "<body>" + sp + "</body>";
+            final String html = "<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"utf-8\"></head><body>" + sp + "</body></html>";
             // load html in the webview
-            webV.loadData(html, "text/html", "utf-8");
+            webV.loadData(html.replaceAll("\\n", "<br/>"), "text/html; charset=UTF-8", null);
             // enable javascript
             WebSettings webSettings = webV.getSettings();
             webSettings.setJavaScriptEnabled(true);
