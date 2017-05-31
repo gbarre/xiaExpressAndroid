@@ -38,12 +38,12 @@ import java.util.TreeSet;
 
 class xiaDetail {
 
-    public Map<Integer, ImageView> points = new HashMap<>();
-    public Integer tag = 0;
-    public float scale = 1;
+    public final Map<Integer, ImageView> points = new HashMap<>();
     public String constraint = "";
     public Boolean locked = false;
     public String path = "";
+    private Integer tag = 0;
+    private float scale = 1;
 
     public xiaDetail(Integer tag, float scale) {
         this.tag = tag;
@@ -51,7 +51,7 @@ class xiaDetail {
         this.scale = scale;
     }
 
-    public Rect bezierFrame() {
+    Rect bezierFrame() {
         Rect rect = new Rect();
         float xMin = 99999999;
         float xMax = 0;
@@ -84,7 +84,7 @@ class xiaDetail {
         return rect;
     }
 
-    public String createPath(float xMin, float ymin){
+    String createPath(float xMin, float ymin) {
         if (points.size() < 2) {
             return "0;0";
         }
@@ -103,7 +103,7 @@ class xiaDetail {
         }
     }
 
-    public ImageView createPoint(float x, float y, int ResId, Integer index, Context ctx) {
+    ImageView createPoint(float x, float y, int ResId, Integer index, Context ctx) {
         ImageView image = new ImageView(ctx);
         image.setImageResource(ResId);
         image.setX(x);
@@ -113,7 +113,7 @@ class xiaDetail {
         return image;
     }
 
-    public  ImageView createShape(Context ctx, Boolean fill, int color, float cornerWidth, float cornerHeight, DisplayMetrics metrics, float toolbarHeight, Boolean drawEllipse, Boolean locked) {
+    ImageView createShape(Context ctx, Boolean fill, int color, float cornerWidth, float cornerHeight, DisplayMetrics metrics, float toolbarHeight, Boolean drawEllipse, Boolean locked) {
         ImageView shapeView = new ImageView(ctx);
         ShapeDrawable shape = new ShapeDrawable();
         GradientDrawable drawable = new GradientDrawable();

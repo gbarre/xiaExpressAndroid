@@ -59,12 +59,15 @@ import java.util.Map;
 
 public class CreateDetailActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
-    ImageView imgTopBarBkgd;
-    float cornerWidth = 0;
-    float cornerHeight = 0;
+    private final float precisionDist = 20;
+    private final Map<Integer, xiaDetail> details = new HashMap<>();
+    private final Map<Integer, ImageView> virtPoints = new HashMap<>();
+    private ImageView imgTopBarBkgd;
+    private float cornerWidth = 0;
+    private float cornerHeight = 0;
     //private menu: UIAlertController!
-    ListPopupWindow listPopupWindow;
-    String[] detailsType;
+    private ListPopupWindow listPopupWindow;
+    private String[] detailsType;
     private String imagesDirectory;
     private String xmlDirectory;
     private String cacheDirectory;
@@ -77,18 +80,14 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private float movingCoordsX = 0;
     private float movingCoordsY = 0;
     private Boolean landscape = false;
-    private float precisionDist = 20;
-    private Map<Integer, xiaDetail> details = new HashMap<>();
     private Integer currentDetailTag = 0;
     private Integer detailToSegue = 0;
     private Boolean createDetail = false;
     //private Point beginTouchLocation = new Point(0, 0); // old bad idea
     private float editDetail = -1;
     private Boolean moveDetail = false;
-    private Map<Integer, ImageView> virtPoints = new HashMap<>();
     private ArrayList<Integer> polygonPointsOrder;
     private Boolean detailsLoaded = false;
-    private ImageView background;
     private float toolbarHeight = 0;
     private RelativeLayout detailsArea;
     private float scale = 1;
@@ -114,8 +113,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         imgTopBarBkgd = (ImageView) findViewById(R.id.imgTopBarBkgd);
         imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
         setBtnsIcons();
-
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
 
         String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
@@ -145,7 +142,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 // Load elements from res
                 detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
                 mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
-                background = (ImageView) findViewById(R.id.image);
+                ImageView background = (ImageView) findViewById(R.id.image);
                 // AsyncTask loading => background resizing + details
                 loadResource loading = new loadResource(background);
                 loading.execute();
@@ -172,14 +169,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-
-        // get pointer index from the event object
-        int pointerIndex = event.getActionIndex();
-
-        // get pointer ID
-        int pointerId = event.getPointerId(pointerIndex);
-
         // get masked (not specific to a pointer) action
         int maskedAction = event.getActionMasked();
         float locationX = event.getX();
@@ -236,7 +225,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     }
                     if ( (addPoint || detailPoints == 0 || touchedVirtPoint != -1) && !moveDetail )  {
                         if (detailPoints == 0) {
-                            polygonPointsOrder = new ArrayList<Integer>();
+                            polygonPointsOrder = new ArrayList<>();
                         }
                         Integer nbPoints = details.get(currentDetailTag).points.size();
                         movingPoint = (touchedVirtPoint == -1) ? nbPoints : (touchedVirtPoint + 1);
@@ -535,14 +524,10 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         listPopupWindow.dismiss();
-        try {
-            addDetail(position);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        addDetail(position);
     }
 
-    private void addDetail(int type) throws InterruptedException {
+    private void addDetail(int type) {
         createDetail = true;
         setBtnsIcons();
 
@@ -1066,7 +1051,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     }
 
     private class loadResource extends AsyncTask<Void, Void, Bitmap> {
-        private ImageView image;
+        private final ImageView image;
 
         loadResource(ImageView im) {
             image = im;

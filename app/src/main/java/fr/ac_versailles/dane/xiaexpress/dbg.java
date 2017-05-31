@@ -24,7 +24,7 @@ import android.util.Log;
 
 class dbg {
 
-    static Boolean enable = Constants.getEnableDebug();
+    private static final Boolean enable = Constants.getEnableDebug();
 
     static void pt(String TAG, String logString, Object object) {
         if (enable) {

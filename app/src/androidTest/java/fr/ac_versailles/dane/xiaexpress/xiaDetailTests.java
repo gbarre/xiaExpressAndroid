@@ -35,10 +35,10 @@ import static junit.framework.Assert.assertEquals;
 @RunWith(AndroidJUnit4.class)
 public class xiaDetailTests {
 
-    private xiaDetail singlePointDetail = new xiaDetail(1, 1);
-    private xiaDetail multiplePointsDetail = new xiaDetail(1, 1);
-    private xiaDetail ellipsePointsDetail = new xiaDetail(1, 1);
-    private Context ctx = InstrumentationRegistry.getTargetContext();
+    private final xiaDetail singlePointDetail = new xiaDetail(1, 1);
+    private final xiaDetail multiplePointsDetail = new xiaDetail(1, 1);
+    private final xiaDetail ellipsePointsDetail = new xiaDetail(1, 1);
+    private final Context ctx = InstrumentationRegistry.getTargetContext();
 
     public xiaDetailTests() {
         // Single point detail

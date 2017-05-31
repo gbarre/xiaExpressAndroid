@@ -27,16 +27,16 @@ import java.io.File;
 
 public class Constants extends Application {
 
-    public static String constraintRectangle = "rectangle";
-    public static String constraintEllipse = "ellipse";
-    public static String constraintPolygon = "polygon";
+    public static final String constraintRectangle = "rectangle";
+    public static final String constraintEllipse = "ellipse";
+    public static final String constraintPolygon = "polygon";
 
-    public static int blue = Color.argb(255, 0, 153, 204);
+    public static final int blue = Color.argb(255, 0, 153, 204);
+    public static final int red = Color.argb(255, 255, 0, 0);
+    public static final int green = Color.argb(255, 0, 255, 0);
+    public static final int white = Color.argb(255, 255, 255, 355);
     public static int darkBlue = Color.argb(255, 0, 102, 153);
     public static int orange = Color.argb(255, 255, 131, 0);
-    public static int red = Color.argb(255, 255, 0, 0);
-    public static int green = Color.argb(255, 0, 255, 0);
-    public static int white = Color.argb(255, 255, 255, 355);
     public static int black = Color.argb(255, 0, 0, 0);
 
     public static Boolean getEnableDebug() {

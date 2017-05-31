@@ -2,12 +2,14 @@ package fr.ac_versailles.dane.xiaexpress;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import java.util.ArrayList;
 
 /**
@@ -31,10 +33,10 @@ import java.util.ArrayList;
  *  @author : guillaume.barre@ac-versailles.fr
  */
 
-public class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
+class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
 
-    private Context context;
-    private int layoutResourceId;
+    private final Context context;
+    private final int layoutResourceId;
     private ArrayList<PhotoThumbnail> data = new ArrayList<>();
 
     public GridViewAdapter(Context context, int layoutResourceId, ArrayList<PhotoThumbnail> data) {
@@ -45,8 +47,9 @@ public class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
     }
 
 
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         View row = convertView;
         ViewHolder holder;
 

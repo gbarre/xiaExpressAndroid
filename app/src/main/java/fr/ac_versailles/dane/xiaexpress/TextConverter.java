@@ -36,11 +36,11 @@ import java.util.regex.Pattern;
  */
 
 class TextConverter extends AsyncTask<Void, Void, String> {
-    private List<String> replacedURL = new ArrayList<>();
+    private final List<String> replacedURL = new ArrayList<>();
+    private final WebView webV;
     private int videoWidth = 480;
     private int videoHeight = 270;
     private String htmlString;
-    private WebView webV;
 
     TextConverter(String t, WebView wv, int w, int h) {
         htmlString = t;
@@ -155,8 +155,6 @@ class TextConverter extends AsyncTask<Void, Void, String> {
 
         // Make list line by line
         String[] outputArray = output.split("<br />");
-        int nbLines = outputArray.length;
-        int onLine = 0;
         Boolean[] levelList = {false, false};
         String previousLine = "";
         int previousClosedLevel = 0;
@@ -214,7 +212,6 @@ class TextConverter extends AsyncTask<Void, Void, String> {
                 }
                 previousLine = line;
             }
-            onLine = onLine + 1;
         }
 
         return output;

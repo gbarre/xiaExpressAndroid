@@ -23,7 +23,7 @@ import android.graphics.Bitmap;
  *  @author : guillaume.barre@ac-versailles.fr
  */
 
-public class PhotoThumbnail {
+class PhotoThumbnail {
     private Bitmap image;
     private String title;
 

@@ -71,19 +71,19 @@ import java.util.TreeSet;
 
 public class PlayXia extends AppCompatActivity {
 
-    float cornerWidth = 0;
-    float cornerHeight = 0;
-    Bitmap fullSizeBackground = null;
+    private final Map<Integer, xiaDetail> details = new HashMap<>();
+    private final int transitionDuration = 500; // in milliseconds
+    private final Map<String, String> xmlElementsDict = new HashMap<>();
+    private float cornerWidth = 0;
+    private float cornerHeight = 0;
+    private Bitmap fullSizeBackground = null;
     private Document xml;
     private String fileTitle = "";
     private String imagesDirectory;
-    private String xmlDirectory = "";
-    private String cacheDirectory;
     private DisplayMetrics metrics;
     private float scale = 1;
     private float xMin = 0;
     private float yMin = 0;
-    private Map<Integer, xiaDetail> details = new HashMap<>();
     private RelativeLayout detailsArea;
     private Boolean detailsLoaded = false;
     private Boolean showPopup = false;
@@ -98,9 +98,6 @@ public class PlayXia extends AppCompatActivity {
     private ImageView detailThumb = null;
     private ProgressBar mProgressBar;
     private RippleBackground rippleBackground;
-    private int transitionDuration = 500; // in milliseconds
-
-    private Map<String, String> xmlElementsDict = new HashMap<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -112,8 +109,8 @@ public class PlayXia extends AppCompatActivity {
 
         String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
-        xmlDirectory = Constants.getXMLFrom(rootDirectory);
-        cacheDirectory = Constants.getCacheFrom(rootDirectory);
+        String xmlDirectory = Constants.getXMLFrom(rootDirectory);
+        String cacheDirectory = Constants.getCacheFrom(rootDirectory);
 
         background = (ImageView) findViewById(R.id.image);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -173,9 +170,9 @@ public class PlayXia extends AppCompatActivity {
     private void showMetas() {
         // Prepare the metas "popup"
         int width = metrics.widthPixels * 8 / 10;
-        int left = metrics.widthPixels * 1 / 10;
+        int left = metrics.widthPixels / 10;
         int height = metrics.heightPixels * 8 / 10;
-        int top = metrics.heightPixels * 1 / 10;
+        int top = metrics.heightPixels / 10;
 
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(width, height);
         lp.setMargins(left, top, left, top);
@@ -238,13 +235,6 @@ public class PlayXia extends AppCompatActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        final String TAG = Thread.currentThread().getStackTrace()[2].getClassName() + "." + Thread.currentThread().getStackTrace()[2].getMethodName();
-        // get pointer index from the event object
-        //int pointerIndex = event.getActionIndex();
-
-        // get pointer ID
-        //int pointerId = event.getPointerId(pointerIndex);
-
         // get masked (not specific to a pointer) action
         int maskedAction = event.getActionMasked();
         float locationX = event.getX();
@@ -378,9 +368,9 @@ public class PlayXia extends AppCompatActivity {
 
             // Prepare the detail "popup"
             int width = metrics.widthPixels * 8 / 10;
-            int left = metrics.widthPixels * 1 / 10;
+            int left = metrics.widthPixels / 10;
             int height = metrics.heightPixels * 8 / 10;
-            int top = metrics.heightPixels * 1 / 10;
+            int top = metrics.heightPixels / 10;
 
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(width, height);
             lp.setMargins(left, top, left, top);
@@ -531,8 +521,7 @@ public class PlayXia extends AppCompatActivity {
 
             // create the animator for this view (the start radius is zero)
             detailThumb.setVisibility(View.VISIBLE);
-            Animator anim =
-                    null;
+            Animator anim;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                 anim = ViewAnimationUtils.createCircularReveal(detailThumb, cx, cy, 0, finalRadius);
                 // start the animation
@@ -639,7 +628,7 @@ public class PlayXia extends AppCompatActivity {
     }
 
     private class loadResource extends AsyncTask<Void, Void, Bitmap> {
-        private ImageView image;
+        private final ImageView image;
 
         loadResource(ImageView im) {
             image = im;
@@ -685,22 +674,16 @@ public class PlayXia extends AppCompatActivity {
     }
 
     private class finishTransition extends AsyncTask<Void, Void, Void> {
-        private ImageView mThumb;
-        private ImageView bkg;
-        private RelativeLayout dArea;
-        private RelativeLayout zoomD;
+        private final ImageView mThumb;
+        private final ImageView bkg;
+        private final RelativeLayout dArea;
+        private final RelativeLayout zoomD;
 
         finishTransition(ImageView t, ImageView b, RelativeLayout d, RelativeLayout z) {
             mThumb = t;
             bkg = b;
             dArea = d;
             zoomD = z;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
         }
 
         @Override

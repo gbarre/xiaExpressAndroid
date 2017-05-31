@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Xia Express</string>
 
     <string name="Collection">Collection</string>
@@ -15,5 +15,13 @@
     <string name="ellipse">Ellipse</string>
     <string name="polygon">Polygon</string>
     <string name="close">Close</string>
+    <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
+    <string name="enable_zoom">Enable Zoom</string>
+    <string name="lock_detail">Lock detail</string>
+    <string name="detail_description" tools:ignore="TypographyEllipsis">Detail description...</string>
+    <string name="choose_image">Choose image</string>
+    <string name="detail_title">Detail title</string>
+
 
 </resources>

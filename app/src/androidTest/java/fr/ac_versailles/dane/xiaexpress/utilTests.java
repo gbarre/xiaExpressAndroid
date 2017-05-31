@@ -7,9 +7,9 @@ import android.support.test.runner.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static fr.ac_versailles.dane.xiaexpress.Util.mod;
+import static fr.ac_versailles.dane.xiaexpress.Util.pointInPolygon;
 import static junit.framework.Assert.assertEquals;
-
-import static fr.ac_versailles.dane.xiaexpress.Util.*;
 
 /**
  * utilTests.java
@@ -34,9 +34,9 @@ import static fr.ac_versailles.dane.xiaexpress.Util.*;
 @RunWith(AndroidJUnit4.class)
 public class utilTests {
 
-    private xiaDetail singlePointDetail = new xiaDetail(1, 1);
-    private xiaDetail multiplePointsDetail = new xiaDetail(1, 1);
-    private Context ctx = InstrumentationRegistry.getTargetContext();
+    private final xiaDetail singlePointDetail = new xiaDetail(1, 1);
+    private final xiaDetail multiplePointsDetail = new xiaDetail(1, 1);
+    private final Context ctx = InstrumentationRegistry.getTargetContext();
 
     public utilTests() {
         // Single point detail

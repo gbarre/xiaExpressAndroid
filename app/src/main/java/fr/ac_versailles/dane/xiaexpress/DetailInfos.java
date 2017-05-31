@@ -37,6 +37,12 @@ import java.io.File;
 
 public class DetailInfos extends AppCompatActivity {
 
+    private final View.OnClickListener cancelListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            finish();
+        }
+    };
     private Integer tag = 0;
     private Boolean zoom = false;
     private Boolean lock = false;
@@ -45,21 +51,45 @@ public class DetailInfos extends AppCompatActivity {
     private Document xml;
     private String fileTitle = "";
     private String xmlDirectory = "";
+    private Switch checkBoxZoom = null;
+    private Switch checkBoxLocked = null;
+    private EditText txtTitle = null;
+    private EditText txtDesc = null;
+    private final View.OnClickListener doneListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            // Save the detail in xml
+            NodeList xmlDetails = xml.getElementsByTagName("detail");
+            for (int i = 0; i < xmlDetails.getLength(); i++) {
+                Node detail = xmlDetails.item(i);
+                NamedNodeMap detailAttr = detail.getAttributes();
+                Node t = detailAttr.getNamedItem("tag");
+                Integer detailTag = Integer.valueOf(t.getTextContent());
+                if (detailTag.equals(tag)) {
+                    Node detailZoom = detailAttr.getNamedItem("zoom");
+                    detailZoom.setTextContent(String.valueOf(checkBoxZoom.isChecked()));
+                    Node detailLocked = detailAttr.getNamedItem("locked");
+                    detailLocked.setTextContent(String.valueOf(checkBoxLocked.isChecked()));
+                    Node detailTitle = detailAttr.getNamedItem("title");
+                    detailTitle.setTextContent(String.valueOf(txtTitle.getText()));
 
-    private Button btnDone = null;
-    private Button btnCancel = null;
-    Switch checkBoxZoom = null;
-    Switch checkBoxLocked = null;
-    EditText txtTitle = null;
-    EditText txtDesc = null;
+                    detail.setTextContent(String.valueOf(txtDesc.getText()));
+
+                }
+            }
+            Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
+
+            finish();
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_infos);
 
-        btnDone = (Button) findViewById(R.id.done);
-        btnCancel = (Button) findViewById(R.id.cancel);
+        Button btnDone = (Button) findViewById(R.id.done);
+        Button btnCancel = (Button) findViewById(R.id.cancel);
 
         btnDone.setOnClickListener(doneListener);
         btnCancel.setOnClickListener(cancelListener);
@@ -99,40 +129,5 @@ public class DetailInfos extends AppCompatActivity {
         txtDesc.requestFocus();
 
     }
-
-    private View.OnClickListener cancelListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            finish();
-        }
-    };
-
-    private View.OnClickListener doneListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            // Save the detail in xml
-            NodeList xmlDetails = xml.getElementsByTagName("detail");
-            for (int i = 0; i < xmlDetails.getLength(); i++) {
-                Node detail = xmlDetails.item(i);
-                NamedNodeMap detailAttr = detail.getAttributes();
-                Node t = detailAttr.getNamedItem("tag");
-                Integer detailTag = Integer.valueOf(t.getTextContent());
-                if (detailTag.equals(tag)) {
-                    Node detailZoom = detailAttr.getNamedItem("zoom");
-                    detailZoom.setTextContent(String.valueOf(checkBoxZoom.isChecked()));
-                    Node detailLocked = detailAttr.getNamedItem("locked");
-                    detailLocked.setTextContent(String.valueOf(checkBoxLocked.isChecked()));
-                    Node detailTitle = detailAttr.getNamedItem("title");
-                    detailTitle.setTextContent(String.valueOf(txtTitle.getText()));
-
-                    detail.setTextContent(String.valueOf(txtDesc.getText()));
-
-                }
-            }
-            Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
-
-            finish();
-        }
-    };
 
 }

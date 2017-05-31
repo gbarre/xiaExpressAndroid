@@ -3,7 +3,8 @@
     android:id="@+id/playMetas"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:elevation="20dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -16,9 +17,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
             android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
             android:background="@color/blue"
             android:contentDescription="@string/close"
             android:paddingTop="4dp"

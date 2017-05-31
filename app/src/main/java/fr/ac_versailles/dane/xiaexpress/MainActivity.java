@@ -45,10 +45,8 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private static final int SELECT_PICTURE = 1;
-    private GridView gridView;
+    private final String[] arrayNames = new String[50];
     private GridViewAdapter gridAdapter;
-    private String[] arrayNames = new String[50];
-
     private String rootDirectory;
     private String imagesDirectory;
     private String xmlDirectory;
@@ -57,8 +55,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Copy file from path src to path dst
      */
-    public static void copy(InputStream in, File dst) throws IOException {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName() + "." + Thread.currentThread().getStackTrace()[2].getMethodName();
+    private static void copy(InputStream in, File dst) throws IOException {
         //InputStream in = new FileInputStream(src);
         OutputStream out = new FileOutputStream(dst);
 
@@ -80,8 +77,6 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
-
         rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
@@ -92,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         Util.createDirectory(cacheDirectory);
 
         // Load the collection in grid view
-        gridView = (GridView) findViewById(R.id.gridView);
+        GridView gridView = (GridView) findViewById(R.id.gridView);
         gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData());
         gridView.setAdapter(gridAdapter);
 
@@ -132,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
 
     // Store the image
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_PICTURE) {
                 // Convert uri to path
@@ -188,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
      * Prepare some dummy data for gridview
      */
     private ArrayList<PhotoThumbnail> getData() {
-        String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
         final ArrayList<PhotoThumbnail> imageItems = new ArrayList<>();
         File dir = new File(imagesDirectory);
         File[] imgs = dir.listFiles();
