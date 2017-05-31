@@ -2,9 +2,6 @@ package fr.ac_versailles.dane.xiaexpress;
 
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.util.Linkify;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -13,6 +10,8 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +36,7 @@ import java.util.regex.Pattern;
  */
 
 class TextConverter extends AsyncTask<Void, Void, String> {
+    private List<String> replacedURL = new ArrayList<>();
     private int videoWidth = 480;
     private int videoHeight = 270;
     private String htmlString;
@@ -61,10 +61,6 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         htmlString = htmlString.replace("}}}", "");
 
         // TODO Test internet connexion
-        htmlString = showAudio(htmlString);
-        htmlString = showCustomLinks(htmlString);
-        htmlString = showPictures(htmlString);
-        htmlString = showVideo(htmlString);
     }
 
     @Override
@@ -90,6 +86,19 @@ class TextConverter extends AsyncTask<Void, Void, String> {
                     htmlCode = htmlCode.replace("src=\"//", "src=\"https://");
                     htmlCode = "<center>" + htmlCode + "</center>"; // so ugly...
                     desc = desc.replace(url, htmlCode);
+                } else {
+                    if (url.matches(".*\\.(mp3|ogg)$")) {
+                        String audioUrl = getAudio(url);
+                        desc = desc.replace(url, audioUrl);
+                    } else if (url.matches(".*\\.(jpg|jpeg|gif|png)$")) {
+                        desc = desc.replace(url, "<img src=\"" + url + "\" alt=\"" + url + "\" style=\"max-width: " + videoWidth + "px;\" />");
+                    } else if (url.matches(".*\\.(mp4|ogv|webm)$")) {
+                        String videoUrl = getvideo(url);
+                        desc = desc.replace(url, videoUrl);
+                    } else {
+                        String[] customLink = showCustomLinks(url, desc);
+                        desc = desc.replace(customLink[0], customLink[1]);
+                    }
                 }
             } catch (UnsupportedEncodingException | JSONException e) {
                 e.printStackTrace();
@@ -102,16 +111,12 @@ class TextConverter extends AsyncTask<Void, Void, String> {
     @Override
     protected void onPostExecute(String desc) {
         super.onPostExecute(desc);
-        // make other link clickable
-        Spannable sp = new SpannableString(desc);
-        Linkify.addLinks(sp, Linkify.ALL);
-        final String html = "<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"utf-8\"></head><body>" + sp + "</body></html>";
+        String html = "<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"utf-8\"></head><body>" + desc + "</body></html>";
         // load html in the webview
         webV.loadData(html, "text/html; charset=UTF-8", null);
         // enable javascript
         WebSettings webSettings = webV.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        dbg.pt("textConverter", "htmlString", html);
     }
 
     private String pikipikiToHTML(String t) {
@@ -215,73 +220,54 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         return output;
     }
 
-    private String showAudio(String inText) {
-        String output = inText;
-        Pattern regex = Pattern.compile("https?:\\/{2}(\\w|\\/|\\.|-|\\%|\\#)*\\.(mp3|ogg)");
-        Matcher results = regex.matcher(inText);
-        while (results.find()) {
-            String result = results.group();
-            String mp3Result = result.replaceAll("\\.(mp3|ogg)", ".mp3");
-            String oggResult = result.replaceAll("\\.(mp3|ogg)", ".ogg");
-            String replaceString = "<center><audio controls>" +
-                    "   <source type=\"audio/mpeg\" src=\"" + mp3Result + "\" />" +
-                    "   <source type=\"audio/ogg\" src=\"" + oggResult + "\" />" +
-                    "</audio></center>";
-            output = output.replace(result, replaceString);
-        }
-        return output;
+    private String getAudio(String url) {
+        String mp3Result = url.replaceAll("\\.(mp3|ogg)", ".mp3");
+        String oggResult = url.replaceAll("\\.(mp3|ogg)", ".ogg");
+        return "<center><audio controls>" +
+                "   <source type=\"audio/mpeg\" src=\"" + mp3Result + "\" />" +
+                "   <source type=\"audio/ogg\" src=\"" + oggResult + "\" />" +
+                "</audio></center>";
     }
 
-    private String showCustomLinks(String inText) {
-        String output = inText;
-        Pattern regex = Pattern.compile("\\[https?:\\/{2}((?! ).)* *((?!\\]).)*\\]");
-        Matcher results = regex.matcher(inText);
-        while (results.find()) {
-            String result = results.group();
-            String content = result.replaceAll("\\[|\\]", "");
-            String[] contentArray = content.split(" ");
-            String url = contentArray[0];
-            String linkText = "";
-            if (contentArray.length > 1) {
-                for (int i = 1; i < contentArray.length; i++) {
-                    linkText = linkText + " " + contentArray[i];
+    private String[] showCustomLinks(String url, String inText) {
+        String input = url;
+        String replaceString = "<a href=\"" + url + "\">" + url + "</a>";
+        if (inText.matches(".*\\[" + url + " *((?!\\]).)*\\].*")) {
+            Pattern regex = Pattern.compile("\\[" + url + " *((?!\\]).)*\\]");
+            Matcher results = regex.matcher(inText);
+            while (results.find()) {
+                String result = results.group();
+                input = result;
+                String content = result.replaceAll("\\[|\\]", "");
+                String[] contentArray = content.split(" ");
+                String target = contentArray[0];
+                String linkText = "";
+                if (contentArray.length > 1) {
+                    for (int i = 1; i < contentArray.length; i++) {
+                        linkText = linkText + " " + contentArray[i];
+                    }
+                } else {
+                    linkText = target;
                 }
-            } else {
-                linkText = url;
+                replaceString = "<a href=\"" + target + "\">" + linkText + "</a>";
             }
-            String replaceString = "<a href=\"" + url + "\">" + linkText + "</a>";
-            output = output.replace(result, replaceString);
         }
-        return output;
+        if (replacedURL.contains(url)) {
+            replaceString = url;
+        } else {
+            replacedURL.add(url);
+        }
+        return new String[]{input, replaceString};
     }
 
-    private String showPictures(String inText) {
-        String output = inText;
-        Pattern regex = Pattern.compile("https?:\\/{2}(\\w|\\/|\\.|-|\\%|\\#)*\\.(jpg|jpeg|gif|png)");
-        Matcher results = regex.matcher(inText);
-        while (results.find()) {
-            String result = results.group();
-            output = output.replace(result, "<img src=\"" + result + "\" alt=\"" + result + "\" style=\"max-width: " + videoWidth + "px;\" />");
-        }
-        return output;
-    }
-
-    private String showVideo(String inText) {
-        String output = inText;
-        Pattern regex = Pattern.compile("https?:\\/{2}(\\w|\\/|\\.|-|\\%|\\#)*\\.(mp4|ogv|webm)( autostart)?");
-        Matcher results = regex.matcher(inText);
-        while (results.find()) {
-            String result = results.group();
-            String mp4Result = result.replaceAll("\\.(mp4|ogv|webm)", ".mp4");
-            String ogvResult = result.replaceAll("\\.(mp4|ogv|webm)", ".ogv");
-            String webmResult = result.replaceAll("\\.(mp4|ogv|webm)", ".webm");
-            String replaceString = "<center><video controls preload=\"none\">" +
-                    "   <source type=\"video/mp4\" src=\"" + mp4Result + "\" />" +
-                    "   <source type=\"video/ogg\" src=\"" + ogvResult + "\" />" +
-                    "   <source type=\"video/webm\" src=\"" + webmResult + "\" />" +
-                    "</video></center>";
-            output = output.replace(result, replaceString);
-        }
-        return output;
+    private String getvideo(String url) {
+        String mp4Result = url.replaceAll("\\.(mp4|ogv|webm)", ".mp4");
+        String ogvResult = url.replaceAll("\\.(mp4|ogv|webm)", ".ogv");
+        String webmResult = url.replaceAll("\\.(mp4|ogv|webm)", ".webm");
+        return "<center><video controls preload=\"none\">" +
+                "   <source type=\"video/mp4\" src=\"" + mp4Result + "\" />" +
+                "   <source type=\"video/ogg\" src=\"" + ogvResult + "\" />" +
+                "   <source type=\"video/webm\" src=\"" + webmResult + "\" />" +
+                "</video></center>";
     }
 }
