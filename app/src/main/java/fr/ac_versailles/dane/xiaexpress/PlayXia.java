@@ -17,9 +17,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.util.Linkify;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
@@ -30,7 +27,6 @@ import android.view.WindowManager;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -42,22 +38,16 @@ import android.widget.TextView;
 
 import com.skyfishjy.library.RippleBackground;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * PlayXia.java
@@ -432,7 +422,7 @@ public class PlayXia extends AppCompatActivity {
             desc.loadData(detailDescription, "text/html; charset=UTF-8", null);
 
             // look for oembed links
-            new url2html(detailDescription, desc).execute();
+            new TextConverter(detailDescription, desc, 0, 0).execute();
 
             int xOri = 0;
             int yOri = 0;
@@ -731,65 +721,6 @@ public class PlayXia extends AppCompatActivity {
             bkg.setAlpha((float) 0.4);
             dArea.setVisibility(View.INVISIBLE);
             zoomD.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    private class url2html extends AsyncTask<Void, Void, String> {
-
-        private String text;
-        private WebView webV;
-
-        url2html(String t, WebView wv) {
-            text = t;
-            webV = wv;
-        }
-
-        @Override
-        protected String doInBackground(Void... arg0) {
-            String desc = text;
-            // Search http(s) links
-            Pattern urls = Pattern.compile("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
-            Matcher urlsMatcher = urls.matcher(text);
-            while (urlsMatcher.find()) {
-                String url = urlsMatcher.group();
-                HttpHandler sh = new HttpHandler();
-                try {
-                    // encode url
-                    String query = URLEncoder.encode(url, "utf-8");
-                    String fullQuery = "https://coyote.jrmv.net:8443/get?url=" + query;
-                    // get the json file (as string)
-                    String jsonStr = sh.makeServiceCall(fullQuery);
-                    // convert string to json
-                    JSONObject json = new JSONObject(jsonStr);
-                    // replace the url by iframe
-                    // TODO look for error before replace
-                    String htmlCode = json.getString("html");
-                    if (!htmlCode.equals("Please insert correct URL")) {
-                        htmlCode = htmlCode.replace("src=\"//", "src=\"https://");
-                        desc = desc.replace(url, htmlCode);
-                    }
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            return desc;
-        }
-
-        @Override
-        protected void onPostExecute(String desc) {
-            super.onPostExecute(desc);
-            // make other link clickable
-            final String content = desc;
-            Spannable sp = new SpannableString(content);
-            Linkify.addLinks(sp, Linkify.ALL);
-            final String html = "<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"utf-8\"></head><body>" + sp + "</body></html>";
-            // load html in the webview
-            webV.loadData(html.replaceAll("\\n", "<br/>"), "text/html; charset=UTF-8", null);
-            // enable javascript
-            WebSettings webSettings = webV.getSettings();
-            webSettings.setJavaScriptEnabled(true);
         }
     }
 }
