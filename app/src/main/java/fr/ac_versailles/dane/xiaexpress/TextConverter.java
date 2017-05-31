@@ -38,15 +38,15 @@ import java.util.regex.Pattern;
 class TextConverter extends AsyncTask<Void, Void, String> {
     private final List<String> replacedURL = new ArrayList<>();
     private final WebView webV;
-    private int videoWidth = 480;
-    private int videoHeight = 270;
+    private float videoWidth = 480;
+    private float videoHeight = 270;
     private String htmlString;
 
-    TextConverter(String t, WebView wv, int w, int h) {
+    TextConverter(String t, WebView wv, float w, float h) {
         htmlString = t;
         webV = wv;
-        videoWidth = 480;
-        videoHeight = 270;
+        videoWidth = (w == 0) ? 480 : w;
+        videoHeight = (h == 0) ? 270 : h;
     }
 
     @Override
@@ -84,6 +84,19 @@ class TextConverter extends AsyncTask<Void, Void, String> {
                 String htmlCode = json.getString("html");
                 if (!htmlCode.equals("Please insert correct URL")) {
                     htmlCode = htmlCode.replace("src=\"//", "src=\"https://");
+                    // video / image resizing
+                    if (!json.getString("provider_name").equals("Instagram") && !json.getString("provider_name").equals("Twitter")) {
+                        int jsonWidth = json.getInt("width");
+                        int jsonHeight = json.getInt("height");
+                        float scaleX = videoWidth / jsonWidth;
+                        float scaleY = videoHeight / jsonHeight;
+                        float scale = Math.min(Math.min(scaleX, scaleY), 1);
+                        int newWidth = Math.round(jsonWidth * scale);
+                        int newHeight = Math.round(jsonHeight * scale);
+                        htmlCode = htmlCode.replace("width=\"" + jsonWidth + "\"", "width=\"" + newWidth + "\"");
+                        htmlCode = htmlCode.replace("height=\"" + jsonHeight + "\"", "height=\"" + newHeight + "\"");
+                    }
+                    // center iframe
                     htmlCode = "<center>" + htmlCode + "</center>"; // so ugly...
                     desc = desc.replace(url, htmlCode);
                 } else {
@@ -261,7 +274,7 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         String mp4Result = url.replaceAll("\\.(mp4|ogv|webm)", ".mp4");
         String ogvResult = url.replaceAll("\\.(mp4|ogv|webm)", ".ogv");
         String webmResult = url.replaceAll("\\.(mp4|ogv|webm)", ".webm");
-        return "<center><video controls preload=\"none\">" +
+        return "<center><video controls preload=\"none\" width=\"" + videoWidth + "\" height=\"" + videoHeight + ">" +
                 "   <source type=\"video/mp4\" src=\"" + mp4Result + "\" />" +
                 "   <source type=\"video/ogg\" src=\"" + ogvResult + "\" />" +
                 "   <source type=\"video/webm\" src=\"" + webmResult + "\" />" +
