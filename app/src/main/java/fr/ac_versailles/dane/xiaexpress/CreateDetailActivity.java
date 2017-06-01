@@ -13,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -96,6 +97,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private DisplayMetrics metrics;
     private int btnTag = 0;
     private ProgressBar mProgressBar;
+    private GestureDetector gestureDetector;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -121,6 +123,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
         fileName = getIntent().getStringExtra("title");
         fileTitle = fileName.replace(".jpg", "");
+
+        gestureDetector = new GestureDetector(this, new GestureListener());
     }
 
     @Override
@@ -517,8 +521,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             }
         }
 
-
-        return true;
+        return gestureDetector.onTouchEvent(event);
     }
 
     @Override
@@ -1092,6 +1095,15 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             mProgressBar.setVisibility(View.INVISIBLE);
             image.setImageBitmap(result);
             loadDetails(xml);
+        }
+    }
+
+    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            dbg.pt("gestureListener", "doubletap", true);
+            detailInfos();
+            return true;
         }
     }
 }
