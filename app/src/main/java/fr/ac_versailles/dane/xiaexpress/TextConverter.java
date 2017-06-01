@@ -1,6 +1,7 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -41,12 +42,14 @@ class TextConverter extends AsyncTask<Void, Void, String> {
     private float videoWidth = 480;
     private float videoHeight = 270;
     private String htmlString;
+    private Context context;
 
-    TextConverter(String t, WebView wv, float w, float h) {
+    TextConverter(String t, WebView wv, float w, float h, Context c) {
         htmlString = t;
         webV = wv;
         videoWidth = (w == 0) ? 480 : w;
         videoHeight = (h == 0) ? 270 : h;
+        context = c;
     }
 
     @Override
@@ -60,63 +63,57 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         htmlString = pikipikiToHTML(htmlString);
         htmlString = htmlString.replace("}}}", "");
 
-        // TODO Test internet connexion
     }
 
     @Override
     protected String doInBackground(Void... arg0) {
         String desc = htmlString;
+
         // Search http(s) links
         Pattern urls = Pattern.compile("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
         Matcher urlsMatcher = urls.matcher(htmlString);
         while (urlsMatcher.find()) {
             String url = urlsMatcher.group();
-            HttpHandler sh = new HttpHandler();
-            try {
-                // encode url
-                String query = URLEncoder.encode(url, "utf-8");
-                String fullQuery = "https://coyote.jrmv.net:8443/get?url=" + query;
-                // get the json file (as string)
-                String jsonStr = sh.makeServiceCall(fullQuery);
-                // convert string to json
-                JSONObject json = new JSONObject(jsonStr);
-                // replace the url by iframe
-                String htmlCode = json.getString("html");
-                if (!htmlCode.equals("Please insert correct URL")) {
-                    htmlCode = htmlCode.replace("src=\"//", "src=\"https://");
-                    // video / image resizing
-                    if (!json.getString("provider_name").equals("Instagram") && !json.getString("provider_name").equals("Twitter")) {
-                        int jsonWidth = json.getInt("width");
-                        int jsonHeight = json.getInt("height");
-                        float scaleX = videoWidth / jsonWidth;
-                        float scaleY = videoHeight / jsonHeight;
-                        float scale = Math.min(Math.min(scaleX, scaleY), 1);
-                        int newWidth = Math.round(jsonWidth * scale);
-                        int newHeight = Math.round(jsonHeight * scale);
-                        htmlCode = htmlCode.replace("width=\"" + jsonWidth + "\"", "width=\"" + newWidth + "\"");
-                        htmlCode = htmlCode.replace("height=\"" + jsonHeight + "\"", "height=\"" + newHeight + "\"");
-                    }
-                    // center iframe
-                    htmlCode = "<center>" + htmlCode + "</center>"; // so ugly...
-                    desc = desc.replace(url, htmlCode);
-                } else {
-                    if (url.matches(".*\\.(mp3|ogg)$")) {
-                        String audioUrl = getAudio(url);
-                        desc = desc.replace(url, audioUrl);
-                    } else if (url.matches(".*\\.(jpg|jpeg|gif|png)$")) {
-                        desc = desc.replace(url, "<img src=\"" + url + "\" alt=\"" + url + "\" style=\"max-width: " + videoWidth + "px;\" />");
-                    } else if (url.matches(".*\\.(mp4|ogv|webm)$")) {
-                        String videoUrl = getvideo(url);
-                        desc = desc.replace(url, videoUrl);
+            if (Util.isOnline(context)) {
+                HttpHandler sh = new HttpHandler();
+                try {
+                    // encode url
+                    String query = URLEncoder.encode(url, "utf-8");
+                    String fullQuery = "https://coyote.jrmv.net:8443/get?url=" + query;
+                    // get the json file (as string)
+                    String jsonStr = sh.makeServiceCall(fullQuery);
+                    // convert string to json
+                    JSONObject json = new JSONObject(jsonStr);
+                    // replace the url by iframe
+                    String htmlCode = json.getString("html");
+                    if (!htmlCode.equals("Please insert correct URL")) {
+                        htmlCode = htmlCode.replace("src=\"//", "src=\"https://");
+                        // video / image resizing
+                        if (!json.getString("provider_name").equals("Instagram") && !json.getString("provider_name").equals("Twitter")) {
+                            int jsonWidth = json.getInt("width");
+                            int jsonHeight = json.getInt("height");
+                            float scaleX = videoWidth / jsonWidth;
+                            float scaleY = videoHeight / jsonHeight;
+                            float scale = Math.min(Math.min(scaleX, scaleY), 1);
+                            int newWidth = Math.round(jsonWidth * scale);
+                            int newHeight = Math.round(jsonHeight * scale);
+                            htmlCode = htmlCode.replace("width=\"" + jsonWidth + "\"", "width=\"" + newWidth + "\"");
+                            htmlCode = htmlCode.replace("height=\"" + jsonHeight + "\"", "height=\"" + newHeight + "\"");
+                        }
+                        // center iframe
+                        htmlCode = "<center>" + htmlCode + "</center>"; // so ugly...
+                        desc = desc.replace(url, htmlCode);
                     } else {
-                        String[] customLink = showCustomLinks(url, desc);
-                        desc = desc.replace(customLink[0], customLink[1]);
+                        desc = replaceURL(url, desc);
                     }
+                } catch (UnsupportedEncodingException | JSONException e) {
+                    e.printStackTrace();
+                    }
+                } else {
+                desc = replaceURL(url, desc);
                 }
-            } catch (UnsupportedEncodingException | JSONException e) {
-                e.printStackTrace();
             }
-        }
+
         return desc;
     }
 
@@ -130,6 +127,22 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         // enable javascript
         WebSettings webSettings = webV.getSettings();
         webSettings.setJavaScriptEnabled(true);
+    }
+
+    private String replaceURL(String url, String desc) {
+        if (url.matches(".*\\.(mp3|ogg)$")) {
+            String audioUrl = getAudio(url);
+            desc = desc.replace(url, audioUrl);
+        } else if (url.matches(".*\\.(jpg|jpeg|gif|png)$")) {
+            desc = desc.replace(url, "<img src=\"" + url + "\" alt=\"" + url + "\" style=\"max-width: " + videoWidth + "px;\" />");
+        } else if (url.matches(".*\\.(mp4|ogv|webm)$")) {
+            String videoUrl = getvideo(url);
+            desc = desc.replace(url, videoUrl);
+        } else {
+            String[] customLink = showCustomLinks(url, desc);
+            desc = desc.replace(customLink[0], customLink[1]);
+        }
+        return desc;
     }
 
     private String pikipikiToHTML(String t) {

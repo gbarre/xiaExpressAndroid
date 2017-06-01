@@ -1,26 +1,24 @@
 package fr.ac_versailles.dane.xiaexpress;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.text.Html;
 import android.text.Spanned;
 import android.widget.ImageView;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -53,7 +51,7 @@ import static fr.ac_versailles.dane.xiaexpress.dbg.pt;
  *  @author : guillaume.barre@ac-versailles.fr
  */
 
-class Util {
+class Util extends Activity {
 
     static void createDirectory(String directory) {
         String TAG = Thread.currentThread().getStackTrace()[2].getClassName()+"."+Thread.currentThread().getStackTrace()[2].getMethodName();
@@ -106,19 +104,6 @@ class Util {
         return result < 0? result + y : result;
     }
 
-    static String nodeToString(Node node) {
-        StringWriter sw = new StringWriter();
-        try {
-            Transformer t = TransformerFactory.newInstance().newTransformer();
-            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            t.setOutputProperty(OutputKeys.INDENT, "yes");
-            t.transform(new DOMSource(node), new StreamResult(sw));
-        } catch (TransformerException te) {
-            System.out.println("nodeToString Transformer Exception");
-        }
-        return sw.toString();
-    }
-
     static Boolean pointInPolygon(Map<Integer, ImageView> points, float touchPointX, float touchPointY) {
         // translate from C : http://alienryderflex.com/polygon/
         int polyCorners = points.size();
@@ -137,31 +122,6 @@ class Util {
         }
 
         return oddNodes;
-    }
-
-    static String readFromFile(InputStream inputStream) {
-        String ret = "";
-
-        try {
-
-            if ( inputStream != null ) {
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                String receiveString;
-                StringBuilder stringBuilder = new StringBuilder();
-
-                while ( (receiveString = bufferedReader.readLine()) != null ) {
-                    stringBuilder.append(receiveString);
-                }
-
-                inputStream.close();
-                ret = stringBuilder.toString();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return ret;
     }
 
     static void writeXML(Document xml, String filepath) {
@@ -209,5 +169,11 @@ class Util {
             result = Html.fromHtml(html);
         }
         return result;
+    }
+
+    static boolean isOnline(Context c) {
+        ConnectivityManager cm = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }

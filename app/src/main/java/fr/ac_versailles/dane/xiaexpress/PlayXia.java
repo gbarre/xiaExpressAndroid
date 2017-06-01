@@ -412,7 +412,7 @@ public class PlayXia extends AppCompatActivity {
             desc.loadData(detailDescription, "text/html; charset=UTF-8", null);
 
             // look for oembed links
-            new TextConverter(detailDescription, desc, 0, 0).execute();
+            new TextConverter(detailDescription, desc, 0, 0, this).execute();
 
             int xOri = 0;
             int yOri = 0;
