@@ -209,12 +209,17 @@ public class PlayXia extends AppCompatActivity {
 
     private void setText(String element) {
         String id = "document" + element.substring(0, 1).toUpperCase() + element.substring(1).toLowerCase();
-        TextView docElement = (TextView) findViewById(getResources().getIdentifier(id, "id", getPackageName()));
         String text = Util.getNodeValue(xml, "xia/" + element);
-        if (!element.equals("title") && !element.equals("description") && !element.equals("creator")) {
-            text = "<b>" + xmlElementsDict.get(element) + ": </b>" + text;
+        if (element.equals("description")) {
+            WebView webV = (WebView) findViewById(R.id.documentDescription);
+            new TextConverter(text, webV, 0, 0, this).execute();
+        } else {
+            TextView docElement = (TextView) findViewById(getResources().getIdentifier(id, "id", getPackageName()));
+            if (!element.equals("title") && !element.equals("creator")) {
+                text = "<b>" + xmlElementsDict.get(element) + ": </b>" + text;
+                docElement.setText(Util.fromHtml(text));
+            }
         }
-        docElement.setText(Util.fromHtml(text));
     }
 
     @Override
