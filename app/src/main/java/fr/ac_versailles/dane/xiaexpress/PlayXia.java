@@ -426,13 +426,9 @@ public class PlayXia extends AppCompatActivity {
                 // Extract part of image into the frame
                 xOri = Math.max(0, Math.round(frame.left - xMin / scale));
                 yOri = Math.max(0, Math.round(frame.top - yMin / scale));
-                wOri = (frame.width() + xOri > fullSizeBackground.getWidth()) ? fullSizeBackground.getWidth() - xOri : frame.width();
-                hOri = (frame.height() + yOri > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
+                wOri = (frame.width() + xOri + cornerWidth / 2 > fullSizeBackground.getWidth()) ? fullSizeBackground.getWidth() - xOri : frame.width();
+                hOri = (frame.height() + yOri + cornerHeight / 2 > fullSizeBackground.getHeight()) ? fullSizeBackground.getHeight() - yOri : frame.height();
 
-                if (!drawEllipse) {
-                    wOri = (int) (wOri + cornerWidth / 2);
-                    hOri = (int) (hOri + cornerHeight / 2);
-                }
                 Bitmap bitmap = Bitmap.createBitmap(fullSizeBackground, xOri, yOri, wOri, hOri);
 
                 // Prepare the mask
