@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="800dp"
+    android:layout_height="400dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/cancel" />
+
+        <EditText
+            android:id="@+id/Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="8"
+            android:clickable="true"
+            android:cursorVisible="true"
+            android:focusable="true"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textAlignment="center" />
+
+        <Button
+            android:id="@+id/done"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/done" />
+    </LinearLayout>
+
+    <co.ceryle.segmentedbutton.SegmentedButtonGroup
+        android:id="@+id/segmentedButtonGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        app:sbg_animateSelector="overshoot"
+        app:sbg_animateSelectorDuration="500"
+        app:sbg_backgroundColor="@color/white"
+        app:sbg_dividerColor="@color/blue"
+        app:sbg_dividerPadding="10dp"
+        app:sbg_dividerRadius="10dp"
+        app:sbg_dividerSize="1dp"
+        app:sbg_position="0"
+        app:sbg_radius="2dp"
+        app:sbg_ripple="true"
+        app:sbg_rippleColor="@color/blue"
+        app:sbg_selectorColor="@color/blue"
+        app:sbg_selectorTextColor="@color/white"
+        app:sbg_shadow="true"
+        app:sbg_shadowElevation="3dp"
+        app:sbg_shadowMargin="4dp">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="10dp"
+            android:text="Metas 1"
+            android:textAllCaps="false"
+            android:textColor="@color/blue" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="10dp"
+            android:text="Metas 2"
+            android:textAllCaps="false"
+            android:textColor="@color/blue" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="10dp"
+            android:text="Metas 3"
+            android:textAllCaps="false"
+            android:textColor="@color/blue" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="10dp"
+            android:text="Image Infos"
+            android:textAllCaps="false"
+            android:textColor="@color/blue" />
+
+    </co.ceryle.segmentedbutton.SegmentedButtonGroup>
+
+    <include layout="@layout/metas_2" />
+
+    <include layout="@layout/metas_3" />
+
+    <include layout="@layout/metas_imginfos" />
+
+
+</LinearLayout>

@@ -42,6 +42,16 @@
             />
         </activity>
 
+        <activity
+            android:name=".Metas"
+            android:parentActivityName=".CreateDetailActivity"
+            android:theme="@style/Theme.AppCompat.Dialog"
+            android:windowSoftInputMode="adjustPan">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
         <activity android:name=".PlayXia"
             android:parentActivityName=".CreateDetailActivity">
             <meta-data

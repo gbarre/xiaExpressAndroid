@@ -753,7 +753,12 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         currentDetailTag = tmpDetailTag;
 
         if (currentDetailTag.equals(0)) {
-            // TODO after viewMetas...
+            //Create intent
+            Intent intent = new Intent(CreateDetailActivity.this, Metas.class);
+            intent.putExtra("fileTitle", fileTitle);
+
+            //Start details activity
+            startActivity(intent);
         }
         else {
             //Create intent
