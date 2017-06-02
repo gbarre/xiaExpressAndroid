@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.w3c.dom.Document;
 
@@ -94,14 +95,21 @@ public class Metas extends AppCompatActivity {
         xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
 
         // Load subviews
+        final LinearLayout metas1 = (LinearLayout) findViewById(R.id.metas1);
         final LinearLayout metas2 = (LinearLayout) findViewById(R.id.metas2);
         final LinearLayout metas3 = (LinearLayout) findViewById(R.id.metas3);
         final LinearLayout metasimginfos = (LinearLayout) findViewById(R.id.metasimginfos);
+        metas1.setVisibility(View.VISIBLE);
+        metas2.setVisibility(View.GONE);
+        metas3.setVisibility(View.GONE);
+        metasimginfos.setVisibility(View.GONE);
 
-        final EditText Title = (EditText) findViewById(R.id.Title);
+        final TextView Title = (TextView) findViewById(R.id.Title);
 
         // First subview
-
+        final EditText metasTitle = (EditText) findViewById(R.id.metasTitle);
+        final EditText metasDescription = (EditText) findViewById(R.id.metasDescription);
+        setNextFocus(metasTitle, metasDescription);
 
         // Second subview
         final EditText Creator = (EditText) findViewById(R.id.metasCreator);
@@ -163,27 +171,25 @@ public class Metas extends AppCompatActivity {
                 switch (position) {
                     default:
                     case 0:
+                        metas1.setVisibility(View.VISIBLE);
                         metas2.setVisibility(View.GONE);
                         metas3.setVisibility(View.GONE);
                         metasimginfos.setVisibility(View.GONE);
                         break;
                     case 1:
-                        setNextFocus(Title, Creator);
-                        setNextFocus(Source, Title);
+                        metas1.setVisibility(View.GONE);
                         metas2.setVisibility(View.VISIBLE);
                         metas3.setVisibility(View.GONE);
                         metasimginfos.setVisibility(View.GONE);
                         break;
                     case 2:
-                        setNextFocus(Title, Languages);
-                        setNextFocus(Coverage, Title);
+                        metas1.setVisibility(View.GONE);
                         metas2.setVisibility(View.GONE);
                         metas3.setVisibility(View.VISIBLE);
                         metasimginfos.setVisibility(View.GONE);
                         break;
                     case 3:
-                        setNextFocus(Title, ImgTitle);
-                        setNextFocus(ImgDescription, Title);
+                        metas1.setVisibility(View.GONE);
                         metas2.setVisibility(View.GONE);
                         metas3.setVisibility(View.GONE);
                         metasimginfos.setVisibility(View.VISIBLE);

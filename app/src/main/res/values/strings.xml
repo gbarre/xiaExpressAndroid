@@ -35,9 +35,9 @@
     <string name="identifier">Identifier:</string>
     <string name="source">Source:</string>
     <string name="date">Date:</string>
+    <string name="readOnly">Read Only:</string>
+    <string name="showDetails">Show Details:</string>
     <!--<string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
     <string name=""></string>-->
 
 </resources>
