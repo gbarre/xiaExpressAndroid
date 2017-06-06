@@ -49,6 +49,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import static fr.ac_versailles.dane.xiaexpress.Constants.xmlElementsDict;
+
 /**
  * PlayXia.java
  * XiaExpress
@@ -73,7 +75,6 @@ public class PlayXia extends AppCompatActivity {
 
     private final Map<Integer, xiaDetail> details = new HashMap<>();
     private final int transitionDuration = 500; // in milliseconds
-    private final Map<String, String> xmlElementsDict = new HashMap<>();
     private float cornerWidth = 0;
     private float cornerHeight = 0;
     private Bitmap fullSizeBackground = null;
@@ -111,6 +112,7 @@ public class PlayXia extends AppCompatActivity {
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
         String xmlDirectory = Constants.getXMLFrom(rootDirectory);
         String cacheDirectory = Constants.getCacheFrom(rootDirectory);
+        Constants.buildXMLElements(this);
 
         background = (ImageView) findViewById(R.id.image);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -151,20 +153,6 @@ public class PlayXia extends AppCompatActivity {
             }
         });
 
-        xmlElementsDict.put("license", "License");
-        xmlElementsDict.put("title", "Title");
-        xmlElementsDict.put("date", "Date");
-        xmlElementsDict.put("creator", "Creator");
-        xmlElementsDict.put("rights", "Rights");
-        xmlElementsDict.put("publisher", "Publisher");
-        xmlElementsDict.put("identifier", "Identifier");
-        xmlElementsDict.put("source", "Source");
-        xmlElementsDict.put("relation", "Relation");
-        xmlElementsDict.put("language", "Languages");
-        xmlElementsDict.put("keywords", "Keywords");
-        xmlElementsDict.put("coverage", "Coverage");
-        xmlElementsDict.put("contributors", "Contributors");
-        xmlElementsDict.put("description", "Description");
     }
 
     private void showMetas() {

@@ -60,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minHeight="10dp"
-            android:text="Metas 1"
+            android:text="@string/metas1"
             android:textAllCaps="false"
             android:textColor="@color/blue" />
 
@@ -68,7 +68,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minHeight="10dp"
-            android:text="Metas 2"
+            android:text="@string/metas2"
             android:textAllCaps="false"
             android:textColor="@color/blue" />
 
@@ -76,7 +76,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minHeight="10dp"
-            android:text="Metas 3"
+            android:text="@string/metas3"
             android:textAllCaps="false"
             android:textColor="@color/blue" />
 
@@ -84,7 +84,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minHeight="10dp"
-            android:text="Image Infos"
+            android:text="@string/image_infos"
             android:textAllCaps="false"
             android:textColor="@color/blue" />
 

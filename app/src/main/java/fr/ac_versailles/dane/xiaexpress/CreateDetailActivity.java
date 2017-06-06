@@ -1106,7 +1106,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            dbg.pt("gestureListener", "doubletap", true);
             detailInfos();
             return true;
         }
