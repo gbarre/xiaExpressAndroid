@@ -103,13 +103,16 @@ public class Metas extends AppCompatActivity {
         setNextFocus(metasTitle, metasDescription);
         ReadOnly = (Switch) findViewById(R.id.readOnly);
         String roStatus = Util.getNodeValue(xml, "xia/readonly");
-        ReadOnly.setChecked((roStatus.equals("true")));
+        ReadOnly.setChecked(roStatus.equals("true"));
         ReadOnly.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
                 showMyDialog(ReadOnly.isChecked(), "");
             }
         });
+        final Switch ShowDetails = (Switch) findViewById(R.id.showDetails);
+        String sdStatus = Util.getNodeAttribute(xml, "details", "show");
+        ShowDetails.setChecked(sdStatus.equals("true"));
 
         // Second subview
         final EditText Creator = (EditText) findViewById(R.id.metasCreator);
@@ -213,8 +216,9 @@ public class Metas extends AppCompatActivity {
                 xml = Util.setNodeValue(xml, "contributors", Contributors.getText().toString());
                 xml = Util.setNodeValue(xml, "date", metasDate.getText().toString());
                 xml = Util.setNodeValue(xml, "license", metasLicence.getSelectedItem().toString());
+                xml = Util.setNodeAttribute(xml, "details", "show", String.valueOf(ShowDetails.isChecked()));
 
-                // Todo showDetails, imgTitle/Desc
+                // Todo imgTitle/Desc
 
                 Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
                 finish();

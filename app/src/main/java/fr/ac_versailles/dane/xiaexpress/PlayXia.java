@@ -87,6 +87,7 @@ public class PlayXia extends AppCompatActivity {
     private float yMin = 0;
     private RelativeLayout detailsArea;
     private Boolean detailsLoaded = false;
+    private Boolean showDetails = true;
     private Boolean showPopup = false;
     private Boolean showMetasPopup = false;
     private Boolean showZoom = false;
@@ -111,7 +112,6 @@ public class PlayXia extends AppCompatActivity {
         String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
         String xmlDirectory = Constants.getXMLFrom(rootDirectory);
-        String cacheDirectory = Constants.getCacheFrom(rootDirectory);
         Constants.buildXMLElements(this);
 
         background = (ImageView) findViewById(R.id.image);
@@ -119,6 +119,8 @@ public class PlayXia extends AppCompatActivity {
 
         fileTitle = getIntent().getStringExtra("fileTitle");
         xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+
+        showDetails = (Util.getNodeAttribute(xml, "details", "show").equals("true"));
 
         playDetail = (LinearLayout) findViewById(R.id.playDetail);
         playDetail.setVisibility(View.INVISIBLE);
@@ -332,6 +334,8 @@ public class PlayXia extends AppCompatActivity {
 
                 ImageView newShape = details.get(detailTag).createShape(this, false, Constants.blue, cornerWidth, cornerHeight, metrics, 0, drawEllipse, details.get(detailTag).locked);
                 detailsArea.addView(newShape);
+                int visibility = (showDetails) ? View.VISIBLE : View.INVISIBLE;
+                newShape.setVisibility(visibility);
             }
         }
         detailsLoaded = true;
