@@ -10,6 +10,9 @@ import android.text.Spanned;
 import android.widget.ImageView;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -83,6 +86,32 @@ class Util extends Activity {
             e.printStackTrace();
         }
         return value;
+    }
+
+    static String getNodeAttribute(Document xml, String node, String attribute) {
+        String attributeValue = "";
+        NodeList nodes = xml.getElementsByTagName(node);
+        Node firstNode = nodes.item(0);
+        NamedNodeMap nodeAttr = firstNode.getAttributes();
+        Node attr = nodeAttr.getNamedItem(attribute);
+        attributeValue = attr.getTextContent();
+        return attributeValue;
+    }
+
+    static Document setNodeValue(Document xml, String node, String value) {
+        NodeList nodes = xml.getElementsByTagName(node);
+        Node firstNode = nodes.item(0);
+        firstNode.setTextContent(value);
+        return xml;
+    }
+
+    static Document setNodeAttribute(Document xml, String node, String attribute, String value) {
+        NodeList nodes = xml.getElementsByTagName(node);
+        Node firstNode = nodes.item(0);
+        NamedNodeMap nodeAttr = firstNode.getAttributes();
+        Node attr = nodeAttr.getNamedItem(attribute);
+        attr.setTextContent(value);
+        return xml;
     }
 
     static Document getXMLFromPath(String filepath) {

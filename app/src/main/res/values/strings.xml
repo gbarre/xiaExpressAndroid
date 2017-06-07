@@ -41,17 +41,31 @@
     <string name="metas2">Metas 2</string>
     <string name="metas3">Metas 3</string>
     <string name="image_infos">Image Infos</string>
+    <string name="password">Password...</string>
+    <string name="enter_code">Enter code</string>
+    <string name="create_code">Create Code</string>
+    <string name="try_again">Please, try again...</string>
+    <string name="double_check">Type again please</string>
+    <string name="error">Error</string>
     <!--<string name=""></string>
     <string name=""></string>
     <string name=""></string>
     <string name=""></string>
     <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
     <string name=""></string>-->
+
+    <string-array name="licenses_array">
+        <item>Proprietary - CC-Zero</item>
+        <item>CC Attribution - CC-BY</item>
+        <item>CC Attribution-ShareALike - CC-BY-SA</item>
+        <item>CC Attribution-NoDerivs - CC-BY-ND</item>
+        <item>CC Attribution-NonCommercial - CC-BY-NC</item>
+        <item>CC Attribution-NonCommercial-ShareALike - CC-BY-NC-SA</item>
+        <item>CC Attribution-NonCommercial-NoDerivs - CC-BY-NC-ND</item>
+        <item>CC0 Public Domain Dedication</item>
+        <item>Free Art</item>
+        <item>Open Font License</item>
+        <item>Other</item>
+    </string-array>
 
 </resources>

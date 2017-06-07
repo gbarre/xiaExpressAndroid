@@ -1,26 +1,43 @@
 package fr.ac_versailles.dane.xiaexpress;
 
+import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Document;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
 
 import co.ceryle.segmentedbutton.SegmentedButtonGroup;
+
+import static fr.ac_versailles.dane.xiaexpress.Constants.xmlElementsDict;
 
 /**
  * Metas.java
  * XiaExpress
- * <p>
+ *
  * Created by guillaume on 02/06/2017.
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -37,58 +54,32 @@ import co.ceryle.segmentedbutton.SegmentedButtonGroup;
 
 public class Metas extends AppCompatActivity {
 
-    private final View.OnClickListener cancelListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            finish();
-        }
-    };
-    private final View.OnClickListener doneListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            // Save the detail in xml
-            /*NodeList xmlDetails = xml.getElementsByTagName("detail");
-            for (int i = 0; i < xmlDetails.getLength(); i++) {
-                Node detail = xmlDetails.item(i);
-                NamedNodeMap detailAttr = detail.getAttributes();
-                Node t = detailAttr.getNamedItem("tag");
-                Integer detailTag = Integer.valueOf(t.getTextContent());
-                if (detailTag.equals(tag)) {
-                    Node detailZoom = detailAttr.getNamedItem("zoom");
-                    detailZoom.setTextContent(String.valueOf(checkBoxZoom.isChecked()));
-                    Node detailLocked = detailAttr.getNamedItem("locked");
-                    detailLocked.setTextContent(String.valueOf(checkBoxLocked.isChecked()));
-                    Node detailTitle = detailAttr.getNamedItem("title");
-                    detailTitle.setTextContent(String.valueOf(txtTitle.getText()));
-
-                    detail.setTextContent(String.valueOf(txtDesc.getText()));
-
-                }
-            }
-            Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
-*/
-            finish();
-        }
-    };
+    private final Calendar myCalendar = Calendar.getInstance();
     private Document xml;
-    private String fileTitle = "";
-    private String xmlDirectory = "";
-    private EditText txtTitle = null;
-    private EditText txtDesc = null;
+    private String fileTitle;
+    private String xmlDirectory;
+    private TextView title;
+    private EditText metasDate;
+    final DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+            myCalendar.set(Calendar.YEAR, year);
+            myCalendar.set(Calendar.MONTH, monthOfYear);
+            myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            updateLabel();
+        }
+    };
+    private Spinner metasLicence;
+    private Switch ReadOnly;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_metas);
 
-        Button btnDone = (Button) findViewById(R.id.done);
-        Button btnCancel = (Button) findViewById(R.id.cancel);
-
-        btnDone.setOnClickListener(doneListener);
-        btnCancel.setOnClickListener(cancelListener);
-
         String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
+        Constants.buildXMLElements(this);
 
         fileTitle = getIntent().getStringExtra("fileTitle");
 
@@ -104,12 +95,21 @@ public class Metas extends AppCompatActivity {
         metas3.setVisibility(View.GONE);
         metasimginfos.setVisibility(View.GONE);
 
-        final TextView Title = (TextView) findViewById(R.id.Title);
+        title = (TextView) findViewById(R.id.Title);
 
         // First subview
         final EditText metasTitle = (EditText) findViewById(R.id.metasTitle);
         final EditText metasDescription = (EditText) findViewById(R.id.metasDescription);
         setNextFocus(metasTitle, metasDescription);
+        ReadOnly = (Switch) findViewById(R.id.readOnly);
+        String roStatus = Util.getNodeValue(xml, "xia/readonly");
+        ReadOnly.setChecked((roStatus.equals("true")));
+        ReadOnly.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                showMyDialog(ReadOnly.isChecked(), "");
+            }
+        });
 
         // Second subview
         final EditText Creator = (EditText) findViewById(R.id.metasCreator);
@@ -121,49 +121,40 @@ public class Metas extends AppCompatActivity {
         setNextFocus(Publisher, Identifier);
         final EditText Source = (EditText) findViewById(R.id.metasSource);
         setNextFocus(Identifier, Source);
+        metasDate = (EditText) findViewById(R.id.metasDate);
+
+        metasDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new DatePickerDialog(Metas.this, date, myCalendar.get(Calendar.YEAR),
+                        myCalendar.get(Calendar.MONTH),
+                        myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+            }
+        });
 
         // Third view
-        final EditText Languages = (EditText) findViewById(R.id.metasLanguages);
+        final EditText Language = (EditText) findViewById(R.id.metasLanguage);
         final EditText Keywords = (EditText) findViewById(R.id.metasKeywords);
-        setNextFocus(Languages, Keywords);
+        setNextFocus(Language, Keywords);
         final EditText Contributors = (EditText) findViewById(R.id.metasContributors);
         setNextFocus(Keywords, Contributors);
         final EditText Relation = (EditText) findViewById(R.id.metasRelation);
         setNextFocus(Contributors, Relation);
         final EditText Coverage = (EditText) findViewById(R.id.metasCoverage);
         setNextFocus(Relation, Coverage);
+        metasLicence = (Spinner) findViewById(R.id.metasLicense);
 
         // Fourth view
         final EditText ImgTitle = (EditText) findViewById(R.id.metasImgTitle);
         final EditText ImgDescription = (EditText) findViewById(R.id.metasImgDescription);
         setNextFocus(ImgTitle, ImgDescription);
 
-        // Load detail infos from xml
-        /*NodeList xmlDetails = xml.getElementsByTagName("detail");
-        for (int i = 0; i < xmlDetails.getLength(); i++) {
-            Node detail = xmlDetails.item(i);
-            NamedNodeMap detailAttr = detail.getAttributes();
-            Integer thisTag = Integer.valueOf(detailAttr.getNamedItem("tag").getTextContent());
-            if (thisTag.equals(tag)) { // we got it !
-                zoom = detailAttr.getNamedItem("zoom").getTextContent().equals("true");
-                lock = detailAttr.getNamedItem("locked").getTextContent().equals("true");
-                detailTitle = detailAttr.getNamedItem("title").getTextContent();
-                detailDescription = detail.getTextContent();
-                break;
-            }
+        // Get metadatas from xml
+        for (Map.Entry<String, String> entry : xmlElementsDict.entrySet()) {
+            String key = entry.getKey();
+            setStoredText(key);
         }
 
-        txtTitle = (EditText) findViewById(R.id.detailTitle);
-        checkBoxZoom = (Switch) findViewById(R.id.zoom);
-        checkBoxLocked = (Switch) findViewById(R.id.locked);
-        txtDesc = (EditText) findViewById(R.id.description);
-
-        txtTitle.setText(detailTitle);
-        checkBoxZoom.setChecked(zoom);
-        checkBoxLocked.setChecked(lock);
-        txtDesc.setText(detailDescription);
-        txtDesc.requestFocus();
-*/
         SegmentedButtonGroup segmentedButtonGroup = (SegmentedButtonGroup) findViewById(R.id.segmentedButtonGroup);
         segmentedButtonGroup.setOnClickedButtonPosition(new SegmentedButtonGroup.OnClickedButtonPosition() {
             @Override
@@ -197,11 +188,186 @@ public class Metas extends AppCompatActivity {
                 }
             }
         });
+
+        final View.OnClickListener cancelListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        };
+        final View.OnClickListener doneListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Save the detail in xml
+                xml = Util.setNodeValue(xml, "title", metasTitle.getText().toString());
+                xml = Util.setNodeValue(xml, "description", metasDescription.getText().toString());
+                xml = Util.setNodeValue(xml, "creator", Creator.getText().toString());
+                xml = Util.setNodeValue(xml, "rights", Rights.getText().toString());
+                xml = Util.setNodeValue(xml, "publisher", Publisher.getText().toString());
+                xml = Util.setNodeValue(xml, "identifier", Identifier.getText().toString());
+                xml = Util.setNodeValue(xml, "source", Source.getText().toString());
+                xml = Util.setNodeValue(xml, "relation", Relation.getText().toString());
+                xml = Util.setNodeValue(xml, "language", Language.getText().toString());
+                xml = Util.setNodeValue(xml, "keywords", Keywords.getText().toString());
+                xml = Util.setNodeValue(xml, "coverage", Coverage.getText().toString());
+                xml = Util.setNodeValue(xml, "contributors", Contributors.getText().toString());
+                xml = Util.setNodeValue(xml, "date", metasDate.getText().toString());
+                xml = Util.setNodeValue(xml, "license", metasLicence.getSelectedItem().toString());
+
+                // Todo showDetails, imgTitle/Desc
+
+                Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
+                finish();
+            }
+        };
+
+        Button btnDone = (Button) findViewById(R.id.done);
+        Button btnCancel = (Button) findViewById(R.id.cancel);
+
+        btnDone.setOnClickListener(doneListener);
+        btnCancel.setOnClickListener(cancelListener);
+
+    }
+
+    private void updateLabel() {
+
+        String myFormat = "dd/MM/yyyy"; //In which you need put here
+        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.FRENCH);
+
+        metasDate.setText(sdf.format(myCalendar.getTime()));
     }
 
     private void setNextFocus(View source, View target) {
         source.setNextFocusDownId(target.getId());
         source.setNextFocusRightId(target.getId());
         target.setNextFocusLeftId(source.getId());
+    }
+
+    private void setStoredText(String element) {
+        String id = "metas" + element.substring(0, 1).toUpperCase() + element.substring(1).toLowerCase();
+        String text = Util.getNodeValue(xml, "xia/" + element);
+
+        if (element.equals("license")) {
+            if (text.length() > 0) {
+                String[] licenses = getResources().getStringArray(R.array.licenses_array);
+                for (int i = 0; i < licenses.length; i++) {
+                    if (text.equals(licenses[i])) {
+                        metasLicence.setSelection(i);
+                        break;
+                    } else {
+                        metasLicence.setSelection(4); // CC Attribution-NonCommercial - CC-BY-NC
+                    }
+                }
+            } else {
+                metasLicence.setSelection(4); // CC Attribution-NonCommercial - CC-BY-NC
+            }
+        } else {
+            EditText docElement = (EditText) findViewById(getResources().getIdentifier(id, "id", getPackageName()));
+            if (text.length() > 0) {
+                if (element.equals("date")) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    Date mDate = null;
+                    try {
+                        mDate = sdf.parse(text);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    // Set text
+                    text = DateFormat.getDateInstance(DateFormat.SHORT).format(mDate);
+                    metasDate.setText(text);
+                    // prepare datepicker
+                    SimpleDateFormat dfy = new SimpleDateFormat("yyyy");
+                    int year = Integer.parseInt(dfy.format(mDate).toString());
+                    myCalendar.set(Calendar.YEAR, year);
+                    SimpleDateFormat dfm = new SimpleDateFormat("MM");
+                    int month = Integer.parseInt(dfm.format(mDate).toString()) - 1;
+                    myCalendar.set(Calendar.MONTH, month);
+                    SimpleDateFormat dfd = new SimpleDateFormat("dd");
+                    int day = Integer.parseInt(dfd.format(mDate).toString());
+                    myCalendar.set(Calendar.DAY_OF_MONTH, day);
+
+                } else {
+                    docElement.setText(text);
+                }
+                if (element.equals("title")) {
+                    title.setText(text);
+                }
+            }
+        }
+    }
+
+    private void showMyDialog(final Boolean createPass, final String previousPass) {
+        // get prompts.xml view
+        LayoutInflater li = LayoutInflater.from(Metas.this);
+        final View promptView = li.inflate(R.layout.prompt, null);
+        final TextView roText = (TextView) promptView.findViewById(R.id.textView1);
+        String roAction;
+        if (createPass) {
+            roAction = (previousPass.equals("")) ?
+                    getResources().getString(R.string.create_code) :
+                    getResources().getString(R.string.double_check);
+        } else {
+            roAction = getResources().getString(R.string.enter_code);
+        }
+
+        roText.setText(roAction);
+
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Metas.this);
+
+        // set prompt.xml to alertdialog builder
+        alertDialogBuilder.setView(promptView);
+
+        final EditText userInput = (EditText) promptView
+                .findViewById(R.id.editTextDialogUserInput);
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton(getResources().getString(R.string.ok),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                final String currentPass = userInput.getText().toString();
+                                if (currentPass.equals("")) {
+                                    ReadOnly.setChecked(!ReadOnly.isChecked());
+                                    dialog.cancel();
+                                } else {
+                                    if (!createPass) { // remove the old password
+                                        if (currentPass.equals(Util.getNodeAttribute(xml, "readonly", "code"))) { // good password
+                                            ReadOnly.setChecked(false); // disable RO
+                                            xml = Util.setNodeValue(xml, "readonly", "false");
+                                            xml = Util.setNodeAttribute(xml, "readonly", "code", "");
+                                            Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
+                                        } else { // Toast error !
+                                            Toast.makeText(Metas.this, getResources().getString(R.string.error), Toast.LENGTH_LONG).show();
+                                            ReadOnly.setChecked(true);
+                                            showMyDialog(false, "");
+                                        }
+                                    } else { // create password
+                                        if (previousPass.equals("")) { // need to check the password
+                                            showMyDialog(true, currentPass);
+                                        } else {
+                                            if (currentPass.equals(previousPass)) { // ok we need to store this password
+                                                xml = Util.setNodeValue(xml, "readonly", "true");
+                                                xml = Util.setNodeAttribute(xml, "readonly", "code", currentPass);
+                                                Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                ReadOnly.setChecked(!ReadOnly.isChecked());
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
     }
 }

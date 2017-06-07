@@ -45,9 +45,9 @@ public class Constants extends Application {
     public static int black = Color.argb(255, 0, 0, 0);
 
     public static void buildXMLElements(Context ctx) {
-        //xmlElementsDict.put("license", ctx.getString(R.string.license));
+        xmlElementsDict.put("license", ctx.getString(R.string.license));
         xmlElementsDict.put("title", ctx.getString(R.string.title));
-        //xmlElementsDict.put("date", ctx.getString(R.string.date));
+        xmlElementsDict.put("date", ctx.getString(R.string.date));
         xmlElementsDict.put("creator", ctx.getString(R.string.creator));
         xmlElementsDict.put("rights", ctx.getString(R.string.rights));
         xmlElementsDict.put("publisher", ctx.getString(R.string.publisher));
