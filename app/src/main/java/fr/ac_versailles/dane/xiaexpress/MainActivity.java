@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
                         "\t<coverage></coverage>\n" +
                         "\t<contributors></contributors>\n" +
                         "\t<readonly code=\"1234\">false</readonly>\n" +
-                        "\t<image description=\"\" title=\"\" desctription=\"\" />\n" +
+                        "\t<image description=\"\" title=\"\"/>\n" +
                         "\t<details show=\"true\">\n" +
                         "\t</details>\n" +
                         "</xia>";

@@ -149,7 +149,9 @@ public class Metas extends AppCompatActivity {
 
         // Fourth view
         final EditText ImgTitle = (EditText) findViewById(R.id.metasImgTitle);
+        ImgTitle.setText(Util.getNodeAttribute(xml, "image", "title"));
         final EditText ImgDescription = (EditText) findViewById(R.id.metasImgDescription);
+        ImgDescription.setText(Util.getNodeAttribute(xml, "image", "description"));
         setNextFocus(ImgTitle, ImgDescription);
 
         // Get metadatas from xml
@@ -217,8 +219,8 @@ public class Metas extends AppCompatActivity {
                 xml = Util.setNodeValue(xml, "date", metasDate.getText().toString());
                 xml = Util.setNodeValue(xml, "license", metasLicence.getSelectedItem().toString());
                 xml = Util.setNodeAttribute(xml, "details", "show", String.valueOf(ShowDetails.isChecked()));
-
-                // Todo imgTitle/Desc
+                xml = Util.setNodeAttribute(xml, "image", "title", ImgTitle.getText().toString());
+                xml = Util.setNodeAttribute(xml, "image", "description", ImgDescription.getText().toString());
 
                 Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
                 finish();
@@ -281,13 +283,13 @@ public class Metas extends AppCompatActivity {
                     metasDate.setText(text);
                     // prepare datepicker
                     SimpleDateFormat dfy = new SimpleDateFormat("yyyy");
-                    int year = Integer.parseInt(dfy.format(mDate).toString());
+                    int year = Integer.parseInt(dfy.format(mDate));
                     myCalendar.set(Calendar.YEAR, year);
                     SimpleDateFormat dfm = new SimpleDateFormat("MM");
-                    int month = Integer.parseInt(dfm.format(mDate).toString()) - 1;
+                    int month = Integer.parseInt(dfm.format(mDate)) - 1;
                     myCalendar.set(Calendar.MONTH, month);
                     SimpleDateFormat dfd = new SimpleDateFormat("dd");
-                    int day = Integer.parseInt(dfd.format(mDate).toString());
+                    int day = Integer.parseInt(dfd.format(mDate));
                     myCalendar.set(Calendar.DAY_OF_MONTH, day);
 
                 } else {
