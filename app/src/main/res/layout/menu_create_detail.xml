@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="44dp"
-    android:background="@color/blue">
+    android:background="@color/blue"
+    android:orientation="horizontal">
 
     <Button
+        android:id="@+id/collection"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/collection"
-        android:text="@string/Collection"
         android:background="@color/blue"
+        android:text="@string/Collection"
         android:textColor="@color/white"/>
 
     <Space
@@ -19,13 +19,13 @@
         android:layout_weight="1" />
 
     <TextView
+        android:id="@+id/menuTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/title"
-        android:text="@string/title"
         android:background="@color/blue"
-        android:textColor="@color/white"
-        android:contentDescription="@string/title"/>
+        android:contentDescription="@string/title"
+        android:text="@string/title"
+        android:textColor="@color/white" />
 
     <Space
         android:layout_width="wrap_content"
@@ -34,83 +34,83 @@
         />
 
     <ImageButton
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:paddingTop="4dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginEnd="8dp"
-        android:scaleType="centerInside"
         android:id="@+id/addDetail"
-        android:src="@drawable/plus"
-        android:background="@color/blue"
-        android:contentDescription="@string/add"/>
-
-    <ImageButton
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:paddingTop="4dp"
-        android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:background="@color/blue"
+        android:contentDescription="@string/add"
+        android:paddingTop="4dp"
         android:scaleType="centerInside"
+        android:src="@drawable/plus" />
+
+    <ImageButton
         android:id="@+id/undo"
-        android:src="@drawable/reply"
-        android:background="@color/blue"
-        android:contentDescription="@string/undo"/>
-
-    <ImageButton
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:paddingTop="4dp"
-        android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:background="@color/blue"
+        android:contentDescription="@string/undo"
+        android:paddingTop="4dp"
         android:scaleType="centerInside"
+        android:src="@drawable/reply" />
+
+    <ImageButton
         android:id="@+id/trash"
-        android:src="@drawable/trash"
-        android:background="@color/blue"
-        android:contentDescription="@string/trash"/>
-
-    <ImageButton
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:paddingTop="4dp"
-        android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
-        android:scaleType="centerInside"
-        android:id="@+id/play"
-        android:src="@drawable/play"
+        android:layout_marginRight="8dp"
         android:background="@color/blue"
-        android:contentDescription="@string/play"/>
+        android:contentDescription="@string/trash"
+        android:paddingTop="4dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/trash" />
+
+    <ImageButton
+        android:id="@+id/play"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:background="@color/blue"
+        android:contentDescription="@string/play"
+        android:paddingTop="4dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/play" />
 
     <Button
+        android:id="@+id/ok"
         android:layout_width="44dp"
         android:layout_height="44dp"
-        android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
-        android:id="@+id/ok"
-        android:text="@string/ok"
+        android:layout_marginRight="8dp"
         android:background="@color/blue"
+        android:text="@string/ok"
         android:textColor="@color/white"/>
 
     <ImageButton
+        android:id="@+id/export"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:paddingTop="4dp"
-        android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
-        android:scaleType="centerInside"
-        android:id="@+id/export"
-        android:src="@drawable/export"
+        android:layout_marginRight="8dp"
         android:background="@color/blue"
-        android:contentDescription="@string/export"/>
+        android:contentDescription="@string/export"
+        android:paddingTop="4dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/export" />
 
     <ImageButton
+        android:id="@+id/edit"
         android:layout_width="36dp"
         android:layout_height="36dp"
+        android:background="@color/blue"
+        android:contentDescription="@string/edit"
         android:paddingTop="4dp"
         android:scaleType="centerInside"
-        android:id="@+id/edit"
-        android:src="@drawable/edit"
-        android:background="@color/blue"
-        android:contentDescription="@string/edit"/>
+        android:src="@drawable/edit" />
 
 </LinearLayout>

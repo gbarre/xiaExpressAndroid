@@ -312,7 +312,7 @@ public class PlayXia extends AppCompatActivity {
                     }
                 }
 
-                xiaDetail newDetail = new xiaDetail(detailTag, scale);
+                xiaDetail newDetail = new xiaDetail(detailTag, scale, 0, cornerWidth, cornerHeight, metrics);
                 details.put(detailTag, newDetail);
                 details.get(detailTag).path = path;
                 details.get(detailTag).constraint = detailAttr.getNamedItem("constraint").getTextContent();
@@ -332,7 +332,7 @@ public class PlayXia extends AppCompatActivity {
                 }
                 Boolean drawEllipse = (details.get(detailTag).constraint.equals(Constants.constraintEllipse));
 
-                ImageView newShape = details.get(detailTag).createShape(this, false, Constants.blue, cornerWidth, cornerHeight, metrics, 0, drawEllipse, details.get(detailTag).locked);
+                ImageView newShape = details.get(detailTag).createShape(this, false, Constants.blue, drawEllipse);
                 detailsArea.addView(newShape);
                 int visibility = (showDetails) ? View.VISIBLE : View.INVISIBLE;
                 newShape.setVisibility(visibility);

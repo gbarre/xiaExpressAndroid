@@ -5,11 +5,14 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.PathShape;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,11 +47,18 @@ class xiaDetail {
     public String path = "";
     private Integer tag = 0;
     private float scale = 1;
+    private float toolbarHeight;
+    private float cornerWidth, cornerHeight;
+    private DisplayMetrics metrics;
 
-    public xiaDetail(Integer tag, float scale) {
+    public xiaDetail(Integer tag, float scale, float tbH, float cw, float ch, DisplayMetrics m) {
         this.tag = tag;
         points.clear();
         this.scale = scale;
+        toolbarHeight = tbH;
+        cornerWidth = cw;
+        cornerHeight = ch;
+        metrics = m;
     }
 
     Rect bezierFrame() {
@@ -113,7 +123,7 @@ class xiaDetail {
         return image;
     }
 
-    ImageView createShape(Context ctx, Boolean fill, int color, float cornerWidth, float cornerHeight, DisplayMetrics metrics, float toolbarHeight, Boolean drawEllipse, Boolean locked) {
+    ImageView createShape(Context ctx, Boolean fill, int color, Boolean drawEllipse) {
         ImageView shapeView = new ImageView(ctx);
         ShapeDrawable shape = new ShapeDrawable();
         GradientDrawable drawable = new GradientDrawable();
@@ -178,6 +188,23 @@ class xiaDetail {
         shapeView.setTag(this.tag + 100);
 
         return shapeView;
+    }
+
+    void drawLockImg(Context ctx, RelativeLayout parentView) {
+        if (locked) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                Drawable draw = ctx.getDrawable(R.drawable.lock);
+                ImageView img = new ImageView(ctx);
+                img.setImageDrawable(draw);
+                img.setAlpha((float) 0.5);
+                Rect frame = bezierFrame();
+                parentView.addView(img);
+                img.getLayoutParams().width = 40;
+                img.setX((frame.centerX() - img.getLayoutParams().width / 2) * scale);
+                img.setY((frame.centerY() - img.getLayoutParams().height / 2 - toolbarHeight) * scale - cornerHeight / 2);
+                img.setTag(tag + 100);
+            }
+        }
     }
 
 }
