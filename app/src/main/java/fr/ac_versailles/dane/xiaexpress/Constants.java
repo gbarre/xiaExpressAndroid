@@ -54,7 +54,7 @@ public class Constants extends Application {
         xmlElementsDict.put("identifier", ctx.getString(R.string.identifier));
         xmlElementsDict.put("source", ctx.getString(R.string.source));
         xmlElementsDict.put("relation", ctx.getString(R.string.relation));
-        xmlElementsDict.put("language", ctx.getString(R.string.languages));
+        xmlElementsDict.put("language", ctx.getString(R.string.language));
         xmlElementsDict.put("keywords", ctx.getString(R.string.keywords));
         xmlElementsDict.put("coverage", ctx.getString(R.string.coverage));
         xmlElementsDict.put("contributors", ctx.getString(R.string.contributors));

@@ -23,7 +23,7 @@
     <string name="choose_image">Choose image</string>
     <string name="detail_title">Detail title</string>
     <string name="description">Description</string>
-    <string name="languages">Languages</string>
+    <string name="language">Languages</string>
     <string name="keywords">Keywords</string>
     <string name="contributors">Contributors</string>
     <string name="relation">Relation</string>
