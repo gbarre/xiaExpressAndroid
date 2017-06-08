@@ -95,7 +95,7 @@ public class PlayXia extends AppCompatActivity {
     private ImageView background = null;
     private LinearLayout playDetail = null;
     private RelativeLayout playMetas = null;
-    private RelativeLayout zoomDetail = null;
+    private RelativeLayout zoomDetailLayout = null;
     private RelativeLayout movingArea = null;
     private ImageView detailThumb = null;
     private ProgressBar mProgressBar;
@@ -128,8 +128,8 @@ public class PlayXia extends AppCompatActivity {
         playMetas = (RelativeLayout) findViewById(R.id.playMetas);
         playMetas.setVisibility(View.INVISIBLE);
 
-        zoomDetail = (RelativeLayout) findViewById(R.id.zoomDetail);
-        zoomDetail.setVisibility(View.INVISIBLE);
+        zoomDetailLayout = (RelativeLayout) findViewById(R.id.zoomDetail);
+        zoomDetailLayout.setVisibility(View.INVISIBLE);
 
         detailThumb = (ImageView) findViewById(R.id.detailThumb);
         detailThumb.setVisibility(View.INVISIBLE);
@@ -183,7 +183,7 @@ public class PlayXia extends AppCompatActivity {
         playMetas.setAnimation(translatePopup);
 
         // After animations, the moving thumb come back, we need to remove it (and other things)
-        finishTransition endTransition = new finishTransition(null, background, detailsArea, zoomDetail);
+        finishTransition endTransition = new finishTransition(null, background, detailsArea, zoomDetailLayout);
         endTransition.execute();
         showMetasPopup = true;
         showPopup = true;
@@ -244,7 +244,7 @@ public class PlayXia extends AppCompatActivity {
             case MotionEvent.ACTION_POINTER_DOWN: {
 
                 if (showZoom) {
-                    zoomDetail(!showZoom, detailThumb);
+                    zoomDetail(false, detailThumb);
                 } else if (!showPopup) {
                     // Look if touch a detail
                     for (Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
@@ -355,16 +355,15 @@ public class PlayXia extends AppCompatActivity {
                 showMetasPopup = false;
             }
 
-            zoomDetail.setVisibility(View.INVISIBLE);
+            zoomDetailLayout.setVisibility(View.INVISIBLE);
             //background.setVisibility(View.VISIBLE);
             background.setAlpha((float) 1.0);
             detailsArea.setVisibility(View.VISIBLE);
-            //detailThumb.setVisibility(View.INVISIBLE);
+            detailThumb.setVisibility(View.INVISIBLE);
         } else { // Show the popup
             //Boolean zoom = true;
             String detailTitle = "";
             String detailDescription = "";
-            Boolean drawEllipse = false;
 
             // Prepare the detail "popup"
             int width = metrics.widthPixels * 8 / 10;
@@ -384,7 +383,6 @@ public class PlayXia extends AppCompatActivity {
                     NamedNodeMap detailAttr = detail.getAttributes();
                     Integer thisTag = Integer.valueOf(detailAttr.getNamedItem("tag").getTextContent());
                     if (thisTag.equals(tag)) { // we got it !
-                        drawEllipse = details.get(tag).constraint.equals(Constants.constraintEllipse);
                         enableZoom = detailAttr.getNamedItem("zoom").getTextContent().equals("true");
                         detailTitle = detailAttr.getNamedItem("title").getTextContent();
                         detailDescription = detail.getTextContent();
@@ -505,7 +503,7 @@ public class PlayXia extends AppCompatActivity {
             playDetail.setAnimation(translatePopup);
 
             // After animations, the moving thumb come back, we need to remove it (and other things)
-            finishTransition endTransition = new finishTransition(movingThumb, background, detailsArea, zoomDetail);
+            finishTransition endTransition = new finishTransition(movingThumb, background, detailsArea, zoomDetailLayout);
             endTransition.execute();
 
             // get the center for the clipping circle
@@ -539,11 +537,14 @@ public class PlayXia extends AppCompatActivity {
         if (show) {
             ImageView detail_zoom = (ImageView) findViewById(R.id.detail_zoom);
             detail_zoom.setImageDrawable(im.getDrawable());
-            playDetail.setVisibility(View.INVISIBLE);
-            zoomDetail.setVisibility(View.VISIBLE);
+            findViewById(R.id.playDetail).clearAnimation();
+            playDetail.setVisibility(View.GONE);
+            background.setVisibility(View.GONE);
+            zoomDetailLayout.setVisibility(View.VISIBLE);
         } else {
             playDetail.setVisibility(View.VISIBLE);
-            zoomDetail.setVisibility(View.INVISIBLE);
+            background.setVisibility(View.VISIBLE);
+            zoomDetailLayout.setVisibility(View.GONE);
         }
         showZoom = !showZoom;
     }

@@ -41,16 +41,16 @@
     <string name="metas2">Metas 2</string>
     <string name="metas3">Metas 3</string>
     <string name="image_infos">Image Infos</string>
-    <string name="password">Password...</string>
+    <string name="password">Password…</string>
     <string name="enter_code">Enter code</string>
     <string name="create_code">Create Code</string>
-    <string name="try_again">Please, try again...</string>
+    <string name="try_again">Please, try again…</string>
     <string name="double_check">Type again please</string>
     <string name="error">Error</string>
+    <string name="detail_zoom">zoom</string>
+    <string name="discus">discus</string>
+    <string name="button">button</string>
     <!--<string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
     <string name=""></string>
     <string name=""></string>-->
 
