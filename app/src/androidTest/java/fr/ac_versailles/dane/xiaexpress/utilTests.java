@@ -3,6 +3,7 @@ package fr.ac_versailles.dane.xiaexpress;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.DisplayMetrics;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,9 +35,10 @@ import static junit.framework.Assert.assertEquals;
 @RunWith(AndroidJUnit4.class)
 public class utilTests {
 
-    private final xiaDetail singlePointDetail = new xiaDetail(1, 1);
-    private final xiaDetail multiplePointsDetail = new xiaDetail(1, 1);
+    private final DisplayMetrics metrics = new DisplayMetrics();
     private final Context ctx = InstrumentationRegistry.getTargetContext();
+    private final xiaDetail singlePointDetail = new xiaDetail(1, 1, 0, 20, 20, metrics, ctx);
+    private final xiaDetail multiplePointsDetail = new xiaDetail(1, 1, 0, 20, 20, metrics, ctx);
 
     public utilTests() {
         // Single point detail

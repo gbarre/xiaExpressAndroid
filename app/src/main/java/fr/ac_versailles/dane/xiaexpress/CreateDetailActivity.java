@@ -268,10 +268,10 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                                 detailsArea.removeView(child);
                             }
                         }
-                        ImageView newShape = details.get(currentDetailTag).createShape(this, true, Constants.red, false);
+                        ImageView newShape = details.get(currentDetailTag).createShape(true, Constants.red, false);
                         detailsArea.addView(newShape);
                         detailsArea.addView(newPoint);
-                        details.get(currentDetailTag).drawLockImg(this, detailsArea);
+                        details.get(currentDetailTag).drawLockImg(detailsArea);
                     }
                 }
                 else {
@@ -450,9 +450,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     }
 
                     Boolean drawEllipse = (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse));
-                    ImageView newShape = details.get(currentDetailTag).createShape(this, true, Constants.red, drawEllipse);
+                    ImageView newShape = details.get(currentDetailTag).createShape(true, Constants.red, drawEllipse);
                     detailsArea.addView(newShape);
-                    details.get(currentDetailTag).drawLockImg(this, detailsArea);
+                    details.get(currentDetailTag).drawLockImg(detailsArea);
                 }
                 break;
             }
@@ -471,9 +471,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         }
 
                         Boolean drawEllipse = (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse));
-                        ImageView newShape = details.get(currentDetailTag).createShape(this, true, Constants.red, drawEllipse);
+                        ImageView newShape = details.get(currentDetailTag).createShape(true, Constants.red, drawEllipse);
                         detailsArea.addView(newShape);
-                        details.get(currentDetailTag).drawLockImg(this, detailsArea);
+                        details.get(currentDetailTag).drawLockImg(detailsArea);
 
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) { // show points
                             for (Integer i = 0; i < detailsArea.getChildCount(); i++) {
@@ -574,7 +574,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         xmlDetails.appendChild(xmlNewDetail);
 
         // Create new detail
-        xiaDetail newDetail = new xiaDetail(currentDetailTag, scale, toolbarHeight, cornerWidth, cornerHeight, metrics);
+        xiaDetail newDetail = new xiaDetail(currentDetailTag, scale, toolbarHeight, cornerWidth, cornerHeight, metrics, this);
         details.put(currentDetailTag, newDetail);
 
         changeDetailColor(currentDetailTag);
@@ -588,7 +588,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 ImageView newPointR1 = details.get(currentDetailTag).createPoint(300, 30, R.drawable.corner, 1, CreateDetailActivity.this);
                 ImageView newPointR2 = details.get(currentDetailTag).createPoint(300, 150, R.drawable.corner, 2, CreateDetailActivity.this);
                 ImageView newPointR3 = details.get(currentDetailTag).createPoint(100, 150, R.drawable.corner, 3, CreateDetailActivity.this);
-                ImageView newShapeR = details.get(currentDetailTag).createShape(CreateDetailActivity.this, true, Constants.red, false);
+                ImageView newShapeR = details.get(currentDetailTag).createShape(true, Constants.red, false);
 
                 detailsArea.addView(newShapeR);
                 detailsArea.addView(newPointR0);
@@ -607,7 +607,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 ImageView newPointE2 = details.get(currentDetailTag).createPoint(300, 170, R.drawable.corner, 2, CreateDetailActivity.this);
                 ImageView newPointE3 = details.get(currentDetailTag).createPoint(200, 110, R.drawable.corner, 3, CreateDetailActivity.this);
 
-                ImageView newShapeE = details.get(currentDetailTag).createShape(CreateDetailActivity.this, true, Constants.red, true);
+                ImageView newShapeE = details.get(currentDetailTag).createShape(true, Constants.red, true);
 
                 detailsArea.addView(newShapeE);
                 detailsArea.addView(newPointE0);
@@ -680,14 +680,14 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             if (detail.points.size() > 2) {
                 Boolean drawEllipse = (detail.constraint.equals(Constants.constraintEllipse));
                 if (thisDetailTag.equals(tag)) {
-                    ImageView detailShape = detail.createShape(this, true, Constants.red, drawEllipse);
+                    ImageView detailShape = detail.createShape(true, Constants.red, drawEllipse);
                     detailsArea.addView(detailShape);
                 }
                 else {
-                    ImageView detailShape = detail.createShape(this, true, Constants.green, drawEllipse);
+                    ImageView detailShape = detail.createShape(true, Constants.green, drawEllipse);
                     detailsArea.addView(detailShape);
                 }
-                detail.drawLockImg(this, detailsArea);
+                detail.drawLockImg(detailsArea);
             }
             else { // only 1 or 2 points, remove them
                 for (int i = 0; i < detailsArea.getChildCount(); i++) {
@@ -816,7 +816,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         detailsArea.removeView(child);
                     }
                 }
-                xiaDetail newDetail = new xiaDetail(detailTag, scale, toolbarHeight, cornerWidth, cornerHeight, metrics);
+                xiaDetail newDetail = new xiaDetail(detailTag, scale, toolbarHeight, cornerWidth, cornerHeight, metrics, this);
                 details.put(detailTag, newDetail);
                 details.get(detailTag).path = path;
                 // Add points to detail
@@ -844,9 +844,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     Boolean drawEllipse = (details.get(detailTag).constraint.equals(Constants.constraintEllipse));
                     details.get(detailTag).locked = (detailAttr.getNamedItem("locked").getTextContent().equals("true"));
 
-                    ImageView newShape = details.get(detailTag).createShape(this, true, Constants.green, drawEllipse);
+                    ImageView newShape = details.get(detailTag).createShape(true, Constants.green, drawEllipse);
                     detailsArea.addView(newShape);
-                    details.get(detailTag).drawLockImg(this, detailsArea);
+                    details.get(detailTag).drawLockImg(detailsArea);
 
                     // TODO attainable points
                 }
@@ -920,9 +920,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     detailsArea.removeView(child);
                 }
             }
-            ImageView newShape = details.get(currentDetailTag).createShape(this, true, Constants.red, false);
+            ImageView newShape = details.get(currentDetailTag).createShape(true, Constants.red, false);
             detailsArea.addView(newShape);
-            details.get(currentDetailTag).drawLockImg(this, detailsArea);
+            details.get(currentDetailTag).drawLockImg(detailsArea);
         }
         setBtnsIcons();
     }

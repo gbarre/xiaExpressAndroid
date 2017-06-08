@@ -50,8 +50,9 @@ class xiaDetail {
     private float toolbarHeight;
     private float cornerWidth, cornerHeight;
     private DisplayMetrics metrics;
+    private Context ctx;
 
-    public xiaDetail(Integer tag, float scale, float tbH, float cw, float ch, DisplayMetrics m) {
+    public xiaDetail(Integer tag, float scale, float tbH, float cw, float ch, DisplayMetrics m, Context c) {
         this.tag = tag;
         points.clear();
         this.scale = scale;
@@ -59,6 +60,7 @@ class xiaDetail {
         cornerWidth = cw;
         cornerHeight = ch;
         metrics = m;
+        ctx = c;
     }
 
     Rect bezierFrame() {
@@ -123,7 +125,7 @@ class xiaDetail {
         return image;
     }
 
-    ImageView createShape(Context ctx, Boolean fill, int color, Boolean drawEllipse) {
+    ImageView createShape(Boolean fill, int color, Boolean drawEllipse) {
         ImageView shapeView = new ImageView(ctx);
         ShapeDrawable shape = new ShapeDrawable();
         GradientDrawable drawable = new GradientDrawable();
@@ -190,7 +192,7 @@ class xiaDetail {
         return shapeView;
     }
 
-    void drawLockImg(Context ctx, RelativeLayout parentView) {
+    void drawLockImg(RelativeLayout parentView) {
         if (locked) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 Drawable draw = ctx.getDrawable(R.drawable.lock);
