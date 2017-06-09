@@ -1,7 +1,11 @@
 package fr.ac_versailles.dane.xiaexpress;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -938,6 +942,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         ImageButton btExport = (ImageButton) findViewById(R.id.export);
         ImageButton btEdit = (ImageButton) findViewById(R.id.edit);
         ImageButton btTrash = (ImageButton) findViewById(R.id.trash);
+        ImageButton btDebug = (ImageButton) findViewById(R.id.debug);
 
         // Build the addDetail menu
         listPopupWindow = new ListPopupWindow(this);
@@ -1026,6 +1031,50 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             @Override
             public void onClick(View v) {
                 deleteDetail();
+            }
+        });
+
+        btDebug.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PackageManager manager = CreateDetailActivity.this.getPackageManager();
+                PackageInfo info = null;
+                try {
+                    info = manager.getPackageInfo(CreateDetailActivity.this.getPackageName(), 0);
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                String text = "Infos à transmettre au développeur :\n";
+                text = text + " - Version de l'API : " + android.os.Build.VERSION.SDK_INT + "\n";
+                text = text + " - Résolution utilisée : " + metrics.widthPixels + " x " + metrics.heightPixels + "\n";
+                text = text + " - Densiteé de pixel : " + metrics.densityDpi + "\n";
+                text = text + " - PackageName = " + info.packageName + "\n";
+                text = text + " - VersionCode = " + info.versionCode + "\n";
+                text = text + " - VersionName = " + info.versionName + "\n";
+
+                AlertDialog.Builder controller = new AlertDialog.Builder(CreateDetailActivity.this);
+                controller.setTitle("DEBUG");
+                controller.setMessage(text);
+                final String finalText = text;
+                controller.setPositiveButton("Copier...", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText("infos", finalText);
+                        clipboard.setPrimaryClip(clip);
+                    }
+                });
+                controller.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do nothing
+                    }
+                });
+
+                // Show the alert controller
+                AlertDialog alertController = controller.create();
+                alertController.show();
             }
         });
     }
