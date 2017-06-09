@@ -183,7 +183,7 @@ public class PlayXia extends AppCompatActivity {
         playMetas.setAnimation(translatePopup);
 
         // After animations, the moving thumb come back, we need to remove it (and other things)
-        finishTransition endTransition = new finishTransition(null, background, detailsArea, zoomDetailLayout);
+        finishTransition endTransition = new finishTransition(null);
         endTransition.execute();
         showMetasPopup = true;
         showPopup = true;
@@ -356,10 +356,8 @@ public class PlayXia extends AppCompatActivity {
             }
 
             zoomDetailLayout.setVisibility(View.INVISIBLE);
-            //background.setVisibility(View.VISIBLE);
             background.setAlpha((float) 1.0);
             detailsArea.setVisibility(View.VISIBLE);
-            detailThumb.setVisibility(View.INVISIBLE);
         } else { // Show the popup
             //Boolean zoom = true;
             String detailTitle = "";
@@ -503,7 +501,7 @@ public class PlayXia extends AppCompatActivity {
             playDetail.setAnimation(translatePopup);
 
             // After animations, the moving thumb come back, we need to remove it (and other things)
-            finishTransition endTransition = new finishTransition(movingThumb, background, detailsArea, zoomDetailLayout);
+            finishTransition endTransition = new finishTransition(movingThumb);
             endTransition.execute();
 
             // get the center for the clipping circle
@@ -514,7 +512,7 @@ public class PlayXia extends AppCompatActivity {
             float finalRadius = (float) Math.hypot(cx, cy);
 
             // create the animator for this view (the start radius is zero)
-            detailThumb.setVisibility(View.VISIBLE);
+            detailThumb.setVisibility(View.INVISIBLE);
             Animator anim;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                 anim = ViewAnimationUtils.createCircularReveal(detailThumb, cx, cy, 0, finalRadius);
@@ -672,15 +670,9 @@ public class PlayXia extends AppCompatActivity {
 
     private class finishTransition extends AsyncTask<Void, Void, Void> {
         private final ImageView mThumb;
-        private final ImageView bkg;
-        private final RelativeLayout dArea;
-        private final RelativeLayout zoomD;
 
-        finishTransition(ImageView t, ImageView b, RelativeLayout d, RelativeLayout z) {
+        finishTransition(ImageView t) {
             mThumb = t;
-            bkg = b;
-            dArea = d;
-            zoomD = z;
         }
 
         @Override
@@ -698,9 +690,10 @@ public class PlayXia extends AppCompatActivity {
             if (mThumb != null) {
                 ((ViewManager) mThumb.getParent()).removeView(mThumb);
             }
-            bkg.setAlpha((float) 0.4);
-            dArea.setVisibility(View.INVISIBLE);
-            zoomD.setVisibility(View.INVISIBLE);
+            background.setAlpha((float) 0.4);
+            detailsArea.setVisibility(View.INVISIBLE);
+            zoomDetailLayout.setVisibility(View.INVISIBLE);
+            detailThumb.setVisibility(View.VISIBLE);
         }
     }
 }

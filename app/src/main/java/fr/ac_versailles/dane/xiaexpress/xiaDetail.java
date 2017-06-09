@@ -9,7 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.PathShape;
-import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -41,10 +41,10 @@ import java.util.TreeSet;
 
 class xiaDetail {
 
-    public final Map<Integer, ImageView> points = new HashMap<>();
-    public String constraint = "";
-    public Boolean locked = false;
-    public String path = "";
+    final Map<Integer, ImageView> points = new HashMap<>();
+    String constraint = "";
+    Boolean locked = false;
+    String path = "";
     private Integer tag = 0;
     private float scale = 1;
     private float toolbarHeight;
@@ -52,7 +52,7 @@ class xiaDetail {
     private DisplayMetrics metrics;
     private Context ctx;
 
-    public xiaDetail(Integer tag, float scale, float tbH, float cw, float ch, DisplayMetrics m, Context c) {
+    xiaDetail(Integer tag, float scale, float tbH, float cw, float ch, DisplayMetrics m, Context c) {
         this.tag = tag;
         points.clear();
         this.scale = scale;
@@ -194,18 +194,16 @@ class xiaDetail {
 
     void drawLockImg(RelativeLayout parentView) {
         if (locked) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                Drawable draw = ctx.getDrawable(R.drawable.lock);
-                ImageView img = new ImageView(ctx);
-                img.setImageDrawable(draw);
-                img.setAlpha((float) 0.5);
-                Rect frame = bezierFrame();
-                parentView.addView(img);
-                img.getLayoutParams().width = 40;
-                img.setX((frame.centerX() - img.getLayoutParams().width / 2) * scale);
-                img.setY((frame.centerY() - img.getLayoutParams().height / 2 - toolbarHeight) * scale - cornerHeight / 2);
-                img.setTag(tag + 100);
-            }
+            Drawable draw = ContextCompat.getDrawable(ctx, R.drawable.lock);
+            ImageView img = new ImageView(ctx);
+            img.setImageDrawable(draw);
+            img.setAlpha((float) 0.5);
+            Rect frame = bezierFrame();
+            parentView.addView(img);
+            img.getLayoutParams().width = 40;
+            img.setX((frame.centerX() - img.getLayoutParams().width / 2) * scale);
+            img.setY((frame.centerY() - img.getLayoutParams().height / 2 - toolbarHeight) * scale - cornerHeight / 2);
+            img.setTag(tag + 100);
         }
     }
 

@@ -35,10 +35,11 @@ import static junit.framework.Assert.assertEquals;
 @RunWith(AndroidJUnit4.class)
 public class xiaDetailTests {
 
-    private final xiaDetail singlePointDetail = new xiaDetail(1, 1);
-    private final xiaDetail multiplePointsDetail = new xiaDetail(1, 1);
-    private final xiaDetail ellipsePointsDetail = new xiaDetail(1, 1);
     private final Context ctx = InstrumentationRegistry.getTargetContext();
+    private final DisplayMetrics metrics = new DisplayMetrics();
+    private final xiaDetail singlePointDetail = new xiaDetail(1, 1, 0, 20, 20, metrics, ctx);
+    private final xiaDetail multiplePointsDetail = new xiaDetail(1, 1, 0, 20, 20, metrics, ctx);
+    private final xiaDetail ellipsePointsDetail = new xiaDetail(1, 1, 0, 20, 20, metrics, ctx);
 
     public xiaDetailTests() {
         // Single point detail
@@ -89,7 +90,7 @@ public class xiaDetailTests {
 
     @Test
     public void testXiaDetailCreateShapeEllipse() throws Exception {
-        ImageView outputEllipse = ellipsePointsDetail.createShape(ctx, true, Color.GREEN, 20, 20, new DisplayMetrics(), 0, true, false);
+        ImageView outputEllipse = ellipsePointsDetail.createShape(true, Color.GREEN, true);
 
         ImageView expectedEllipse = new ImageView(ctx);
         expectedEllipse.setX(60);
@@ -103,7 +104,7 @@ public class xiaDetailTests {
 
     @Test
     public void testXiaDetailCreateShapePolygon() throws Exception {
-        ImageView outputEllipse = multiplePointsDetail.createShape(ctx, true, Color.GREEN, 20, 20, new DisplayMetrics(), 0, false, false);
+        ImageView outputEllipse = multiplePointsDetail.createShape(true, Color.GREEN, false);
 
         ImageView expectedPolygon = new ImageView(ctx);
         expectedPolygon.setX(0);
