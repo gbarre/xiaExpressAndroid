@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -76,6 +78,18 @@ public class Metas extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_metas);
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int width = metrics.widthPixels * 8 / 10;
+        int height = metrics.heightPixels * 8 / 10;
+
+        // Gets linearlayout
+        LinearLayout layout = (LinearLayout) findViewById(R.id.activity_metas);
+        // Gets the layout params that will allow you to resize the layout
+        ViewGroup.LayoutParams params = layout.getLayoutParams();
+        // Changes the height and width to the specified *pixels*
+        params.height = height;
+        params.width = width;
 
         String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
