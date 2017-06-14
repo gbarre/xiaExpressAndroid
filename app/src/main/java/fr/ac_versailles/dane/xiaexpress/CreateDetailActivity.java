@@ -819,13 +819,15 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         switch (type) {
             case 0: // Xia Tablet
                 exportXMLString = export.xiaTablet();
+                tmpFilePath = cacheDirectory + tmpTitle + ".xml";
                 break;
             case 1: // Inkscape SVG
+                exportXMLString = export.inkscape();
+                tmpFilePath = cacheDirectory + tmpTitle + ".svg";
                 break;
         }
         if (!exportXMLString.equals("")) {
             // write string to temp file
-            tmpFilePath = cacheDirectory + tmpTitle + ".xml";
             Util.string2File(exportXMLString, tmpFilePath);
 
             // Open share Intent
