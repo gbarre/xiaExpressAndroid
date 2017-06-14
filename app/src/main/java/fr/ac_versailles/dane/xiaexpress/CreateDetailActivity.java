@@ -65,6 +65,7 @@ import java.util.Map;
 
 public class CreateDetailActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
+    static final int PICK_CONTACT_REQUEST = 1;
     private final float precisionDist = 30;
     private final Map<Integer, xiaDetail> details = new HashMap<>();
     private final Map<Integer, ImageView> virtPoints = new HashMap<>();
@@ -74,13 +75,15 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     //private menu: UIAlertController!
     private ListPopupWindow listPopupWindow;
     private String[] detailsType;
+    private ListPopupWindow exportPopupWindow;
+    private String[] exportsType;
     private String imagesDirectory;
     private String xmlDirectory;
     private String cacheDirectory;
     private Integer index = 0;
     private Document xml;
     private String fileName = "";
-    private String filePath = "";
+    private String tmpFilePath;
     private String fileTitle = "";
     private float movingPoint = -1; // Id of point
     private float movingCoordsX = 0;
@@ -116,6 +119,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         String ellipse = getResources().getString(R.string.ellipse);
         String polygon = getResources().getString(R.string.polygon);
         detailsType = new String[]{rectangle, ellipse, polygon};
+        exportsType = new String[]{getResources().getString(R.string.xia_tablet), getResources().getString(R.string.inkscape)};
 
         imgTopBarBkgd = (ImageView) findViewById(R.id.imgTopBarBkgd);
         imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
@@ -542,8 +546,24 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        listPopupWindow.dismiss();
-        addDetail(position);
+        if (listPopupWindow.isShowing()) {
+            listPopupWindow.dismiss();
+            addDetail(position);
+        } else if (exportPopupWindow.isShowing()) {
+            exportPopupWindow.dismiss();
+            exportResource(position);
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == PICK_CONTACT_REQUEST) {
+            // Make sure the request was successful
+            File file = new File(tmpFilePath);
+            file.delete();
+        }
     }
 
     private void addDetail(int type) {
@@ -792,6 +812,28 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         return (float) Math.sqrt((xA-xB)*(xA-xB)+(yA-yB)*(yA-yB));
     }
 
+    private void exportResource(int type) {
+        String exportXMLString = "";
+        String tmpTitle = Util.cleanInput(Util.getNodeValue(xml, "xia/title"));
+        Export export = new Export(xml, imagesDirectory + fileName);
+        switch (type) {
+            case 0: // Xia Tablet
+                exportXMLString = export.xiaTablet();
+                break;
+            case 1: // Inkscape SVG
+                break;
+        }
+        if (!exportXMLString.equals("")) {
+            // write string to temp file
+            tmpFilePath = cacheDirectory + tmpTitle + ".xml";
+            Util.string2File(exportXMLString, tmpFilePath);
+
+            // Open share Intent
+            Intent shareIntent = Util.share(tmpFilePath, tmpTitle);
+            startActivityForResult(Intent.createChooser(shareIntent, getResources().getString(R.string.export)), PICK_CONTACT_REQUEST);
+        }
+    }
+
     private void goForward() {
         //Create intent
         Intent intent = new Intent(CreateDetailActivity.this, PlayXia.class);
@@ -954,6 +996,16 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         listPopupWindow.setModal(true);
         listPopupWindow.setOnItemClickListener(this);
 
+        // Build the export menu
+        exportPopupWindow = new ListPopupWindow(this);
+        exportPopupWindow.setAdapter(new ArrayAdapter(CreateDetailActivity.this, R.layout.list_item, exportsType));
+        exportPopupWindow.setAnchorView(btExport);
+        exportPopupWindow.setWidth(185);
+        //exportPopupWindow.setHeight(500);
+        exportPopupWindow.setVerticalOffset(10);
+        exportPopupWindow.setModal(true);
+        exportPopupWindow.setOnItemClickListener(this);
+
 
         if (createDetail) {
             btAddDetail.setVisibility(View.GONE);
@@ -1017,6 +1069,13 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             @Override
             public void onClick(View v) {
                 stopCreation();
+            }
+        });
+
+        btExport.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                exportPopupWindow.show();
             }
         });
 
