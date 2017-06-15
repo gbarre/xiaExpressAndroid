@@ -7,8 +7,8 @@ android {
         applicationId "fr.ac_versailles.dane.xiaexpress"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.0-Alpha"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -16,6 +16,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            debuggable false
+        }
+
     }
 }
 

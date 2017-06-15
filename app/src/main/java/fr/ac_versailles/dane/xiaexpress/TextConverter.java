@@ -79,7 +79,7 @@ class TextConverter extends AsyncTask<Void, Void, String> {
                 try {
                     // encode url
                     String query = URLEncoder.encode(url, "utf-8");
-                    String fullQuery = "https://coyote.jrmv.net:8443/get?url=" + query;
+                    String fullQuery = "https://coyote.jrmv.net/?url=" + query;
                     // get the json file (as string)
                     String jsonStr = sh.makeServiceCall(fullQuery);
                     // convert string to json

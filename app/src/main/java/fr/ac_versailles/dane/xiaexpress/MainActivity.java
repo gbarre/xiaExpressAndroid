@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private String imagesDirectory;
     private String xmlDirectory;
     private String cacheDirectory;
+    private int nbThumb = 0;
 
     /**
      * Copy file from path src to path dst
@@ -97,11 +98,19 @@ public class MainActivity extends AppCompatActivity {
                 PhotoThumbnail item = (PhotoThumbnail) parent.getItemAtPosition(position);
 
                 //Create intent
-                Intent intent = new Intent(MainActivity.this, CreateDetailActivity.class);
-                intent.putExtra("title", item.getTitle());
+                if (nbThumb > 0) {
+                    Intent intent = new Intent(MainActivity.this, CreateDetailActivity.class);
+                    intent.putExtra("title", item.getTitle());
 
-                //Start details activity
-                startActivity(intent);
+                    //Start details activity
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent();
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    startActivityForResult(Intent.createChooser(intent,
+                            "Select Picture"), SELECT_PICTURE);
+                }
 
             }
         });
@@ -122,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
                         "Select Picture"), SELECT_PICTURE);
             }
         });
-
     }
 
     // Store the image
@@ -174,6 +182,35 @@ public class MainActivity extends AppCompatActivity {
                 catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                gridAdapter = null;
+                // Load the collection in grid view
+                GridView gridView = (GridView) findViewById(R.id.gridView);
+                gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData());
+                gridView.setAdapter(gridAdapter);
+
+                // Add listener on collection
+                gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                        PhotoThumbnail item = (PhotoThumbnail) parent.getItemAtPosition(position);
+
+                        //Create intent
+                        if (nbThumb > 0) {
+                            Intent intent = new Intent(MainActivity.this, CreateDetailActivity.class);
+                            intent.putExtra("title", item.getTitle());
+
+                            //Start details activity
+                            startActivity(intent);
+                        } else {
+                            Intent intent = new Intent();
+                            intent.setType("image/*");
+                            intent.setAction(Intent.ACTION_GET_CONTENT);
+                            startActivityForResult(Intent.createChooser(intent,
+                                    "Select Picture"), SELECT_PICTURE);
+                        }
+
+                    }
+                });
             }
         }
     }
@@ -187,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
         File[] imgs = dir.listFiles();
 
         if (imgs != null && imgs.length > 0) {
+            nbThumb = imgs.length;
             for (int i = 0; i < imgs.length; i++) {
                 String imgName = imgs[i].getName();
                 arrayNames[i] = imgName;
@@ -248,5 +286,4 @@ public class MainActivity extends AppCompatActivity {
 
         return BitmapFactory.decodeFile(String.valueOf(cachedImage));
     }
-
 }
