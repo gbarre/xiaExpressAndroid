@@ -243,8 +243,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         if (detailPoints == 0) {
                             polygonPointsOrder = new ArrayList<>();
                         }
-                        Integer nbPoints = details.get(currentDetailTag).points.size();
-                        movingPoint = nbPoints;
+                        movingPoint = details.get(currentDetailTag).points.size();
 
                         // Add new point
                         ImageView newPoint = details.get(currentDetailTag).createPoint(locationX, locationY, R.drawable.corner, Math.round(movingPoint), this);
@@ -550,7 +549,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         if (requestCode == PICK_CONTACT_REQUEST) {
             // Make sure the request was successful
             File file = new File(tmpFilePath);
-            file.delete();
+            if (!file.delete()) {
+                dbg.pt("Warning", "File not deleted", tmpFilePath);
+            }
         }
     }
 
@@ -736,7 +737,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             Integer detailTag = entry.getKey();
             xiaDetail detail = entry.getValue();
             if ( detailTag != 0 && detail.points.size() < 3 ) {
-                // TODO performFullDetailRemove(detailTag);
+                performFullDetailRemove(detailTag, false);
             }
         }
     }
@@ -908,10 +909,12 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             int iMax = detailsArea.getChildCount();
             for (int i = 0; i < iMax; i++) {
                 View child = detailsArea.getChildAt(i);
-                Integer childTag = (child != null) ? (Integer) child.getTag() : 9999;
-                if (childTag.equals(tag) || childTag.equals(tag + 100)) {
-                    child.setVisibility(View.INVISIBLE);
-                    detailsArea.removeView(child);
+                if (child != null) {
+                    Integer childTag = (Integer) child.getTag();
+                    if (childTag.equals(tag) || childTag.equals(tag + 100)) {
+                        child.setVisibility(View.INVISIBLE);
+                        detailsArea.removeView(child);
+                    }
                 }
             }
 
@@ -993,7 +996,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         listPopupWindow.setAdapter(new ArrayAdapter(CreateDetailActivity.this, R.layout.list_item, detailsType));
         listPopupWindow.setAnchorView(btAddDetail);
         listPopupWindow.setWidth(185);
-        //listPopupWindow.setHeight(500);
         listPopupWindow.setVerticalOffset(10);
         listPopupWindow.setModal(true);
         listPopupWindow.setOnItemClickListener(this);
@@ -1003,7 +1005,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         exportPopupWindow.setAdapter(new ArrayAdapter(CreateDetailActivity.this, R.layout.list_item, exportsType));
         exportPopupWindow.setAnchorView(btExport);
         exportPopupWindow.setWidth(185);
-        //exportPopupWindow.setHeight(500);
         exportPopupWindow.setVerticalOffset(10);
         exportPopupWindow.setModal(true);
         exportPopupWindow.setOnItemClickListener(this);
