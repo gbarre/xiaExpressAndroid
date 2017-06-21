@@ -2,6 +2,7 @@ package fr.ac_versailles.dane.xiaexpress;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -43,6 +44,7 @@ class TextConverter extends AsyncTask<Void, Void, String> {
     private float videoHeight = 270;
     private String htmlString;
     private Context context;
+    private DBAdapter urlDb;
 
     TextConverter(String t, WebView wv, float w, float h, Context c) {
         htmlString = t;
@@ -63,6 +65,8 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         htmlString = pikipikiToHTML(htmlString);
         htmlString = htmlString.replace("}}}", "");
 
+        // initiate & open DB
+        openDB();
     }
 
     @Override
@@ -75,15 +79,24 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         while (urlsMatcher.find()) {
             String url = urlsMatcher.group();
             if (Util.isOnline(context)) {
-                HttpHandler sh = new HttpHandler();
                 try {
-                    // encode url
-                    String query = URLEncoder.encode(url, "utf-8");
-                    String fullQuery = "https://coyote.jrmv.net/?url=" + query;
-                    // get the json file (as string)
-                    String jsonStr = sh.makeServiceCall(fullQuery);
-                    // convert string to json
-                    JSONObject json = new JSONObject(jsonStr);
+                    // Look in DB
+                    Cursor cursor = urlDb.getRowURL(url);
+                    JSONObject json;
+                    if (cursor.moveToFirst()) {
+                        json = new JSONObject(cursor.getString(DBAdapter.COL_JSON));
+                    } else {
+                        // encode url
+                        String query = URLEncoder.encode(url, "utf-8");
+                        String fullQuery = "https://coyote.jrmv.net/?url=" + query;
+                        // get the json file (as string)
+                        HttpHandler sh = new HttpHandler();
+                        String jsonStr = sh.makeServiceCall(fullQuery);
+                        // convert string to json
+                        json = new JSONObject(jsonStr);
+                        // Save jsonString to DB
+                        urlDb.insertRow(url, jsonStr);
+                    }
                     // replace the url by iframe
                     String htmlCode = json.getString("html");
                     if (!htmlCode.equals("Please insert correct URL")) {
@@ -127,22 +140,38 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         // enable javascript
         WebSettings webSettings = webV.getSettings();
         webSettings.setJavaScriptEnabled(true);
+
+        // close DB
+        clodeDB();
     }
 
-    private String replaceURL(String url, String desc) {
-        if (url.matches(".*\\.(mp3|ogg)$")) {
-            String audioUrl = getAudio(url);
-            desc = desc.replace(url, audioUrl);
-        } else if (url.matches(".*\\.(jpg|jpeg|gif|png)$")) {
-            desc = desc.replace(url, "<img src=\"" + url + "\" alt=\"" + url + "\" style=\"max-width: " + videoWidth + "px;\" />");
-        } else if (url.matches(".*\\.(mp4|ogv|webm)$")) {
-            String videoUrl = getvideo(url);
-            desc = desc.replace(url, videoUrl);
-        } else {
-            String[] customLink = showCustomLinks(url, desc);
-            desc = desc.replace(customLink[0], customLink[1]);
-        }
-        return desc;
+    private void clodeDB() {
+        urlDb.close();
+    }
+
+    private String getAudio(String url) {
+        String mp3Result = url.replaceAll("\\.(mp3|ogg)", ".mp3");
+        String oggResult = url.replaceAll("\\.(mp3|ogg)", ".ogg");
+        return "<center><audio controls>" +
+                "   <source type=\"audio/mpeg\" src=\"" + mp3Result + "\" />" +
+                "   <source type=\"audio/ogg\" src=\"" + oggResult + "\" />" +
+                "</audio></center>";
+    }
+
+    private String getvideo(String url) {
+        String mp4Result = url.replaceAll("\\.(mp4|ogv|webm)", ".mp4");
+        String ogvResult = url.replaceAll("\\.(mp4|ogv|webm)", ".ogv");
+        String webmResult = url.replaceAll("\\.(mp4|ogv|webm)", ".webm");
+        return "<center><video controls preload=\"none\" width=\"" + videoWidth + "\" height=\"" + videoHeight + ">" +
+                "   <source type=\"video/mp4\" src=\"" + mp4Result + "\" />" +
+                "   <source type=\"video/ogg\" src=\"" + ogvResult + "\" />" +
+                "   <source type=\"video/webm\" src=\"" + webmResult + "\" />" +
+                "</video></center>";
+    }
+
+    private void openDB() {
+        urlDb = new DBAdapter(context);
+        urlDb.open();
     }
 
     private String pikipikiToHTML(String t) {
@@ -243,13 +272,20 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         return output;
     }
 
-    private String getAudio(String url) {
-        String mp3Result = url.replaceAll("\\.(mp3|ogg)", ".mp3");
-        String oggResult = url.replaceAll("\\.(mp3|ogg)", ".ogg");
-        return "<center><audio controls>" +
-                "   <source type=\"audio/mpeg\" src=\"" + mp3Result + "\" />" +
-                "   <source type=\"audio/ogg\" src=\"" + oggResult + "\" />" +
-                "</audio></center>";
+    private String replaceURL(String url, String desc) {
+        if (url.matches(".*\\.(mp3|ogg)$")) {
+            String audioUrl = getAudio(url);
+            desc = desc.replace(url, audioUrl);
+        } else if (url.matches(".*\\.(jpg|jpeg|gif|png)$")) {
+            desc = desc.replace(url, "<img src=\"" + url + "\" alt=\"" + url + "\" style=\"max-width: " + videoWidth + "px;\" />");
+        } else if (url.matches(".*\\.(mp4|ogv|webm)$")) {
+            String videoUrl = getvideo(url);
+            desc = desc.replace(url, videoUrl);
+        } else {
+            String[] customLink = showCustomLinks(url, desc);
+            desc = desc.replace(customLink[0], customLink[1]);
+        }
+        return desc;
     }
 
     private String[] showCustomLinks(String url, String inText) {
@@ -283,14 +319,4 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         return new String[]{input, replaceString};
     }
 
-    private String getvideo(String url) {
-        String mp4Result = url.replaceAll("\\.(mp4|ogv|webm)", ".mp4");
-        String ogvResult = url.replaceAll("\\.(mp4|ogv|webm)", ".ogv");
-        String webmResult = url.replaceAll("\\.(mp4|ogv|webm)", ".webm");
-        return "<center><video controls preload=\"none\" width=\"" + videoWidth + "\" height=\"" + videoHeight + ">" +
-                "   <source type=\"video/mp4\" src=\"" + mp4Result + "\" />" +
-                "   <source type=\"video/ogg\" src=\"" + ogvResult + "\" />" +
-                "   <source type=\"video/webm\" src=\"" + webmResult + "\" />" +
-                "</video></center>";
-    }
 }
