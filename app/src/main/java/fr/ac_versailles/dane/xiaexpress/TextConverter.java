@@ -80,9 +80,10 @@ class TextConverter extends AsyncTask<Void, Void, String> {
             String url = urlsMatcher.group();
             if (Util.isOnline(context)) {
                 try {
+                    Boolean error = false;
                     // Look in DB
                     Cursor cursor = urlDb.getRowURL(url);
-                    JSONObject json;
+                    JSONObject json = null;
                     if (cursor.moveToFirst()) {
                         json = new JSONObject(cursor.getString(DBAdapter.COL_JSON));
                     } else {
@@ -93,12 +94,16 @@ class TextConverter extends AsyncTask<Void, Void, String> {
                         HttpHandler sh = new HttpHandler();
                         String jsonStr = sh.makeServiceCall(fullQuery);
                         // convert string to json
-                        json = new JSONObject(jsonStr);
-                        // Save jsonString to DB
-                        urlDb.insertRow(url, jsonStr);
+                        if (jsonStr != null) {
+                            json = new JSONObject(jsonStr);
+                            // Save jsonString to DB
+                            urlDb.insertRow(url, jsonStr);
+                        } else {
+                            error = true;
+                        }
                     }
                     // replace the url by iframe
-                    String htmlCode = json.getString("html");
+                    String htmlCode = (error) ? "Please insert correct URL" : json.getString("html");
                     if (!htmlCode.equals("Please insert correct URL")) {
                         htmlCode = htmlCode.replace("src=\"//", "src=\"https://");
                         // video / image resizing
