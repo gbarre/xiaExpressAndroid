@@ -1,0 +1,90 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">Xia Express</string>
+
+    <string name="Collection">Collection</string>
+    <string name="ok">OK</string>
+    <string name="title">Titre</string>
+    <string name="undo">Annuler</string>
+    <string name="add">Ajouter</string>
+    <string name="trash">Supprimer</string>
+    <string name="play">Lecture</string>
+    <string name="export">Exporter</string>
+    <string name="edit">Éditer</string>
+    <string name="bkgimg">Image</string>
+    <string name="rectangle">Rectangle</string>
+    <string name="ellipse">Ellipse</string>
+    <string name="polygon">Polygon</string>
+    <string name="close">Fermer</string>
+    <string name="cancel">Annuler</string>
+    <string name="done">Terminer</string>
+    <string name="enable_zoom">Activer le zoom</string>
+    <string name="lock_detail">Verrouiller le detail</string>
+    <string name="detail_description" tools:ignore="TypographyEllipsis">Description...</string>
+    <string name="choose_image">Ajouter une image</string>
+    <string name="detail_title">Titre du détail</string>
+    <string name="description">Description</string>
+    <string name="language">Langes</string>
+    <string name="keywords">Mots clés</string>
+    <string name="contributors">Contributeurs</string>
+    <string name="relation">Relation</string>
+    <string name="coverage">Portée</string>
+    <string name="license">Licence</string>
+    <string name="creator">Auteur</string>
+    <string name="rights">Droits</string>
+    <string name="publisher">Éditeur</string>
+    <string name="identifier">Identifiant</string>
+    <string name="source">Source</string>
+    <string name="date">Date</string>
+    <string name="readOnly">Lecture seule</string>
+    <string name="showDetails">Afficher les détails</string>
+    <string name="metas1">Metas 1</string>
+    <string name="metas2">Metas 2</string>
+    <string name="metas3">Metas 3</string>
+    <string name="image_infos">Infos Image</string>
+    <string name="password">Mot de passe…</string>
+    <string name="enter_code">Saisir le code</string>
+    <string name="create_code">Créer un Code</string>
+    <string name="try_again">Veuillez réessayer…</string>
+    <string name="double_check">Saisir à nouveau</string>
+    <string name="error">Erreur</string>
+    <string name="detail_zoom">zoom</string>
+    <string name="discus">discus</string>
+    <string name="button">bouton</string>
+    <string name="xia_tablet">Xia Tablette</string>
+    <string name="inkscape">Inkscape</string>
+    <string name="fili">xia_fili</string>
+    <!--<string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>-->
+
+    <string-array name="licenses_array">
+        <item>Proprietary - CC-Zero</item>
+        <item>CC Attribution - CC-BY</item>
+        <item>CC Attribution-ShareALike - CC-BY-SA</item>
+        <item>CC Attribution-NoDerivs - CC-BY-ND</item>
+        <item>CC Attribution-NonCommercial - CC-BY-NC</item>
+        <item>CC Attribution-NonCommercial-ShareALike - CC-BY-NC-SA</item>
+        <item>CC Attribution-NonCommercial-NoDerivs - CC-BY-NC-ND</item>
+        <item>CC0 Public Domain Dedication</item>
+        <item>Free Art</item>
+        <item>Open Font License</item>
+        <item>Other</item>
+    </string-array>
+
+</resources>
