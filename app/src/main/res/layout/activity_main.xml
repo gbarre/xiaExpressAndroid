@@ -7,6 +7,17 @@
     android:background="@color/white"
     tools:context="fr.ac_versailles.dane.xiaexpress.MainActivity">
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="200dp"
+        android:layout_marginLeft="200dp"
+        android:layout_marginRight="200dp"
+        android:layout_marginTop="200dp"
+        android:alpha="0.15"
+        android:contentDescription="@string/fili"
+        android:src="@drawable/filixia" />
+
     <Button
         android:id="@+id/buttonLoadPicture"
         android:layout_width="wrap_content"
@@ -30,4 +41,6 @@
         android:numColumns="auto_fit"
         android:stretchMode="columnWidth"
         android:verticalSpacing="15dp" />
+
+
 </RelativeLayout>
