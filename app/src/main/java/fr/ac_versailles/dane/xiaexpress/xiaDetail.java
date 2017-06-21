@@ -207,4 +207,28 @@ class xiaDetail {
         }
     }
 
+    Map<Integer, ImageView> makeVirtPoints() {
+        int nbPoints = points.size();
+        Map<Integer, ImageView> virtPoints = new HashMap<>();
+
+        for (int i = 0; i < nbPoints; i++) {
+            int j = (i + 1) % nbPoints;
+            // Get distance between point1 & point2
+            float x = points.get(i).getX() - points.get(j).getX();
+            float y = points.get(i).getY() - points.get(j).getY();
+            double dist = Math.sqrt(x * x + y * y);
+            if (dist > 50) {
+                // We can show a virt point
+                ImageView image = new ImageView(ctx);
+                image.setImageResource(R.drawable.corner);
+                image.setX((points.get(i).getX() + points.get(j).getX()) / 2);
+                image.setY((points.get(i).getY() + points.get(j).getY()) / 2);
+                image.setTag(tag + 100);
+                image.setAlpha((float) 0.2);
+                virtPoints.put(i, image);
+            }
+        }
+        return virtPoints;
+    }
+
 }

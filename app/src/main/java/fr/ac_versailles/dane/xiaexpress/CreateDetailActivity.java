@@ -68,7 +68,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     static final int PICK_CONTACT_REQUEST = 1;
     private final float precisionDist = 30;
     private final Map<Integer, xiaDetail> details = new HashMap<>();
-    private final Map<Integer, ImageView> virtPoints = new HashMap<>();
+    private Map<Integer, ImageView> virtPoints = new HashMap<>();
     private ImageView imgTopBarBkgd;
     private float cornerWidth = 0;
     private float cornerHeight = 0;
@@ -194,8 +194,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         int maskedAction = event.getActionMasked();
         float locationX = event.getX();
         float locationY = event.getY() - toolbarHeight;
-        // TODO let touchedVirtPoint = touchesVirtPoint(location)
-        float touchedVirtPoint = -1;
+        float touchedVirtPoint = touchesVirtPoint(locationX, locationY);
 
         switch (maskedAction) {
 
@@ -206,7 +205,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     Integer detailPoints = details.get(currentDetailTag).points.size();
                     Boolean addPoint = false;
 
-                    if ( detailPoints != 0 && touchedVirtPoint == -1) { // Points exists
+                    if (detailPoints != 0) { // Points exists
                         // Are we in the polygon ?
                         if (detailPoints > 2) {
                             if (Util.pointInPolygon(details.get(currentDetailTag).points, locationX, locationY)) {
@@ -240,27 +239,12 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                             }
                         }
                     }
-                    if (touchedVirtPoint != -1) {
-                        moveDetail = false;
-                        addPoint = false;
-                    }
-                    if ( (addPoint || detailPoints == 0 || touchedVirtPoint != -1) && !moveDetail )  {
+                    if ((addPoint || detailPoints == 0) && !moveDetail) {
                         if (detailPoints == 0) {
                             polygonPointsOrder = new ArrayList<>();
                         }
                         Integer nbPoints = details.get(currentDetailTag).points.size();
-                        movingPoint = (touchedVirtPoint == -1) ? nbPoints : (touchedVirtPoint + 1);
-                        if (touchedVirtPoint != -1) {
-                            // Change indexes of next points
-                            Integer i = nbPoints;
-                            while (i > touchedVirtPoint - 1) {
-                                details.get(currentDetailTag).points.put(i+1, details.get(currentDetailTag).points.get(i));
-                                i = i - 1;
-                                if (i > touchedVirtPoint) {
-                                    polygonPointsOrder.set(i, polygonPointsOrder.get(i) + 1);
-                                }
-                            }
-                        }
+                        movingPoint = nbPoints;
 
                         // Add new point
                         ImageView newPoint = details.get(currentDetailTag).createPoint(locationX, locationY, R.drawable.corner, Math.round(movingPoint), this);
@@ -293,7 +277,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         Boolean touchIn = Util.pointInPolygon(detailPoints.points, locationX, locationY);
                         if (touchIn) {
                             touchedTag = detailTag;
-                            //beginTouchLocation = location; // old bad idea
                             editDetail = touchedTag;
                             currentDetailTag = touchedTag;
                             movingCoordsX = locationX;
@@ -333,31 +316,37 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     }
 
                     // Should we add a virtual point ?
-                    /* TODO add virtpoint LATER
-                    if touchedVirtPoint != -1 {
-                        moveDetail = false
-                        let nbPoints = (details["\(currentDetailTag)"]?.points.count)!
-                                movingPoint = touchedVirtPoint + 1
+                    if (touchedVirtPoint != -1) {
+                        moveDetail = false;
+                        int nbPoints = details.get(currentDetailTag).points.size();
+                        movingPoint = touchedVirtPoint + 1;
                         // Change indexes of next points
-                        var i = nbPoints
-                        while i > touchedVirtPoint-1 {
-                            details["\(currentDetailTag)"]?.points[i+1] = details["\(currentDetailTag)"]?.points[i]
-                            i = i - 1
+                        int i = nbPoints - 1;
+                        while (i > touchedVirtPoint) {
+                            details.get(currentDetailTag).points.put(i + 1, details.get(currentDetailTag).points.get(i));
+                            i = i - 1;
                         }
 
                         // Add new point
-                        let newPoint = details["\(currentDetailTag)"]?.createPoint(location, imageName: "corner", index: movingPoint)
-                        newPoint?.layer.zPosition = 1
-                        imgView.addSubview(newPoint!)
+                        ImageView newPoint = details.get(currentDetailTag).createPoint(locationX, locationY, R.drawable.corner, Math.round(movingPoint), this);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            newPoint.setZ(1);
+                        }
 
                         // Remove old polygon
-                        for subview in imgView.subviews {
-                            if subview.tag == (currentDetailTag + 100) {
-                                subview.removeFromSuperview()
+                        for (int j = 0; j < detailsArea.getChildCount(); j++) {
+                            View child = detailsArea.getChildAt(j);
+                            Integer childTag = (Integer) child.getTag();
+                            if (childTag.equals(currentDetailTag + 100)) {
+                                detailsArea.removeView(child);
                             }
                         }
-                        buildShape(true, color: editColor, tag: currentDetailTag, points: details["\(currentDetailTag)"]!.points, parentView: imgView, locked: details["\(currentDetailTag)"]!.locked)
-                    }*/
+
+                        // Draw the shape
+                        ImageView newShape = details.get(currentDetailTag).createShape(true, Constants.red, false);
+                        detailsArea.addView(newShape);
+                        detailsArea.addView(newPoint);
+                    }
                 }
                 break;
             }
@@ -493,15 +482,14 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                             }
                         }
 
-                        // TODO virtpoints
-
-                    /*let locked = details["\(currentDetailTag)"]!.locked
-                    if (details["\(currentDetailTag)"]?.constraint == constraintPolygon && !locked) {
-                        virtPoints = details["\(currentDetailTag)"]!.makeVirtPoints()
-                        for virtPoint in virtPoints {
-                            imgView.addSubview(virtPoint.1)
+                        // virtpoints
+                        if (details.get(currentDetailTag).constraint.equals(Constants.constraintPolygon) && !details.get(currentDetailTag).locked && !createDetail) {
+                            virtPoints = details.get(currentDetailTag).makeVirtPoints();
+                            for (Map.Entry<Integer, ImageView> entry : virtPoints.entrySet()) {
+                                ImageView point = entry.getValue();
+                                detailsArea.addView(point);
+                            }
                         }
-                    }*/
 
                         // Save the detail in xml
                         NodeList xmlDetails = this.xml.getElementsByTagName("detail");
@@ -577,6 +565,17 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 break;
             }
         }
+
+        // Remove old views
+        int iMax = detailsArea.getChildCount();
+        for (int i = 0; i < iMax; i++) {
+            View child = detailsArea.getChildAt(i);
+            Integer childTag = (child != null) ? (Integer) child.getTag() : 9999;
+            if (childTag.equals(currentDetailTag)) {
+                detailsArea.removeView(child);
+            }
+        }
+
         // TODO send alert if i >= 200
 
         // prepare new xml detail
@@ -906,9 +905,10 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private void performFullDetailRemove(int tag, Boolean force) {
         if (details.get(tag).points.size() < 3 || force) {
             // remove point & polygon
-            for (int i = 0; i < detailsArea.getChildCount(); i++) {
+            int iMax = detailsArea.getChildCount();
+            for (int i = 0; i < iMax; i++) {
                 View child = detailsArea.getChildAt(i);
-                Integer childTag = (Integer) child.getTag();
+                Integer childTag = (child != null) ? (Integer) child.getTag() : 9999;
                 if (childTag.equals(tag) || childTag.equals(tag + 100)) {
                     child.setVisibility(View.INVISIBLE);
                     detailsArea.removeView(child);

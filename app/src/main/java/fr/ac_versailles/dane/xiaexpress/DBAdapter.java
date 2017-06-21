@@ -9,9 +9,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 /**
  * DBAdapter.java
  * XiaExpress
- * <p>
+ *
  * Modified by guillaume on 16/06/2017.
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
