@@ -10,6 +10,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.w3c.dom.Document;
+
 import java.util.ArrayList;
 
 /**
@@ -37,13 +39,15 @@ class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
 
     private final Context context;
     private final int layoutResourceId;
+    private final String xmlDirectory;
     private ArrayList<PhotoThumbnail> data = new ArrayList<>();
 
-    public GridViewAdapter(Context context, int layoutResourceId, ArrayList<PhotoThumbnail> data) {
+    public GridViewAdapter(Context context, int layoutResourceId, ArrayList<PhotoThumbnail> data, String xmlDir) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.data = data;
+        this.xmlDirectory = xmlDir;
     }
 
 
@@ -66,7 +70,13 @@ class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
 
 
         PhotoThumbnail item = data.get(position);
-        holder.imageTitle.setText(item.getTitle());
+        Document xml = Util.getXMLFromPath((xmlDirectory + item.getFilename()).replace(".jpg", ".xml"));
+        String title = (Util.getNodeValue(xml, "xia/title").equals("")) ? item.getFilename().replace(".jpg", "") : Util.getNodeValue(xml, "xia/title");
+        if (title.length() > 35) {
+            title = title.substring(0, 35) + "...";
+        }
+
+        holder.imageTitle.setText(title);
         holder.image.setImageBitmap(item.getImage());
         return row;
     }

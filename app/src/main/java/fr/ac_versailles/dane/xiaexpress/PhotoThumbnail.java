@@ -25,28 +25,19 @@ import android.graphics.Bitmap;
 
 class PhotoThumbnail {
     private Bitmap image;
-    private String title;
+    private String filename;
 
-    public PhotoThumbnail(Bitmap image, String title) {
+    public PhotoThumbnail(Bitmap image, String filename) {
         super();
         this.image = image;
-        this.title = title;
+        this.filename = filename;
     }
 
     public Bitmap getImage() {
         return image;
     }
 
-    public void setImage(Bitmap image) {
-        this.image = image;
+    public String getFilename() {
+        return filename;
     }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
 }

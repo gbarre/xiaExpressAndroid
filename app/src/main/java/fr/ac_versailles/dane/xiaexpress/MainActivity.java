@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Load the collection in grid view
         GridView gridView = (GridView) findViewById(R.id.gridView);
-        gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData());
+        gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(), xmlDirectory);
         gridView.setAdapter(gridAdapter);
 
         // Add listener on collection
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
                 //Create intent
                 if (nbThumb > 0) {
                     Intent intent = new Intent(MainActivity.this, CreateDetailActivity.class);
-                    intent.putExtra("title", item.getTitle());
+                    intent.putExtra("filename", item.getFilename());
 
                     //Start details activity
                     startActivity(intent);
@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
                 gridAdapter = null;
                 // Load the collection in grid view
                 GridView gridView = (GridView) findViewById(R.id.gridView);
-                gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData());
+                gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(), xmlDirectory);
                 gridView.setAdapter(gridAdapter);
 
                 // Add listener on collection
@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
                         //Create intent
                         if (nbThumb > 0) {
                             Intent intent = new Intent(MainActivity.this, CreateDetailActivity.class);
-                            intent.putExtra("title", item.getTitle());
+                            intent.putExtra("filename", item.getFilename());
 
                             //Start details activity
                             startActivity(intent);

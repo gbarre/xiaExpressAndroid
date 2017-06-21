@@ -130,7 +130,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
         cacheDirectory = Constants.getCacheFrom(rootDirectory);
 
-        fileName = getIntent().getStringExtra("title");
+        fileName = getIntent().getStringExtra("filename");
         fileTitle = fileName.replace(".jpg", "");
 
         gestureDetector = new GestureDetector(this, new GestureListener());
