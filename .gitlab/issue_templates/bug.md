@@ -9,6 +9,7 @@
 
 
 #### Device infos :
+- Modèle : 
 - Version de l'API : 
 - Résolution utilisée : 
 - Densité de pixel : 

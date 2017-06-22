@@ -1100,6 +1100,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             @Override
             public void onClick(View view) {
                 String text = "Infos à transmettre au développeur :\n";
+                text = text + " - Modèle : " + Build.MANUFACTURER + " - " + Build.MODEL + "\n";
                 text = text + " - Version de l'API : " + android.os.Build.VERSION.SDK_INT + "\n";
                 text = text + " - Résolution utilisée : " + metrics.widthPixels + " x " + metrics.heightPixels + "\n";
                 text = text + " - Densité de pixel : " + metrics.densityDpi + "\n";
