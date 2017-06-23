@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.util.Map;
@@ -116,6 +117,37 @@ class Util extends Activity {
         }
         else {
             pt(TAG, directory, "already exist");
+        }
+    }
+
+    static void createXiaXML(String filePath) {
+        String xmlString = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n" +
+                "<xia>\n" +
+                "\t<title></title>\n" +
+                "\t<description></description>\n" +
+                "\t<creator></creator>\n" +
+                "\t<rights></rights>\n" +
+                "\t<license></license>\n" +
+                "\t<date></date>\n" +
+                "\t<publisher></publisher>\n" +
+                "\t<identifier></identifier>\n" +
+                "\t<source></source>\n" +
+                "\t<relation></relation>\n" +
+                "\t<language></language>\n" +
+                "\t<keywords></keywords>\n" +
+                "\t<coverage></coverage>\n" +
+                "\t<contributors></contributors>\n" +
+                "\t<readonly code=\"1234\">false</readonly>\n" +
+                "\t<image description=\"\" title=\"\"/>\n" +
+                "\t<details show=\"true\">\n" +
+                "\t</details>\n" +
+                "</xia>";
+        try {
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(filePath));
+            outputStreamWriter.write(xmlString);
+            outputStreamWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

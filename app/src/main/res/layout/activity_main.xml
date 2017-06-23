@@ -7,6 +7,10 @@
     android:background="@color/white"
     tools:context="fr.ac_versailles.dane.xiaexpress.MainActivity">
 
+    <include
+        android:id="@+id/mainMenu"
+        layout="@layout/menu_main" />
+
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,13 +22,6 @@
         android:contentDescription="@string/fili"
         android:src="@drawable/filixia" />
 
-    <Button
-        android:id="@+id/buttonLoadPicture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="@string/choose_image" />
-
     <GridView
         android:id="@+id/gridView"
         android:layout_width="fill_parent"
@@ -32,7 +29,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/buttonLoadPicture"
+        android:layout_below="@+id/mainMenu"
         android:clickable="true"
         android:columnWidth="200dp"
         android:drawSelectorOnTop="true"

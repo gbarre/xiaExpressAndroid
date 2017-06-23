@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="44dp"
+    android:background="@color/blue"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/leftMenu"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:gravity="start"
+        android:visibility="invisible">
+
+        <ImageButton
+            android:id="@+id/trash"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:background="@color/blue"
+            android:contentDescription="@string/trash"
+            android:paddingTop="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/trash"
+            android:visibility="invisible" />
+
+        <ImageButton
+            android:id="@+id/export"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:background="@color/blue"
+            android:contentDescription="@string/export"
+            android:paddingTop="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/export"
+            android:visibility="invisible" />
+
+        <ImageButton
+            android:id="@+id/edit"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@color/blue"
+            android:contentDescription="@string/edit"
+            android:paddingTop="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/edit"
+            android:visibility="invisible" />
+
+        <ImageButton
+            android:id="@+id/duplicate"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@color/blue"
+            android:contentDescription="@string/duplicate"
+            android:paddingTop="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/duplicate"
+            android:visibility="invisible" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/blue"
+            android:contentDescription="@string/title"
+            android:gravity="center_vertical"
+            android:text="@string/xia"
+            android:textColor="@color/white"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_weight="1"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/add"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:background="@color/blue"
+            android:contentDescription="@string/add"
+            android:paddingTop="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/plus" />
+
+        <Button
+            android:id="@+id/editMode"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:background="@color/blue"
+            android:text="@string/edit"
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
+    </LinearLayout>
+</LinearLayout>

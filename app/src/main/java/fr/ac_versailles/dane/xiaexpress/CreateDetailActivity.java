@@ -1196,7 +1196,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         @Override
         protected Bitmap doInBackground(Void... arg0) {
             // Load background
-            String imagePath = imagesDirectory + fileName;
+            String imagePath = imagesDirectory + fileName + ".jpg";
             float availableWidth = metrics.widthPixels;
             float availableHeight = metrics.heightPixels - toolbarHeight;
 
