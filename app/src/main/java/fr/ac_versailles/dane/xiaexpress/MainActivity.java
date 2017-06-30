@@ -26,6 +26,7 @@ import org.w3c.dom.Document;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -136,7 +137,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 // Alert
                 AlertDialog.Builder controller = new AlertDialog.Builder(MainActivity.this);
                 controller.setTitle(title);
-                //controller.setMessage("DELETE_DETAIL");
                 controller.setPositiveButton(getResources().getString(R.string.YES), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         Collections.sort(selectedItems, Collections.<Integer>reverseOrder());
@@ -191,7 +191,42 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         btnDuplicate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO duplicate resource
+                // Alert
+                AlertDialog.Builder controller = new AlertDialog.Builder(MainActivity.this);
+                controller.setTitle(getResources().getString(R.string.DUPLICATE_FILE));
+                controller.setPositiveButton(getResources().getString(R.string.YES), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        long now = System.currentTimeMillis();
+                        String fileToDuplicate = arrayNames.get(selectedItems.get(0));
+                        try {
+                            InputStream in = new FileInputStream(new File(imagesDirectory + fileToDuplicate + ".jpg"));
+                            copy(in, new File(imagesDirectory + now + ".jpg"));
+                            in = new FileInputStream(new File(xmlDirectory + fileToDuplicate + ".xml"));
+                            copy(in, new File(xmlDirectory + now + ".xml"));
+                            in = new FileInputStream(new File(cacheDirectory + fileToDuplicate + ".jpg"));
+                            copy(in, new File(cacheDirectory + now + ".jpg"));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        endEdit();
+                        arrayNames.add(arrayNames.size(), String.valueOf(now));
+                        Bitmap bitmap = decodeSampledBitmapFromFile(imagesDirectory + now + ".jpg", 150, 150);
+                        gridAdapter.add(new PhotoThumbnail(bitmap, String.valueOf(now)));
+                        gridAdapter.notifyDataSetChanged();
+                        gridView.setAdapter(gridAdapter);
+                    }
+                });
+                controller.setNegativeButton(getResources().getString(R.string.NO), new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do nothing
+                    }
+                });
+
+                // Show the alert controller
+                AlertDialog alertController = controller.create();
+                alertController.show();
             }
         });
 
