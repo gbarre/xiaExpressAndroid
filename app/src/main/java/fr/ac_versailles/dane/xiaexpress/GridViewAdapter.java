@@ -70,8 +70,9 @@ class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
 
 
         PhotoThumbnail item = data.get(position);
-        Document xml = Util.getXMLFromPath((xmlDirectory + item.getFilename()).replace(".jpg", ".xml"));
-        String title = (Util.getNodeValue(xml, "xia/title").equals("")) ? item.getFilename().replace(".jpg", "") : Util.getNodeValue(xml, "xia/title");
+        String filename = item.getFilename().replace(".jpg", "");
+        Document xml = Util.getXMLFromPath((xmlDirectory + filename) + ".xml");
+        String title = (Util.getNodeValue(xml, "xia/title").equals("")) ? filename : Util.getNodeValue(xml, "xia/title");
         if (title.length() > 35) {
             title = title.substring(0, 35) + "...";
         }
@@ -79,6 +80,10 @@ class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
         holder.imageTitle.setText(title);
         holder.image.setImageBitmap(item.getImage());
         return row;
+    }
+
+    public void deleteItem(int position) {
+        data.remove(position);
     }
 
     static class ViewHolder {

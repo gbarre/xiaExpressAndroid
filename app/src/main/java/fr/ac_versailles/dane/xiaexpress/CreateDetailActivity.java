@@ -759,7 +759,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             AlertDialog.Builder controller = new AlertDialog.Builder(this);
             controller.setTitle("WARNING");
             controller.setMessage("DELETE_DETAIL");
-            controller.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            controller.setPositiveButton(getResources().getString(R.string.YES), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     createDetail = false;
                     changeDetailColor(-1);
@@ -768,7 +768,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     setBtnsIcons();
                 }
             });
-            controller.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            controller.setNegativeButton(getResources().getString(R.string.NO), new DialogInterface.OnClickListener() {
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -1196,7 +1196,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         @Override
         protected Bitmap doInBackground(Void... arg0) {
             // Load background
-            String imagePath = imagesDirectory + fileName + ".jpg";
+            String imagePath = imagesDirectory + fileTitle + ".jpg";
             float availableWidth = metrics.widthPixels;
             float availableHeight = metrics.heightPixels - toolbarHeight;
 

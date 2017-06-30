@@ -1,5 +1,6 @@
 package fr.ac_versailles.dane.xiaexpress;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -7,6 +8,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private final ArrayList<String> arrayNames = new ArrayList<>();
     String tmpFilePath;
     private GridViewAdapter gridAdapter;
+    private GridView gridView;
     private String rootDirectory;
     private String imagesDirectory;
     private String xmlDirectory;
@@ -71,9 +74,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ListPopupWindow exportPopupWindow;
     private String[] exportsType;
 
-    /**
-     * Copy file from path src to path dst
-     */
     private static void copy(InputStream in, File dst) throws IOException {
         //InputStream in = new FileInputStream(src);
         OutputStream out = new FileOutputStream(dst);
@@ -132,8 +132,32 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         btnTrash.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO open popup before delete elements
-                dbg.pt("btnTrash", "selectedItems", selectedItems.toString());
+                String title = (selectedItems.size() == 1) ? getResources().getString(R.string.delete_file) : String.format(getResources().getString(R.string.delete_n_files), selectedItems.size());
+                // Alert
+                AlertDialog.Builder controller = new AlertDialog.Builder(MainActivity.this);
+                controller.setTitle(title);
+                //controller.setMessage("DELETE_DETAIL");
+                controller.setPositiveButton(getResources().getString(R.string.YES), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Collections.sort(selectedItems, Collections.<Integer>reverseOrder());
+                        for (int item : selectedItems) {
+                            deleteFiles(item);
+                        }
+                        selectedItems = new ArrayList<>();
+                        endEdit();
+                    }
+                });
+                controller.setNegativeButton(getResources().getString(R.string.NO), new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do nothing
+                    }
+                });
+
+                // Show the alert controller
+                AlertDialog alertController = controller.create();
+                alertController.show();
             }
         });
 
@@ -184,59 +208,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     leftMenu.setVisibility(View.INVISIBLE);
                     menu.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.blue));
                     selectedItems = new ArrayList<>();
-                    setGridView();
+                    gridView.invalidateViews();
+                    gridAdapter.notifyDataSetChanged();
+                    gridView.setAdapter(gridAdapter);
                 }
                 buildLeftNavbarItems(selectedItems.size());
             }
         });
 
-    }
-
-    private void setGridView() {
-        // Load the collection in grid view
-        GridView gridView = (GridView) findViewById(R.id.gridView);
-        gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(), xmlDirectory);
-        gridView.setAdapter(gridAdapter);
-
-        // Add listener on collection
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                PhotoThumbnail item = (PhotoThumbnail) parent.getItemAtPosition(position);
-                View element = parent.getChildAt(position);
-
-                if (isEditing) {
-                    if (selectedItems.contains(position)) {
-                        for (int i = 0; i < selectedItems.size(); i++) {
-                            if (selectedItems.get(i) == position) {
-                                selectedItems.remove(i);
-                                element.setBackgroundColor(Color.TRANSPARENT);
-                                break;
-                            }
-                        }
-                    } else {
-                        selectedItems.add(position);
-                        element.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.orange));
-                    }
-                    Collections.sort(selectedItems, Collections.<Integer>reverseOrder());
-                    buildLeftNavbarItems(selectedItems.size());
-                } else { //Create intent
-                    if (nbThumb > 0) {
-                        Intent intent = new Intent(MainActivity.this, CreateDetailActivity.class);
-                        intent.putExtra("filename", item.getFilename());
-
-                        //Start details activity
-                        startActivity(intent);
-                    } else {
-                        Intent intent = new Intent();
-                        intent.setType("image/*");
-                        intent.setAction(Intent.ACTION_GET_CONTENT);
-                        startActivityForResult(Intent.createChooser(intent,
-                                "Select Picture"), SELECT_PICTURE);
-                    }
-                    selectedItems = new ArrayList<>();
-                }
-            }
-        });
     }
 
     @Override
@@ -247,33 +226,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             exportResource(position);
         }
 
-    }
-
-    private void exportResource(int type) {
-        String exportXMLString = "";
-        String fileName = arrayNames.get(selectedItems.get(0));
-        Document xml = Util.getXMLFromPath(xmlDirectory + fileName + ".xml");
-        String tmpTitle = (Util.getNodeValue(xml, "xia/title").equals("")) ? fileName : Util.getNodeValue(xml, "xia/title");
-        tmpTitle = Util.cleanInput(tmpTitle);
-        Export export = new Export(xml, imagesDirectory + fileName + ".jpg");
-        switch (type) {
-            case 0: // Xia Tablet
-                exportXMLString = export.xiaTablet();
-                tmpFilePath = cacheDirectory + tmpTitle + ".xml";
-                break;
-            case 1: // Inkscape SVG
-                exportXMLString = export.inkscape();
-                tmpFilePath = cacheDirectory + tmpTitle + ".svg";
-                break;
-        }
-        if (!exportXMLString.equals("")) {
-            // write string to temp file
-            Util.string2File(exportXMLString, tmpFilePath);
-
-            // Open share Intent
-            Intent shareIntent = Util.share(tmpFilePath, tmpTitle);
-            startActivityForResult(Intent.createChooser(shareIntent, getResources().getString(R.string.export)), PICK_CONTACT_REQUEST);
-        }
     }
 
     // Store the image
@@ -294,38 +246,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bitmap = decodeSampledBitmapFromFile(imagesDirectory + now + ".jpg", 150, 150);
                 String imgName = new File(imagesDirectory + now + ".jpg").getName();
                 gridAdapter.add(new PhotoThumbnail(bitmap, imgName));
+                int position = arrayNames.size();
+                arrayNames.add(position, imgName.replace(".jpg", ""));
 
                 // Create xml file
                 Util.createXiaXML(xmlDirectory + now + ".xml");
 
-                gridAdapter = null;
-                // Load the collection in grid view
-                GridView gridView = (GridView) findViewById(R.id.gridView);
-                gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(), xmlDirectory);
+                gridAdapter.notifyDataSetChanged();
                 gridView.setAdapter(gridAdapter);
-
-                // Add listener on collection
-                gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                        PhotoThumbnail item = (PhotoThumbnail) parent.getItemAtPosition(position);
-
-                        //Create intent
-                        if (nbThumb > 0) {
-                            Intent intent = new Intent(MainActivity.this, CreateDetailActivity.class);
-                            intent.putExtra("filename", item.getFilename());
-
-                            //Start details activity
-                            startActivity(intent);
-                        } else {
-                            Intent intent = new Intent();
-                            intent.setType("image/*");
-                            intent.setAction(Intent.ACTION_GET_CONTENT);
-                            startActivityForResult(Intent.createChooser(intent,
-                                    "Select Picture"), SELECT_PICTURE);
-                        }
-
-                    }
-                });
             }
         }
         if (requestCode == PICK_CONTACT_REQUEST) {
@@ -405,9 +333,57 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return BitmapFactory.decodeFile(String.valueOf(cachedImage));
     }
 
-    /**
-     * Prepare some dummy data for gridview
-     */
+    private void deleteFiles(int index) {
+        String fileName = arrayNames.get(index);
+        File file = new File(cacheDirectory + fileName + ".jpg");
+        file.delete();
+        file = new File(imagesDirectory + fileName + ".jpg");
+        file.delete();
+        file = new File(xmlDirectory + fileName + ".xml");
+        file.delete();
+        arrayNames.remove(index);
+        gridAdapter.deleteItem(index);
+        gridAdapter.notifyDataSetChanged();
+        gridView.setAdapter(gridAdapter);
+    }
+
+    private void endEdit() {
+        isEditing = false;
+        buildLeftNavbarItems(0);
+        gridAdapter.notifyDataSetChanged();
+        gridView.setAdapter(gridAdapter);
+        LinearLayout menu = (LinearLayout) findViewById(R.id.mainMenu);
+        menu.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.blue));
+
+    }
+
+    private void exportResource(int type) {
+        String exportXMLString = "";
+        String fileName = arrayNames.get(selectedItems.get(0));
+        Document xml = Util.getXMLFromPath(xmlDirectory + fileName + ".xml");
+        String tmpTitle = (Util.getNodeValue(xml, "xia/title").equals("")) ? fileName : Util.getNodeValue(xml, "xia/title");
+        tmpTitle = Util.cleanInput(tmpTitle);
+        Export export = new Export(xml, imagesDirectory + fileName + ".jpg");
+        switch (type) {
+            case 0: // Xia Tablet
+                exportXMLString = export.xiaTablet();
+                tmpFilePath = cacheDirectory + tmpTitle + ".xml";
+                break;
+            case 1: // Inkscape SVG
+                exportXMLString = export.inkscape();
+                tmpFilePath = cacheDirectory + tmpTitle + ".svg";
+                break;
+        }
+        if (!exportXMLString.equals("")) {
+            // write string to temp file
+            Util.string2File(exportXMLString, tmpFilePath);
+
+            // Open share Intent
+            Intent shareIntent = Util.share(tmpFilePath, tmpTitle);
+            startActivityForResult(Intent.createChooser(shareIntent, getResources().getString(R.string.export)), PICK_CONTACT_REQUEST);
+        }
+    }
+
     private ArrayList<PhotoThumbnail> getData() {
         final ArrayList<PhotoThumbnail> imageItems = new ArrayList<>();
         File dir = new File(imagesDirectory);
@@ -435,4 +411,52 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
         return imageItems;
     }
+
+    private void setGridView() {
+        // Load the collection in grid view
+        gridView = (GridView) findViewById(R.id.gridView);
+        gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(), xmlDirectory);
+        gridView.setAdapter(gridAdapter);
+
+        // Add listener on collection
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                PhotoThumbnail item = (PhotoThumbnail) parent.getItemAtPosition(position);
+                View element = parent.getChildAt(position);
+
+                if (isEditing) {
+                    if (selectedItems.contains(position)) {
+                        for (int i = 0; i < selectedItems.size(); i++) {
+                            if (selectedItems.get(i) == position) {
+                                selectedItems.remove(i);
+                                element.setBackgroundColor(Color.TRANSPARENT);
+                                break;
+                            }
+                        }
+                    } else {
+                        selectedItems.add(position);
+                        element.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.orange));
+                    }
+                    Collections.sort(selectedItems, Collections.<Integer>reverseOrder());
+                    buildLeftNavbarItems(selectedItems.size());
+                } else { //Create intent
+                    if (nbThumb > 0) {
+                        Intent intent = new Intent(MainActivity.this, CreateDetailActivity.class);
+                        intent.putExtra("filename", item.getFilename());
+
+                        //Start details activity
+                        startActivity(intent);
+                    } else {
+                        Intent intent = new Intent();
+                        intent.setType("image/*");
+                        intent.setAction(Intent.ACTION_GET_CONTENT);
+                        startActivityForResult(Intent.createChooser(intent,
+                                "Select Picture"), SELECT_PICTURE);
+                    }
+                    selectedItems = new ArrayList<>();
+                }
+            }
+        });
+    }
+
 }

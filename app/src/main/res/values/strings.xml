@@ -55,11 +55,11 @@
     <string name="fili">xia_fili</string>
     <string name="duplicate">Duplicate</string>
     <string name="xia">Xia</string>
+    <string name="delete_file">Delete file</string>
+    <string name="delete_n_files">Delete %d files</string>
+    <string name="YES">Yes</string>
+    <string name="NO">No</string>
     <!--<string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
     <string name=""></string>
     <string name=""></string>
     <string name=""></string>
