@@ -476,7 +476,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     buildLeftNavbarItems(selectedItems.size());
                 } else { //Create intent
                     if (nbThumb > 0) {
-                        Intent intent = new Intent(MainActivity.this, CreateDetailActivity.class);
+                        Document xml = Util.getXMLFromPath(xmlDirectory + item.getFilename() + ".xml");
+                        Boolean readOnly = Util.getNodeValue(xml, "xia/readonly").equals("true");
+                        Intent intent;
+                        if (readOnly) {
+                            intent = new Intent(MainActivity.this, PlayXia.class);
+                        } else {
+                            intent = new Intent(MainActivity.this, CreateDetailActivity.class);
+                        }
                         intent.putExtra("filename", item.getFilename());
 
                         //Start details activity

@@ -117,7 +117,7 @@ public class PlayXia extends AppCompatActivity {
         background = (ImageView) findViewById(R.id.image);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-        fileTitle = getIntent().getStringExtra("fileTitle");
+        fileTitle = getIntent().getStringExtra("filename");
         xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
 
         showDetails = (Util.getNodeAttribute(xml, "details", "show").equals("true"));
