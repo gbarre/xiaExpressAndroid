@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -22,8 +21,11 @@ import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
 
+import com.mvc.imagepicker.ImagePicker;
+
 import org.w3c.dom.Document;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,7 +59,7 @@ import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     static final int PICK_CONTACT_REQUEST = 2;
-    private static final int SELECT_PICTURE = 1;
+    //rprivate static final int SELECT_PICTURE = 1;
     private final ArrayList<String> arrayNames = new ArrayList<>();
     String tmpFilePath;
     private GridViewAdapter gridAdapter;
@@ -76,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private String[] exportsType;
 
     private static void copy(InputStream in, File dst) throws IOException {
-        //InputStream in = new FileInputStream(src);
         OutputStream out = new FileOutputStream(dst);
 
         // Transfer bytes from in to out
@@ -115,17 +116,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Util.createDirectory(cacheDirectory);
 
         setGridView();
+        ImagePicker.setMinQuality(400, 400);
 
         btnAdd.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
 
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent,
-                        "Select Picture"), SELECT_PICTURE);
+                ImagePicker.pickImage(MainActivity.this, getResources().getString(R.string.select_picture));
             }
         });
 
@@ -257,7 +255,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (exportPopupWindow.isShowing()) {
             exportPopupWindow.dismiss();
-            dbg.pt("Export", "item clicked", position);
             exportResource(position);
         }
 
@@ -266,15 +263,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // Store the image
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            if (requestCode == SELECT_PICTURE) {
-                // Convert uri to path
-                Uri selectedImageUri = data.getData();
+            if (requestCode != PICK_CONTACT_REQUEST) {
+                gridAdapter.setEmpty(nbThumb == 0);
+                if (gridAdapter.getEmpty()) {
+                    gridAdapter.deleteItem(0);
+                    gridAdapter.notifyDataSetChanged();
+                }
+                Bitmap bmp = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
                 // Copy file to documentsDirectory
                 long now = System.currentTimeMillis();
 
                 try {
-                    InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
-                    copy(inputStream, new File(imagesDirectory + now + ".jpg"));
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 85, bos);
+                    byte[] bitmapdata = bos.toByteArray();
+                    ByteArrayInputStream bs = new ByteArrayInputStream(bitmapdata);
+                    copy(bs, new File(imagesDirectory + now + ".jpg"));
+                    nbThumb = nbThumb + 1;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -289,14 +294,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 gridAdapter.notifyDataSetChanged();
                 gridView.setAdapter(gridAdapter);
+                gridAdapter.setEmpty(false);
             }
         }
         if (requestCode == PICK_CONTACT_REQUEST) {
             // Make sure the request was successful
             File file = new File(tmpFilePath);
-            if (!file.delete()) {
-                dbg.pt("Warning", "File not deleted", tmpFilePath);
-            }
+            file.delete();
         }
     }
 
@@ -385,6 +389,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void endEdit() {
         isEditing = false;
         buildLeftNavbarItems(0);
+        if (gridAdapter.getSize() == 0) {
+            gridAdapter.setEmpty(true);
+            nbThumb = 0;
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.plus200);
+            gridAdapter.add(new PhotoThumbnail(bitmap, getResources().getString(R.string.new_resource)));
+        }
         gridAdapter.notifyDataSetChanged();
         gridView.setAdapter(gridAdapter);
         LinearLayout menu = (LinearLayout) findViewById(R.id.mainMenu);
@@ -442,7 +452,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         } else {
             Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.plus200);
-            imageItems.add(new PhotoThumbnail(bitmap, "New resource..."));
+            imageItems.add(new PhotoThumbnail(bitmap, getResources().getString(R.string.new_resource)));
         }
         return imageItems;
     }
@@ -452,6 +462,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         gridView = (GridView) findViewById(R.id.gridView);
         gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(), xmlDirectory);
         gridView.setAdapter(gridAdapter);
+        gridAdapter.setEmpty(nbThumb == 0);
 
         // Add listener on collection
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -476,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     buildLeftNavbarItems(selectedItems.size());
                 } else { //Create intent
                     if (nbThumb > 0) {
-                        Document xml = Util.getXMLFromPath(xmlDirectory + item.getFilename() + ".xml");
+                        Document xml = Util.getXMLFromPath(xmlDirectory + item.getFilename().replace(".jpg", "") + ".xml");
                         Boolean readOnly = Util.getNodeValue(xml, "xia/readonly").equals("true");
                         Intent intent;
                         if (readOnly) {
@@ -489,11 +500,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         //Start details activity
                         startActivity(intent);
                     } else {
-                        Intent intent = new Intent();
-                        intent.setType("image/*");
-                        intent.setAction(Intent.ACTION_GET_CONTENT);
-                        startActivityForResult(Intent.createChooser(intent,
-                                "Select Picture"), SELECT_PICTURE);
+                        ImagePicker.pickImage(MainActivity.this, getResources().getString(R.string.select_picture));
                     }
                     selectedItems = new ArrayList<>();
                 }

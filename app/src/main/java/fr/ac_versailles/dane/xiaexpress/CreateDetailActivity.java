@@ -839,7 +839,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private void goForward() {
         //Create intent
         Intent intent = new Intent(CreateDetailActivity.this, PlayXia.class);
-        intent.putExtra("fileTitle", fileTitle);
+        intent.putExtra("filename", fileTitle);
         intent.putExtra("toolbarHeight", String.valueOf(toolbarHeight));
 
         //Start details activity

@@ -41,6 +41,7 @@ class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
     private final int layoutResourceId;
     private final String xmlDirectory;
     private ArrayList<PhotoThumbnail> data = new ArrayList<>();
+    private Boolean isEmpty = true;
 
     public GridViewAdapter(Context context, int layoutResourceId, ArrayList<PhotoThumbnail> data, String xmlDir) {
         super(context, layoutResourceId, data);
@@ -70,11 +71,16 @@ class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
 
 
         PhotoThumbnail item = data.get(position);
-        String filename = item.getFilename().replace(".jpg", "");
-        Document xml = Util.getXMLFromPath((xmlDirectory + filename) + ".xml");
-        String title = (Util.getNodeValue(xml, "xia/title").equals("")) ? filename : Util.getNodeValue(xml, "xia/title");
-        if (title.length() > 35) {
-            title = title.substring(0, 35) + "...";
+        String title;
+        if (!isEmpty) {
+            String filename = item.getFilename().replace(".jpg", "");
+            Document xml = Util.getXMLFromPath((xmlDirectory + filename) + ".xml");
+            title = (Util.getNodeValue(xml, "xia/title").equals("")) ? filename : Util.getNodeValue(xml, "xia/title");
+            if (title.length() > 35) {
+                title = title.substring(0, 35) + "...";
+            }
+        } else {
+            title = context.getResources().getString(R.string.new_resource);
         }
 
         holder.imageTitle.setText(title);
@@ -82,8 +88,20 @@ class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
         return row;
     }
 
-    public void deleteItem(int position) {
+    void deleteItem(int position) {
         data.remove(position);
+    }
+
+    Boolean getEmpty() {
+        return isEmpty;
+    }
+
+    void setEmpty(Boolean value) {
+        isEmpty = value;
+    }
+
+    int getSize() {
+        return data.size();
     }
 
     static class ViewHolder {
