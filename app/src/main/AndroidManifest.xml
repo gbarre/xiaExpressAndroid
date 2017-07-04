@@ -31,6 +31,22 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".importActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/xml" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:host="*"
+                    android:pathPattern=".*\\.xml"
+                    android:scheme="file" />
+            </intent-filter>
+        </activity>
+
         <activity android:name=".CreateDetailActivity"
             android:parentActivityName=".MainActivity">
             <meta-data

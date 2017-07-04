@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.StringWriter;
@@ -99,6 +101,19 @@ class Util extends Activity {
         if (out.length() > 45) {
             return out.substring(0, 45);
         } else return out;
+    }
+
+    static void copy(InputStream in, File dst) throws IOException {
+        OutputStream out = new FileOutputStream(dst);
+
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.close();
     }
 
     static void createDirectory(String directory) {
@@ -270,7 +285,6 @@ class Util extends Activity {
     }
 
     static void writeXML(Document xml, String filepath) {
-        //pt("writeXML", "xml", nodeToString(xml.getDocumentElement()));
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();

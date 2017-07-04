@@ -32,7 +32,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -76,19 +75,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private Button btnEditMode;
     private ListPopupWindow exportPopupWindow;
     private String[] exportsType;
-
-    private static void copy(InputStream in, File dst) throws IOException {
-        OutputStream out = new FileOutputStream(dst);
-
-        // Transfer bytes from in to out
-        byte[] buf = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
-        in.close();
-        out.close();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -198,11 +184,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         String fileToDuplicate = arrayNames.get(selectedItems.get(0));
                         try {
                             InputStream in = new FileInputStream(new File(imagesDirectory + fileToDuplicate + ".jpg"));
-                            copy(in, new File(imagesDirectory + now + ".jpg"));
+                            Util.copy(in, new File(imagesDirectory + now + ".jpg"));
                             in = new FileInputStream(new File(xmlDirectory + fileToDuplicate + ".xml"));
-                            copy(in, new File(xmlDirectory + now + ".xml"));
+                            Util.copy(in, new File(xmlDirectory + now + ".xml"));
                             in = new FileInputStream(new File(cacheDirectory + fileToDuplicate + ".jpg"));
-                            copy(in, new File(cacheDirectory + now + ".jpg"));
+                            Util.copy(in, new File(cacheDirectory + now + ".jpg"));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -278,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     bmp.compress(Bitmap.CompressFormat.JPEG, 85, bos);
                     byte[] bitmapdata = bos.toByteArray();
                     ByteArrayInputStream bs = new ByteArrayInputStream(bitmapdata);
-                    copy(bs, new File(imagesDirectory + now + ".jpg"));
+                    Util.copy(bs, new File(imagesDirectory + now + ".jpg"));
                     nbThumb = nbThumb + 1;
                 } catch (IOException e) {
                     e.printStackTrace();
