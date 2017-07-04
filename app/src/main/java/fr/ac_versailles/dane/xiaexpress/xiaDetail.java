@@ -1,6 +1,7 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -182,6 +183,7 @@ class xiaDetail {
             shape.getPaint().setPathEffect(new DashPathEffect(new float[] {10,5}, 0));
             shape.getPaint().setStrokeWidth(3);
 
+            drawable.setColor(Color.TRANSPARENT);
             drawable.setStroke(3, color, 10, 5);
 
         }
