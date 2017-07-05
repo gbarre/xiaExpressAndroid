@@ -80,7 +80,7 @@ public class DetailInfos extends AppCompatActivity {
 
                 }
             }
-            Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
+            Util.writeXML(xml, xmlDirectory + fileTitle + Constants.XML_EXTENSION);
 
             finish();
         }
@@ -115,7 +115,7 @@ public class DetailInfos extends AppCompatActivity {
         fileTitle = getIntent().getStringExtra("fileTitle");
         tag = Integer.valueOf(getIntent().getStringExtra("tag"));
 
-        xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+        xml = Util.getXMLFromPath(xmlDirectory + fileTitle + Constants.XML_EXTENSION);
 
         // Load detail infos from xml
         NodeList xmlDetails = xml.getElementsByTagName("detail");

@@ -118,7 +118,7 @@ public class PlayXia extends AppCompatActivity {
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         fileTitle = getIntent().getStringExtra("filename");
-        xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+        xml = Util.getXMLFromPath(xmlDirectory + fileTitle + Constants.XML_EXTENSION);
 
         showDetails = (Util.getNodeAttribute(xml, "details", "show").equals("true"));
 
@@ -137,7 +137,7 @@ public class PlayXia extends AppCompatActivity {
         rippleBackground = (RippleBackground) findViewById(R.id.content);
         movingArea = (RelativeLayout) findViewById(R.id.movingArea);
 
-        fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + ".jpg");
+        fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + Constants.JPG_EXTENSION);
 
         ImageButton showImgInfos = (ImageButton) findViewById(R.id.showImgInfos);
         showImgInfos.setOnClickListener(new View.OnClickListener() {

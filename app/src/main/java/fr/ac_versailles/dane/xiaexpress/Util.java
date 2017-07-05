@@ -166,6 +166,13 @@ class Util extends Activity {
         }
     }
 
+    static void removeFile(String filepath) {
+        File file = new File(filepath);
+        if (!file.delete()) {
+            dbg.pt("removeFile", "error", filepath);
+        }
+    }
+
     // http://stackoverflow.com/questions/37904739/html-fromhtml-deprecated-in-android-n
     @SuppressWarnings("deprecation")
     static Spanned fromHtml(String html) {

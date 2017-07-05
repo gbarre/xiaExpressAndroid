@@ -64,6 +64,8 @@
     <string name="new_resource">Nouvelle ressource…</string>
     <string name="importOK">Import OK</string>
     <string name="wrongXML">XML incompatible</string>
+    <string name="newPicture">Nouvelle image</string>
+    <string name="importXML">Importer un XML</string>
     <!--<string name=""></string>
     <string name=""></string>
     <string name=""></string>

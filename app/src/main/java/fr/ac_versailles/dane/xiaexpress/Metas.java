@@ -97,7 +97,7 @@ public class Metas extends AppCompatActivity {
 
         fileTitle = getIntent().getStringExtra("fileTitle");
 
-        xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+        xml = Util.getXMLFromPath(xmlDirectory + fileTitle + Constants.XML_EXTENSION);
 
         // Load subviews
         final LinearLayout metas1 = (LinearLayout) findViewById(R.id.metas1);
@@ -236,7 +236,7 @@ public class Metas extends AppCompatActivity {
                 xml = Util.setNodeAttribute(xml, "image", "title", ImgTitle.getText().toString());
                 xml = Util.setNodeAttribute(xml, "image", "description", ImgDescription.getText().toString());
 
-                Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
+                Util.writeXML(xml, xmlDirectory + fileTitle + Constants.XML_EXTENSION);
                 finish();
             }
         };
@@ -356,7 +356,7 @@ public class Metas extends AppCompatActivity {
                                             ReadOnly.setChecked(false); // disable RO
                                             xml = Util.setNodeValue(xml, "readonly", "false");
                                             xml = Util.setNodeAttribute(xml, "readonly", "code", "");
-                                            Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
+                                            Util.writeXML(xml, xmlDirectory + fileTitle + Constants.XML_EXTENSION);
                                         } else { // Toast error !
                                             Toast.makeText(Metas.this, getResources().getString(R.string.error), Toast.LENGTH_LONG).show();
                                             ReadOnly.setChecked(true);
@@ -369,7 +369,7 @@ public class Metas extends AppCompatActivity {
                                             if (currentPass.equals(previousPass)) { // ok we need to store this password
                                                 xml = Util.setNodeValue(xml, "readonly", "true");
                                                 xml = Util.setNodeAttribute(xml, "readonly", "code", currentPass);
-                                                Util.writeXML(xml, xmlDirectory + fileTitle + ".xml");
+                                                Util.writeXML(xml, xmlDirectory + fileTitle + Constants.XML_EXTENSION);
                                             }
                                         }
                                     }

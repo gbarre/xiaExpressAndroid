@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *  dbg.java
+ *  Constants.java
  *  xia-android
  *
  *  Created by guillaume on 12/10/2016.
@@ -40,6 +40,8 @@ public class Constants extends Application {
     public static final int red = Color.argb(255, 255, 0, 0);
     public static final int green = Color.argb(255, 0, 255, 0);
     public static final int white = Color.argb(255, 255, 255, 355);
+    static final String JPG_EXTENSION = ".jpg";
+    static final String XML_EXTENSION = ".xml";
     public static int darkBlue = Color.argb(255, 0, 102, 153);
     public static int orange = Color.argb(255, 255, 131, 0);
     public static int black = Color.argb(255, 0, 0, 0);

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -20,6 +21,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mvc.imagepicker.ImagePicker;
 
@@ -57,13 +59,12 @@ import java.util.Collections;
 
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
-    static final int PICK_CONTACT_REQUEST = 2;
-    //rprivate static final int SELECT_PICTURE = 1;
+    static final int EXPORT_REQUEST = 2;
+    static final int IMPORT_XML_REQUEST = 3;
     private final ArrayList<String> arrayNames = new ArrayList<>();
     String tmpFilePath;
     private GridViewAdapter gridAdapter;
     private GridView gridView;
-    private String rootDirectory;
     private String imagesDirectory;
     private String xmlDirectory;
     private String cacheDirectory;
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ImageButton btnTrash, btnExport, btnEdit, btnDuplicate, btnAdd;
     private Button btnEditMode;
     private ListPopupWindow exportPopupWindow;
-    private String[] exportsType;
+    private ListPopupWindow importPopupWindow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         btnEditMode = (Button) findViewById(R.id.editMode);
         btnAdd = (ImageButton) findViewById(R.id.add);
 
-        rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
+        String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);
         xmlDirectory = Constants.getXMLFrom(rootDirectory);
         cacheDirectory = Constants.getCacheFrom(rootDirectory);
@@ -104,12 +105,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         setGridView();
         ImagePicker.setMinQuality(400, 400);
 
+        // Build the addDetail menu
+        String[] importsType = new String[]{getResources().getString(R.string.newPicture), getResources().getString(R.string.importXML)};
+        importPopupWindow = new ListPopupWindow(this);
+        importPopupWindow.setAdapter(new ArrayAdapter(MainActivity.this, R.layout.list_item, importsType));
+        importPopupWindow.setAnchorView(btnAdd);
+        importPopupWindow.setWidth(285);
+        importPopupWindow.setVerticalOffset(10);
+        importPopupWindow.setModal(true);
+        importPopupWindow.setOnItemClickListener(this);
+
         btnAdd.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
-
-                ImagePicker.pickImage(MainActivity.this, getResources().getString(R.string.select_picture));
+                importPopupWindow.show();
             }
         });
 
@@ -145,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
-        exportsType = new String[]{getResources().getString(R.string.xia_tablet), getResources().getString(R.string.inkscape)};
+        String[] exportsType = new String[]{getResources().getString(R.string.xia_tablet), getResources().getString(R.string.inkscape)};
         // Build the export menu
         exportPopupWindow = new ListPopupWindow(this);
         exportPopupWindow.setAdapter(new ArrayAdapter(MainActivity.this, R.layout.list_item, exportsType));
@@ -183,18 +193,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         long now = System.currentTimeMillis();
                         String fileToDuplicate = arrayNames.get(selectedItems.get(0));
                         try {
-                            InputStream in = new FileInputStream(new File(imagesDirectory + fileToDuplicate + ".jpg"));
-                            Util.copy(in, new File(imagesDirectory + now + ".jpg"));
-                            in = new FileInputStream(new File(xmlDirectory + fileToDuplicate + ".xml"));
-                            Util.copy(in, new File(xmlDirectory + now + ".xml"));
-                            in = new FileInputStream(new File(cacheDirectory + fileToDuplicate + ".jpg"));
-                            Util.copy(in, new File(cacheDirectory + now + ".jpg"));
+                            InputStream in = new FileInputStream(new File(imagesDirectory + fileToDuplicate + Constants.JPG_EXTENSION));
+                            Util.copy(in, new File(imagesDirectory + now + Constants.JPG_EXTENSION));
+                            in = new FileInputStream(new File(xmlDirectory + fileToDuplicate + Constants.XML_EXTENSION));
+                            Util.copy(in, new File(xmlDirectory + now + Constants.XML_EXTENSION));
+                            in = new FileInputStream(new File(cacheDirectory + fileToDuplicate + Constants.JPG_EXTENSION));
+                            Util.copy(in, new File(cacheDirectory + now + Constants.JPG_EXTENSION));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                         endEdit();
                         arrayNames.add(arrayNames.size(), String.valueOf(now));
-                        Bitmap bitmap = decodeSampledBitmapFromFile(imagesDirectory + now + ".jpg", 150, 150);
+                        Bitmap bitmap = decodeSampledBitmapFromFile(imagesDirectory + now + Constants.JPG_EXTENSION, 150, 150);
                         gridAdapter.add(new PhotoThumbnail(bitmap, String.valueOf(now)));
                         gridAdapter.notifyDataSetChanged();
                         gridView.setAdapter(gridAdapter);
@@ -239,7 +249,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (exportPopupWindow.isShowing()) {
+        if (importPopupWindow.isShowing()) {
+            importPopupWindow.dismiss();
+            importResource(position);
+        } else if (exportPopupWindow.isShowing()) {
             exportPopupWindow.dismiss();
             exportResource(position);
         }
@@ -249,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // Store the image
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            if (requestCode != PICK_CONTACT_REQUEST) {
+            if (requestCode != EXPORT_REQUEST && requestCode != IMPORT_XML_REQUEST) {
                 gridAdapter.setEmpty(nbThumb == 0);
                 if (gridAdapter.getEmpty()) {
                     gridAdapter.deleteItem(0);
@@ -264,29 +277,41 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     bmp.compress(Bitmap.CompressFormat.JPEG, 85, bos);
                     byte[] bitmapdata = bos.toByteArray();
                     ByteArrayInputStream bs = new ByteArrayInputStream(bitmapdata);
-                    Util.copy(bs, new File(imagesDirectory + now + ".jpg"));
+                    Util.copy(bs, new File(imagesDirectory + now + Constants.JPG_EXTENSION));
                     nbThumb = nbThumb + 1;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                Bitmap bitmap = decodeSampledBitmapFromFile(imagesDirectory + now + ".jpg", 150, 150);
-                String imgName = new File(imagesDirectory + now + ".jpg").getName();
+                Bitmap bitmap = decodeSampledBitmapFromFile(imagesDirectory + now + Constants.JPG_EXTENSION, 150, 150);
+                String imgName = new File(imagesDirectory + now + Constants.JPG_EXTENSION).getName();
                 gridAdapter.add(new PhotoThumbnail(bitmap, imgName));
                 int position = arrayNames.size();
-                arrayNames.add(position, imgName.replace(".jpg", ""));
+                arrayNames.add(position, imgName.replace(Constants.JPG_EXTENSION, ""));
 
                 // Create xml file
-                Util.createXiaXML(xmlDirectory + now + ".xml");
+                Util.createXiaXML(xmlDirectory + now + Constants.XML_EXTENSION);
 
                 gridAdapter.notifyDataSetChanged();
                 gridView.setAdapter(gridAdapter);
                 gridAdapter.setEmpty(false);
             }
-        }
-        if (requestCode == PICK_CONTACT_REQUEST) {
-            // Make sure the request was successful
-            File file = new File(tmpFilePath);
-            file.delete();
+            if (requestCode == EXPORT_REQUEST) {
+                // Make sure the request was successful
+                Util.removeFile(tmpFilePath);
+            }
+            if (requestCode == IMPORT_XML_REQUEST) {
+                long now = System.currentTimeMillis();
+                Uri xmlURI = data.getData();
+                try {
+                    InputStream inputStream = getContentResolver().openInputStream(xmlURI);
+                    Util.copy(inputStream, new File(cacheDirectory + now + Constants.XML_EXTENSION));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Intent intent = new Intent(MainActivity.this, importActivity.class);
+                intent.putExtra("fileToImport", String.valueOf(now));
+                startActivity(intent);
+            }
         }
     }
 
@@ -360,12 +385,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void deleteFiles(int index) {
         String fileName = arrayNames.get(index);
-        File file = new File(cacheDirectory + fileName + ".jpg");
-        file.delete();
-        file = new File(imagesDirectory + fileName + ".jpg");
-        file.delete();
-        file = new File(xmlDirectory + fileName + ".xml");
-        file.delete();
+        Util.removeFile(cacheDirectory + fileName + Constants.JPG_EXTENSION);
+        Util.removeFile(imagesDirectory + fileName + Constants.JPG_EXTENSION);
+        Util.removeFile(xmlDirectory + fileName + Constants.XML_EXTENSION);
         arrayNames.remove(index);
         gridAdapter.deleteItem(index);
         gridAdapter.notifyDataSetChanged();
@@ -391,14 +413,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void exportResource(int type) {
         String exportXMLString = "";
         String fileName = arrayNames.get(selectedItems.get(0));
-        Document xml = Util.getXMLFromPath(xmlDirectory + fileName + ".xml");
+        Document xml = Util.getXMLFromPath(xmlDirectory + fileName + Constants.XML_EXTENSION);
         String tmpTitle = (Util.getNodeValue(xml, "xia/title").equals("")) ? fileName : Util.getNodeValue(xml, "xia/title");
         tmpTitle = Util.cleanInput(tmpTitle);
-        Export export = new Export(xml, imagesDirectory + fileName + ".jpg");
+        Export export = new Export(xml, imagesDirectory + fileName + Constants.JPG_EXTENSION);
         switch (type) {
             case 0: // Xia Tablet
                 exportXMLString = export.xiaTablet();
-                tmpFilePath = cacheDirectory + tmpTitle + ".xml";
+                tmpFilePath = cacheDirectory + tmpTitle + Constants.XML_EXTENSION;
                 break;
             case 1: // Inkscape SVG
                 exportXMLString = export.inkscape();
@@ -411,7 +433,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             // Open share Intent
             Intent shareIntent = Util.share(tmpFilePath, tmpTitle);
-            startActivityForResult(Intent.createChooser(shareIntent, getResources().getString(R.string.export)), PICK_CONTACT_REQUEST);
+            startActivityForResult(Intent.createChooser(shareIntent, getResources().getString(R.string.export)), EXPORT_REQUEST);
         }
     }
 
@@ -423,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (imgs != null && imgs.length > 0) {
             nbThumb = imgs.length;
             for (int i = 0; i < imgs.length; i++) {
-                String imgName = imgs[i].getName().replace(".jpg", "");
+                String imgName = imgs[i].getName().replace(Constants.JPG_EXTENSION, "");
                 arrayNames.add(i, imgName);
 
                 Bitmap bitmap;
@@ -441,6 +463,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             imageItems.add(new PhotoThumbnail(bitmap, getResources().getString(R.string.new_resource)));
         }
         return imageItems;
+    }
+
+    private void importResource(int type) {
+        switch (type) {
+            case 0: // picture
+                ImagePicker.pickImage(MainActivity.this, getResources().getString(R.string.select_picture));
+                break;
+            case 1: // import xml
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("text/xml");   //XML file only
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+                try {
+                    startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"), IMPORT_XML_REQUEST);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    // Potentially direct the user to the Market with a Dialog
+                    Toast.makeText(this, "Please install a File Manager.", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
     }
 
     private void setGridView() {
@@ -473,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     buildLeftNavbarItems(selectedItems.size());
                 } else { //Create intent
                     if (nbThumb > 0) {
-                        Document xml = Util.getXMLFromPath(xmlDirectory + item.getFilename().replace(".jpg", "") + ".xml");
+                        Document xml = Util.getXMLFromPath(xmlDirectory + item.getFilename().replace(Constants.JPG_EXTENSION, "") + Constants.XML_EXTENSION);
                         Boolean readOnly = Util.getNodeValue(xml, "xia/readonly").equals("true");
                         Intent intent;
                         if (readOnly) {

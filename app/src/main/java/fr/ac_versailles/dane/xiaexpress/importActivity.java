@@ -52,13 +52,22 @@ public class importActivity extends AppCompatActivity {
         String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         String imagesDirectory = Constants.getImagesFrom(rootDirectory);
         String xmlDirectory = Constants.getXMLFrom(rootDirectory);
+        String cacheDirectory = Constants.getCacheFrom(rootDirectory);
 
         Util.createDirectory(imagesDirectory);
         Util.createDirectory(xmlDirectory);
+        Util.createDirectory(cacheDirectory);
 
         // Get file path
         Intent intent = getIntent();
-        String path = intent.getData().getPath();
+        String path;
+        Boolean localImport = false;
+        if (intent.getStringExtra("fileToImport") != null) {
+            path = cacheDirectory + intent.getStringExtra("fileToImport") + Constants.XML_EXTENSION;
+            localImport = true;
+        } else {
+            path = intent.getData().getPath();
+        }
 
         long now = System.currentTimeMillis();
 
@@ -76,7 +85,7 @@ public class importActivity extends AppCompatActivity {
             ByteArrayInputStream bs = new ByteArrayInputStream(bitmapdata);
             try {
                 // Store image
-                Util.copy(bs, new File(imagesDirectory + now + ".jpg"));
+                Util.copy(bs, new File(imagesDirectory + now + Constants.JPG_EXTENSION));
                 errorAtImageImport = false;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -85,7 +94,7 @@ public class importActivity extends AppCompatActivity {
 
         if (!errorAtImageImport) {
             // Store xml
-            String xmlPath = xmlDirectory + now + ".xml";
+            String xmlPath = xmlDirectory + now + Constants.XML_EXTENSION;
             NodeList xiaNodeList = xml.getElementsByTagName("xia");
             Node xia = xiaNodeList.item(0);
             if (xia != null) {
@@ -108,11 +117,13 @@ public class importActivity extends AppCompatActivity {
         }
 
         if (errorAtXMLImport) {
-            File file = new File(imagesDirectory + now + ".jpg");
-            file.delete();
+            Util.removeFile(imagesDirectory + now + Constants.JPG_EXTENSION);
         }
         if (errorAtImageImport || errorAtXMLImport) {
             Toast.makeText(this, getResources().getString(R.string.wrongXML), Toast.LENGTH_LONG).show();
+        }
+        if (localImport) {
+            Util.removeFile(path);
         }
 
         // launch main activity

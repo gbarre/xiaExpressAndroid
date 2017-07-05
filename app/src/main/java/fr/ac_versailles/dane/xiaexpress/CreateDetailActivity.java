@@ -65,7 +65,7 @@ import java.util.Map;
 
 public class CreateDetailActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
-    static final int PICK_CONTACT_REQUEST = 1;
+    static final int EXPORT_REQUEST = 2;
     private final float precisionDist = 30;
     private final Map<Integer, xiaDetail> details = new HashMap<>();
     private Map<Integer, ImageView> virtPoints = new HashMap<>();
@@ -131,7 +131,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         cacheDirectory = Constants.getCacheFrom(rootDirectory);
 
         fileName = getIntent().getStringExtra("filename");
-        fileTitle = fileName.replace(".jpg", "");
+        fileTitle = fileName.replace(Constants.JPG_EXTENSION, "");
 
         gestureDetector = new GestureDetector(this, new GestureListener());
     }
@@ -139,7 +139,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     @Override
     public void onWindowFocusChanged(boolean hasFocus){
         // Always lok for xml on focus changed
-        this.xml = Util.getXMLFromPath(xmlDirectory + fileTitle + ".xml");
+        this.xml = Util.getXMLFromPath(xmlDirectory + fileTitle + Constants.XML_EXTENSION);
 
         if (hasFocus) {
             TextView menuTitle = (TextView) findViewById(R.id.menuTitle);
@@ -505,7 +505,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                                 detailConstraint.setTextContent(details.get(currentDetailTag).constraint);
                             }
                         }
-                        Util.writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
+                        Util.writeXML(this.xml, xmlDirectory + fileTitle + Constants.XML_EXTENSION);
                     }
                 }
 
@@ -546,11 +546,10 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
-        if (requestCode == PICK_CONTACT_REQUEST) {
+        if (requestCode == EXPORT_REQUEST) {
             // Make sure the request was successful
-            File file = new File(tmpFilePath);
-            if (!file.delete()) {
-                dbg.pt("Warning", "File not deleted", tmpFilePath);
+            if (tmpFilePath != null) {
+                Util.removeFile(tmpFilePath);
             }
         }
     }
@@ -672,7 +671,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             }
         }
 
-        Util.writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
+        Util.writeXML(this.xml, xmlDirectory + fileTitle + Constants.XML_EXTENSION);
 
     }
 
@@ -815,11 +814,12 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private void exportResource(int type) {
         String exportXMLString = "";
         String tmpTitle = Util.cleanInput(Util.getNodeValue(xml, "xia/title"));
-        Export export = new Export(xml, imagesDirectory + fileName);
+        tmpTitle = (tmpTitle.equals("")) ? fileName : tmpTitle;
+        Export export = new Export(xml, imagesDirectory + fileName + Constants.JPG_EXTENSION);
         switch (type) {
             case 0: // Xia Tablet
                 exportXMLString = export.xiaTablet();
-                tmpFilePath = cacheDirectory + tmpTitle + ".xml";
+                tmpFilePath = cacheDirectory + tmpTitle + Constants.XML_EXTENSION;
                 break;
             case 1: // Inkscape SVG
                 exportXMLString = export.inkscape();
@@ -832,7 +832,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
 
             // Open share Intent
             Intent shareIntent = Util.share(tmpFilePath, tmpTitle);
-            startActivityForResult(Intent.createChooser(shareIntent, getResources().getString(R.string.export)), PICK_CONTACT_REQUEST);
+            startActivityForResult(Intent.createChooser(shareIntent, getResources().getString(R.string.export)), EXPORT_REQUEST);
         }
     }
 
@@ -933,7 +933,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     dets.removeChild(detail);
                 }
             }
-            Util.writeXML(this.xml, xmlDirectory + fileTitle + ".xml");
+            Util.writeXML(this.xml, xmlDirectory + fileTitle + Constants.XML_EXTENSION);
             currentDetailTag = 0;
         }
     }
@@ -1196,7 +1196,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         @Override
         protected Bitmap doInBackground(Void... arg0) {
             // Load background
-            String imagePath = imagesDirectory + fileTitle + ".jpg";
+            String imagePath = imagesDirectory + fileTitle + Constants.JPG_EXTENSION;
             float availableWidth = metrics.widthPixels;
             float availableHeight = metrics.heightPixels - toolbarHeight;
 

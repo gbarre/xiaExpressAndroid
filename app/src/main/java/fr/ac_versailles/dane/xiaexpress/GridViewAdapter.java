@@ -73,8 +73,8 @@ class GridViewAdapter extends ArrayAdapter<PhotoThumbnail> {
         PhotoThumbnail item = data.get(position);
         String title;
         if (!isEmpty) {
-            String filename = item.getFilename().replace(".jpg", "");
-            Document xml = Util.getXMLFromPath((xmlDirectory + filename) + ".xml");
+            String filename = item.getFilename().replace(Constants.JPG_EXTENSION, "");
+            Document xml = Util.getXMLFromPath((xmlDirectory + filename) + Constants.XML_EXTENSION);
             title = (Util.getNodeValue(xml, "xia/title").equals("")) ? filename : Util.getNodeValue(xml, "xia/title");
             if (title.length() > 35) {
                 title = title.substring(0, 35) + "...";

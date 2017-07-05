@@ -64,6 +64,8 @@
     <string name="new_resource">New resource…</string>
     <string name="importOK">Import OK</string>
     <string name="wrongXML">Wrong XML</string>
+    <string name="newPicture">New picture</string>
+    <string name="importXML">Import XML</string>
     <!--<string name=""></string>
     <string name=""></string>
     <string name=""></string>
