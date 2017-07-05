@@ -62,6 +62,8 @@
     <string name="DUPLICATE_FILE">Dupliquer le fichier</string>
     <string name="select_picture">Selectionner une image</string>
     <string name="new_resource">Nouvelle ressource…</string>
+    <string name="importOK">Import OK</string>
+    <string name="wrongXML">XML incompatible</string>
     <!--<string name=""></string>
     <string name=""></string>
     <string name=""></string>

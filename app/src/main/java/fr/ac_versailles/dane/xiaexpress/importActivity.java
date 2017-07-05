@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
+import android.widget.Toast;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -21,9 +22,9 @@ import java.io.OutputStreamWriter;
 /**
  * import.java
  * XiaExpress
- * <p>
+ *
  * Created by guillaume on 04/07/2017.
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,21 +41,17 @@ import java.io.OutputStreamWriter;
 
 public class importActivity extends AppCompatActivity {
 
-    private String rootDirectory;
-    private String imagesDirectory;
-    private String xmlDirectory;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        dbg.pt("importActivity", "onCreate", "begin import");
 
-        // TODO check XML structure
+        Boolean errorAtImageImport = true;
+        Boolean errorAtXMLImport = true;
 
         // Prepare directories
-        rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
-        imagesDirectory = Constants.getImagesFrom(rootDirectory);
-        xmlDirectory = Constants.getXMLFrom(rootDirectory);
+        String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
+        String imagesDirectory = Constants.getImagesFrom(rootDirectory);
+        String xmlDirectory = Constants.getXMLFrom(rootDirectory);
 
         Util.createDirectory(imagesDirectory);
         Util.createDirectory(xmlDirectory);
@@ -62,7 +59,6 @@ public class importActivity extends AppCompatActivity {
         // Get file path
         Intent intent = getIntent();
         String path = intent.getData().getPath();
-        dbg.pt("import", "name", path);
 
         long now = System.currentTimeMillis();
 
@@ -70,42 +66,58 @@ public class importActivity extends AppCompatActivity {
         Document xml = Util.getXMLFromPath(path);
         String imageB64 = Util.getNodeValue(xml, "XiaiPad/image");
 
-        // build image
-        byte[] decodedString = Base64.decode(imageB64, Base64.DEFAULT);
-        Bitmap bmp = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 85, bos);
-        byte[] bitmapdata = bos.toByteArray();
-        ByteArrayInputStream bs = new ByteArrayInputStream(bitmapdata);
-        try {
-            // Store image
-            Util.copy(bs, new File(imagesDirectory + now + ".jpg"));
-            dbg.pt("import", "image", "imported");
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (!imageB64.equals("")) {
+            // build image
+            byte[] decodedString = Base64.decode(imageB64, Base64.DEFAULT);
+            Bitmap bmp = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.JPEG, 85, bos);
+            byte[] bitmapdata = bos.toByteArray();
+            ByteArrayInputStream bs = new ByteArrayInputStream(bitmapdata);
+            try {
+                // Store image
+                Util.copy(bs, new File(imagesDirectory + now + ".jpg"));
+                errorAtImageImport = false;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        // Store xml
-        String xmlPath = xmlDirectory + now + ".xml";
-        NodeList xiaNodeList = xml.getElementsByTagName("xia");
-        Node xia = xiaNodeList.item(0);
-        dbg.pt("import", "xia", xia.toString());
+        if (!errorAtImageImport) {
+            // Store xml
+            String xmlPath = xmlDirectory + now + ".xml";
+            NodeList xiaNodeList = xml.getElementsByTagName("xia");
+            Node xia = xiaNodeList.item(0);
+            if (xia != null) {
+                String xmlString = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n";
+                try {
+                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(xmlPath));
+                    outputStreamWriter.write(xmlString);
+                    outputStreamWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-        String xmlString = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n";
-        try {
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(xmlPath));
-            outputStreamWriter.write(xmlString);
-            outputStreamWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+                Document newXML = Util.getXMLFromPath(xmlPath);
+                Node copyXia = newXML.importNode(xia, true);
+                newXML.appendChild(copyXia);
+                Util.writeXML(newXML, xmlPath);
+                errorAtXMLImport = false;
+                Toast.makeText(this, getResources().getString(R.string.importOK), Toast.LENGTH_LONG).show();
+            }
         }
 
-        Document newXML = Util.getXMLFromPath(xmlPath);
-        Node copyXia = newXML.importNode(xia, true);
-        newXML.appendChild(copyXia);
-        Util.writeXML(newXML, xmlPath);
+        if (errorAtXMLImport) {
+            File file = new File(imagesDirectory + now + ".jpg");
+            file.delete();
+        }
+        if (errorAtImageImport || errorAtXMLImport) {
+            Toast.makeText(this, getResources().getString(R.string.wrongXML), Toast.LENGTH_LONG).show();
+        }
 
-        // TODO launch main activity !
+        // launch main activity
+        Intent start = new Intent(importActivity.this, MainActivity.class);
+        startActivity(start);
 
     }
 
