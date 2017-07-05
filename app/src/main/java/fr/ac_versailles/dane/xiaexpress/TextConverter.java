@@ -89,7 +89,7 @@ class TextConverter extends AsyncTask<Void, Void, String> {
                     } else {
                         // encode url
                         String query = URLEncoder.encode(url, "utf-8");
-                        String fullQuery = "https://coyote.jrmv.net/?url=" + query;
+                        String fullQuery = "https://oembedproxy.backbone.education/?url=" + query;
                         // get the json file (as string)
                         HttpHandler sh = new HttpHandler();
                         String jsonStr = sh.makeServiceCall(fullQuery);
