@@ -233,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (isEditing) {
                     leftMenu.setVisibility(View.VISIBLE);
                     menu.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.orange));
+                    btnEditMode.setText(getResources().getString(R.string.done));
                 } else {
                     leftMenu.setVisibility(View.INVISIBLE);
                     menu.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.blue));
@@ -240,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     gridView.invalidateViews();
                     gridAdapter.notifyDataSetChanged();
                     gridView.setAdapter(gridAdapter);
+                    btnEditMode.setText(getResources().getString(R.string.edit));
                 }
                 buildLeftNavbarItems(selectedItems.size());
             }
@@ -397,16 +399,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void endEdit() {
         isEditing = false;
         buildLeftNavbarItems(0);
+        btnEditMode.setClickable(true);
         if (gridAdapter.getSize() == 0) {
             gridAdapter.setEmpty(true);
             nbThumb = 0;
             Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.plus200);
             gridAdapter.add(new PhotoThumbnail(bitmap, getResources().getString(R.string.new_resource)));
+            btnEditMode.setClickable(false);
         }
         gridAdapter.notifyDataSetChanged();
         gridView.setAdapter(gridAdapter);
         LinearLayout menu = (LinearLayout) findViewById(R.id.mainMenu);
         menu.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.blue));
+        btnEditMode.setText(getResources().getString(R.string.edit));
 
     }
 
@@ -527,8 +532,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                         //Start details activity
                         startActivity(intent);
+                        btnEditMode.setClickable(true);
                     } else {
                         ImagePicker.pickImage(MainActivity.this, getResources().getString(R.string.select_picture));
+                        btnEditMode.setClickable(false);
                     }
                     selectedItems = new ArrayList<>();
                 }
