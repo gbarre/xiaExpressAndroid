@@ -72,7 +72,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private ImageView imgTopBarBkgd;
     private float cornerWidth = 0;
     private float cornerHeight = 0;
-    //private menu: UIAlertController!
     private ListPopupWindow listPopupWindow;
     private String[] detailsType;
     private ListPopupWindow exportPopupWindow;
@@ -88,11 +87,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private float movingPoint = -1; // Id of point
     private float movingCoordsX = 0;
     private float movingCoordsY = 0;
-    private Boolean landscape = false;
     private Integer currentDetailTag = 0;
-    private Integer detailToSegue = 0;
     private Boolean createDetail = false;
-    //private Point beginTouchLocation = new Point(0, 0); // old bad idea
     private float editDetail = -1;
     private Boolean moveDetail = false;
     private ArrayList<Integer> polygonPointsOrder;
@@ -103,7 +99,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private float xMin = 0;
     private float yMin = 0;
     private DisplayMetrics metrics;
-    private int btnTag = 0;
     private ProgressBar mProgressBar;
     private GestureDetector gestureDetector;
 
@@ -646,12 +641,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 setBtnsIcons();
                 imgTopBarBkgd.setBackgroundColor(Constants.red);
 
-                /* TODO Disable other gesture
-                if let recognizers = self.view.gestureRecognizers {
-                for recognizer in recognizers {
-                    self.view.removeGestureRecognizer(recognizer)
-                }
-                }*/
                 break;
         }
 
@@ -1154,13 +1143,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
             setBtnsIcons();
         }
-
-        /* TODO Add double tap gesture
-        let dSelector : Selector = #selector(ViewCreateDetails.detailInfos)
-        let doubleTapGesture = UITapGestureRecognizer(target: self, action: dSelector)
-        doubleTapGesture.numberOfTapsRequired = 2
-        view.addGestureRecognizer(doubleTapGesture)
-        */
     }
 
     private float touchesVirtPoint(float locationX, float locationY) {
