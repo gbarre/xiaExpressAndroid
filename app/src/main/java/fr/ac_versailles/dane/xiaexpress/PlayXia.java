@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -244,7 +245,7 @@ public class PlayXia extends AppCompatActivity {
             case MotionEvent.ACTION_POINTER_DOWN: {
 
                 if (showZoom) {
-                    zoomDetail(false, detailThumb);
+                    zoomDetail(false, detailThumb); // hide zoom
                 } else if (!showPopup) {
                     // Look if touch a detail
                     for (Map.Entry<Integer, xiaDetail> entry : details.entrySet()) {
@@ -274,7 +275,7 @@ public class PlayXia extends AppCompatActivity {
                     } else if (locationX > playDetail.getLeft() && locationX < (playDetail.getLeft() + detailThumb.getWidth()) &&
                             locationY > playDetail.getTop() && locationY < (playDetail.getTop() + detailThumb.getHeight())
                             && enableZoom) {
-                        zoomDetail(!showZoom, detailThumb);
+                        zoomDetail(!showZoom, detailThumb); // show zoom
                     }
                 }
                 break;
@@ -535,6 +536,16 @@ public class PlayXia extends AppCompatActivity {
         if (show) {
             ImageView detail_zoom = (ImageView) findViewById(R.id.detail_zoom);
             detail_zoom.setImageDrawable(im.getDrawable());
+
+            // Scale zoom
+            int scaleX = Math.min(metrics.widthPixels / detailThumb.getWidth(), 3);
+            int scaleY = Math.min(metrics.heightPixels / detailThumb.getHeight(), 3);
+            int scale = Math.min(scaleX, scaleY);
+            int width = detailThumb.getWidth() * scale;
+            int height = detailThumb.getHeight() * scale;
+            RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(width, height);
+            detail_zoom.setLayoutParams(layout);
+            zoomDetailLayout.setGravity(Gravity.CENTER);
             findViewById(R.id.playDetail).clearAnimation();
             playDetail.setVisibility(View.GONE);
             background.setVisibility(View.GONE);
