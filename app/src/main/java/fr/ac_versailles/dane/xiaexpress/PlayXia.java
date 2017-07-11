@@ -329,7 +329,7 @@ public class PlayXia extends AppCompatActivity {
                     String[] coords = aPointsArray.split(";");
                     Float x = Float.parseFloat(coords[0]) * scale + xMin - cornerWidth / 2;
                     Float y = Float.parseFloat(coords[1]) * scale + yMin - cornerHeight / 2;
-                    ImageView newPoint = details.get(detailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
+                    ImageView newPoint = details.get(detailTag).createPoint(x, y, pointIndex, this);
                     newPoint.setVisibility(View.INVISIBLE);
                     detailsArea.addView(newPoint);
                     pointIndex = pointIndex + 1;

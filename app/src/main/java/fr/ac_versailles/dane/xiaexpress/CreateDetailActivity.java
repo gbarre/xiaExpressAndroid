@@ -135,7 +135,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     public void onWindowFocusChanged(boolean hasFocus){
         // Always lok for xml on focus changed
         this.xml = Util.getXMLFromPath(xmlDirectory + fileTitle + Constants.XML_EXTENSION);
-
         if (hasFocus) {
             TextView menuTitle = (TextView) findViewById(R.id.menuTitle);
             menuTitle.setText(Util.getNodeValue(xml, "xia/title"));
@@ -178,6 +177,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         break;
                     }
                 }
+                changeDetailColor(currentDetailTag);
                 setBtnsIcons();
             }
         }
@@ -241,7 +241,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         movingPoint = details.get(currentDetailTag).points.size();
 
                         // Add new point
-                        ImageView newPoint = details.get(currentDetailTag).createPoint(locationX, locationY, R.drawable.corner, Math.round(movingPoint), this);
+                        ImageView newPoint = details.get(currentDetailTag).createPoint(locationX, locationY, Math.round(movingPoint), this);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             newPoint.setZ(1);
                         }
@@ -257,7 +257,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         ImageView newShape = details.get(currentDetailTag).createShape(true, Constants.red, false);
                         detailsArea.addView(newShape);
                         detailsArea.addView(newPoint);
-                        details.get(currentDetailTag).drawLockImg(detailsArea);
                     }
                 }
                 else {
@@ -310,7 +309,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     }
 
                     // Should we add a virtual point ?
-                    if (touchedVirtPoint != -1) {
+                    if (touchedVirtPoint != -1 && !details.get(currentDetailTag).locked) {
                         moveDetail = false;
                         int nbPoints = details.get(currentDetailTag).points.size();
                         movingPoint = touchedVirtPoint + 1;
@@ -322,7 +321,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         }
 
                         // Add new point
-                        ImageView newPoint = details.get(currentDetailTag).createPoint(locationX, locationY, R.drawable.corner, Math.round(movingPoint), this);
+                        ImageView newPoint = details.get(currentDetailTag).createPoint(locationX, locationY, Math.round(movingPoint), this);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             newPoint.setZ(1);
                         }
@@ -345,105 +344,104 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 break;
             }
             case MotionEvent.ACTION_MOVE: { // a pointer was moved
-                if ( movingPoint != -1 && currentDetailTag != 0 && !details.get(currentDetailTag).locked ) {
-                    movingPoint = Math.round(movingPoint);
-                    float plocX = details.get(currentDetailTag).points.get(Math.round(movingPoint)).getX();
-                    float plocY = details.get(currentDetailTag).points.get(Math.round(movingPoint)).getY();
+                if (currentDetailTag != 0 && !details.get(currentDetailTag).locked) {
+                    if (movingPoint != -1) {
+                        movingPoint = Math.round(movingPoint);
+                        float plocX = details.get(currentDetailTag).points.get(Math.round(movingPoint)).getX();
+                        float plocY = details.get(currentDetailTag).points.get(Math.round(movingPoint)).getY();
 
-                    float dist = distance(locationX, locationY, plocX, plocY);
-                    if ( dist < 200 ) {
-                        ImageView toMove = details.get(currentDetailTag).points.get(Math.round(movingPoint));
-                        int previousPoint = Math.round(Util.mod(Math.round(movingPoint + 3), 4));
-                        int nextPoint = Math.round(Util.mod(Math.round(movingPoint + 1), 4));
-                        int oppositePoint = Math.round(Util.mod(Math.round(movingPoint + 2), 4));
+                        float dist = distance(locationX, locationY, plocX, plocY);
+                        if (dist < 200) {
+                            ImageView toMove = details.get(currentDetailTag).points.get(Math.round(movingPoint));
+                            int previousPoint = Math.round(Util.mod(Math.round(movingPoint + 3), 4));
+                            int nextPoint = Math.round(Util.mod(Math.round(movingPoint + 1), 4));
+                            int oppositePoint = Math.round(Util.mod(Math.round(movingPoint + 2), 4));
 
-                        // Are there any constraint ?
-                        if (details.get(currentDetailTag).constraint.equals(Constants.constraintRectangle)) {
-                            if (movingPoint % 2 == 0) {
-                                details.get(currentDetailTag).points.get(previousPoint).setX(locationX);
-                                details.get(currentDetailTag).points.get(previousPoint).setY(details.get(currentDetailTag).points.get(previousPoint).getY());
+                            // Are there any constraint ?
+                            if (details.get(currentDetailTag).constraint.equals(Constants.constraintRectangle)) {
+                                if (movingPoint % 2 == 0) {
+                                    details.get(currentDetailTag).points.get(previousPoint).setX(locationX);
+                                    details.get(currentDetailTag).points.get(previousPoint).setY(details.get(currentDetailTag).points.get(previousPoint).getY());
 
-                                details.get(currentDetailTag).points.get(nextPoint).setX(details.get(currentDetailTag).points.get(nextPoint).getX());
-                                details.get(currentDetailTag).points.get(nextPoint).setY(locationY);
-                            } else {
-                                details.get(currentDetailTag).points.get(previousPoint).setX(details.get(currentDetailTag).points.get(previousPoint).getX());
-                                details.get(currentDetailTag).points.get(previousPoint).setY(locationY);
+                                    details.get(currentDetailTag).points.get(nextPoint).setX(details.get(currentDetailTag).points.get(nextPoint).getX());
+                                    details.get(currentDetailTag).points.get(nextPoint).setY(locationY);
+                                } else {
+                                    details.get(currentDetailTag).points.get(previousPoint).setX(details.get(currentDetailTag).points.get(previousPoint).getX());
+                                    details.get(currentDetailTag).points.get(previousPoint).setY(locationY);
 
-                                details.get(currentDetailTag).points.get(nextPoint).setX(locationX);
-                                details.get(currentDetailTag).points.get(nextPoint).setY(details.get(currentDetailTag).points.get(nextPoint).getY());
-                            }
-                            toMove.setX(locationX);
-                            toMove.setY(locationY);
-                            details.get(currentDetailTag).points.put(Math.round(movingPoint), toMove);
-                        }
-                        else if (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse)) {
-                            if (movingPoint % 2 == 0) {
-                                float middleHeight = (details.get(currentDetailTag).points.get(oppositePoint).getY() - locationY)/2 + locationY;
-                                toMove.setX(plocX);
-                                toMove.setY(locationY);
-                                details.get(currentDetailTag).points.get(Math.round(movingPoint)).setX(plocX);
-                                details.get(currentDetailTag).points.get(Math.round(movingPoint)).setY(details.get(currentDetailTag).points.get(Math.round(movingPoint)).getY());
-                                details.get(currentDetailTag).points.get(previousPoint).setX(details.get(currentDetailTag).points.get(previousPoint).getX());
-                                details.get(currentDetailTag).points.get(previousPoint).setY(middleHeight);
-                                details.get(currentDetailTag).points.get(nextPoint).setX(details.get(currentDetailTag).points.get(nextPoint).getX());
-                                details.get(currentDetailTag).points.get(nextPoint).setY(middleHeight);
-                            } else {
-                                float middleWidth = (details.get(currentDetailTag).points.get(oppositePoint).getX() - locationX)/2 + locationX;
+                                    details.get(currentDetailTag).points.get(nextPoint).setX(locationX);
+                                    details.get(currentDetailTag).points.get(nextPoint).setY(details.get(currentDetailTag).points.get(nextPoint).getY());
+                                }
                                 toMove.setX(locationX);
-                                toMove.setY(plocY);
-                                details.get(currentDetailTag).points.get(Math.round(movingPoint)).setX(details.get(currentDetailTag).points.get(Math.round(movingPoint)).getX());
-                                details.get(currentDetailTag).points.get(Math.round(movingPoint)).setY(plocY);
-                                details.get(currentDetailTag).points.get(previousPoint).setX(middleWidth);
-                                details.get(currentDetailTag).points.get(previousPoint).setY(details.get(currentDetailTag).points.get(previousPoint).getY());
-                                details.get(currentDetailTag).points.get(nextPoint).setX(middleWidth);
-                                details.get(currentDetailTag).points.get(nextPoint).setY(details.get(currentDetailTag).points.get(nextPoint).getY());
+                                toMove.setY(locationY);
+                                details.get(currentDetailTag).points.put(Math.round(movingPoint), toMove);
+                            } else if (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse)) {
+                                if (movingPoint % 2 == 0) {
+                                    float middleHeight = (details.get(currentDetailTag).points.get(oppositePoint).getY() - locationY) / 2 + locationY;
+                                    toMove.setX(plocX);
+                                    toMove.setY(locationY);
+                                    details.get(currentDetailTag).points.get(Math.round(movingPoint)).setX(plocX);
+                                    details.get(currentDetailTag).points.get(Math.round(movingPoint)).setY(details.get(currentDetailTag).points.get(Math.round(movingPoint)).getY());
+                                    details.get(currentDetailTag).points.get(previousPoint).setX(details.get(currentDetailTag).points.get(previousPoint).getX());
+                                    details.get(currentDetailTag).points.get(previousPoint).setY(middleHeight);
+                                    details.get(currentDetailTag).points.get(nextPoint).setX(details.get(currentDetailTag).points.get(nextPoint).getX());
+                                    details.get(currentDetailTag).points.get(nextPoint).setY(middleHeight);
+                                } else {
+                                    float middleWidth = (details.get(currentDetailTag).points.get(oppositePoint).getX() - locationX) / 2 + locationX;
+                                    toMove.setX(locationX);
+                                    toMove.setY(plocY);
+                                    details.get(currentDetailTag).points.get(Math.round(movingPoint)).setX(details.get(currentDetailTag).points.get(Math.round(movingPoint)).getX());
+                                    details.get(currentDetailTag).points.get(Math.round(movingPoint)).setY(plocY);
+                                    details.get(currentDetailTag).points.get(previousPoint).setX(middleWidth);
+                                    details.get(currentDetailTag).points.get(previousPoint).setY(details.get(currentDetailTag).points.get(previousPoint).getY());
+                                    details.get(currentDetailTag).points.get(nextPoint).setX(middleWidth);
+                                    details.get(currentDetailTag).points.get(nextPoint).setY(details.get(currentDetailTag).points.get(nextPoint).getY());
+                                }
+                            } else {
+                                toMove.setX(locationX);
+                                toMove.setY(locationY);
+                                details.get(currentDetailTag).points.put(Math.round(movingPoint), toMove);
                             }
-                        }
-                        else {
-                            toMove.setX(locationX);
-                            toMove.setY(locationY);
-                            details.get(currentDetailTag).points.put(Math.round(movingPoint), toMove);
                         }
                     }
-                }
 
-                if ( (createDetail && moveDetail) || (editDetail != -1) ) {
-                    if (moveDetail) {
-                        movingPoint = -1;
-                        float deltaX = locationX - movingCoordsX;
-                        float deltaY = locationY - movingCoordsY;
+                    if ((createDetail && moveDetail) || (editDetail != -1)) {
+                        if (moveDetail) {
+                            movingPoint = -1;
+                            float deltaX = locationX - movingCoordsX;
+                            float deltaY = locationY - movingCoordsY;
+                            for (int j = 0; j < detailsArea.getChildCount(); j++) {
+                                View child = detailsArea.getChildAt(j);
+                                Integer childTag = (Integer) child.getTag();
+                                if (childTag.equals(currentDetailTag) || childTag.equals(currentDetailTag + 100)) {
+                                    float destX = child.getX() + deltaX;
+                                    float destY = child.getY() + deltaY;
+                                    child.setX(destX);
+                                    child.setY(destY);
+                                }
+                            }
+                            movingCoordsX = locationX;
+                            movingCoordsY = locationY;
+                        }
+                    }
+
+                    if (details.get(currentDetailTag).points.size() > 2) {
+                        // rebuild points & shape
                         for (int j = 0; j < detailsArea.getChildCount(); j++) {
                             View child = detailsArea.getChildAt(j);
                             Integer childTag = (Integer) child.getTag();
-                            if (childTag.equals(currentDetailTag) || childTag.equals(currentDetailTag + 100)) {
-                                float destX = child.getX() + deltaX;
-                                float destY = child.getY() + deltaY;
-                                child.setX(destX);
-                                child.setY(destY);
+                            if (childTag.equals(currentDetailTag + 100)) { // remove shape
+                                detailsArea.removeView(child);
+                            }
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && childTag.equals(currentDetailTag)) { // points to top
+                                child.setZ(1);
                             }
                         }
-                        movingCoordsX = locationX;
-                        movingCoordsY = locationY;
-                    }
-                }
 
-                if (currentDetailTag != 0 && details.get(currentDetailTag).points.size() > 2) {
-                    // rebuild points & shape
-                    for (int j = 0; j < detailsArea.getChildCount(); j++) {
-                        View child = detailsArea.getChildAt(j);
-                        Integer childTag = (Integer) child.getTag();
-                        if (childTag.equals(currentDetailTag + 100)) { // remove shape
-                            detailsArea.removeView(child);
-                        }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && childTag.equals(currentDetailTag)) { // points to top
-                            child.setZ(1);
-                        }
+                        Boolean drawEllipse = (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse));
+                        ImageView newShape = details.get(currentDetailTag).createShape(true, Constants.red, drawEllipse);
+                        detailsArea.addView(newShape);
                     }
-
-                    Boolean drawEllipse = (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse));
-                    ImageView newShape = details.get(currentDetailTag).createShape(true, Constants.red, drawEllipse);
-                    detailsArea.addView(newShape);
-                    details.get(currentDetailTag).drawLockImg(detailsArea);
                 }
                 break;
             }
@@ -464,7 +462,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         Boolean drawEllipse = (details.get(currentDetailTag).constraint.equals(Constants.constraintEllipse));
                         ImageView newShape = details.get(currentDetailTag).createShape(true, Constants.red, drawEllipse);
                         detailsArea.addView(newShape);
-                        details.get(currentDetailTag).drawLockImg(detailsArea);
 
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) { // show points
                             for (Integer i = 0; i < detailsArea.getChildCount(); i++) {
@@ -602,10 +599,10 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 details.get(currentDetailTag).constraint = Constants.constraintRectangle;
 
                 // Build the rectangle
-                ImageView newPointR0 = details.get(currentDetailTag).createPoint(100, 30, R.drawable.corner, 0, CreateDetailActivity.this);
-                ImageView newPointR1 = details.get(currentDetailTag).createPoint(300, 30, R.drawable.corner, 1, CreateDetailActivity.this);
-                ImageView newPointR2 = details.get(currentDetailTag).createPoint(300, 150, R.drawable.corner, 2, CreateDetailActivity.this);
-                ImageView newPointR3 = details.get(currentDetailTag).createPoint(100, 150, R.drawable.corner, 3, CreateDetailActivity.this);
+                ImageView newPointR0 = details.get(currentDetailTag).createPoint(100, 30, 0, CreateDetailActivity.this);
+                ImageView newPointR1 = details.get(currentDetailTag).createPoint(300, 30, 1, CreateDetailActivity.this);
+                ImageView newPointR2 = details.get(currentDetailTag).createPoint(300, 150, 2, CreateDetailActivity.this);
+                ImageView newPointR3 = details.get(currentDetailTag).createPoint(100, 150, 3, CreateDetailActivity.this);
                 ImageView newShapeR = details.get(currentDetailTag).createShape(true, Constants.red, false);
 
                 detailsArea.addView(newShapeR);
@@ -620,10 +617,10 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 details.get(currentDetailTag).constraint = Constants.constraintEllipse;
 
                 // Build the "ellipse"
-                ImageView newPointE0 = details.get(currentDetailTag).createPoint(300, 50, R.drawable.corner, 0, CreateDetailActivity.this);
-                ImageView newPointE1 = details.get(currentDetailTag).createPoint(400, 110, R.drawable.corner, 1, CreateDetailActivity.this);
-                ImageView newPointE2 = details.get(currentDetailTag).createPoint(300, 170, R.drawable.corner, 2, CreateDetailActivity.this);
-                ImageView newPointE3 = details.get(currentDetailTag).createPoint(200, 110, R.drawable.corner, 3, CreateDetailActivity.this);
+                ImageView newPointE0 = details.get(currentDetailTag).createPoint(300, 50, 0, CreateDetailActivity.this);
+                ImageView newPointE1 = details.get(currentDetailTag).createPoint(400, 110, 1, CreateDetailActivity.this);
+                ImageView newPointE2 = details.get(currentDetailTag).createPoint(300, 170, 2, CreateDetailActivity.this);
+                ImageView newPointE3 = details.get(currentDetailTag).createPoint(200, 110, 3, CreateDetailActivity.this);
 
                 ImageView newShapeE = details.get(currentDetailTag).createShape(true, Constants.red, true);
 
@@ -677,7 +674,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     child.setVisibility(View.GONE);
                 }
                 if (childTag.equals(thisDetailTag)) { // points
-                    if (thisDetailTag.equals(tag)) {
+                    if (thisDetailTag.equals(tag) && !detail.locked) {
                         child.setVisibility(View.VISIBLE);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             child.setZ(1);
@@ -696,10 +693,10 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                     detailsArea.addView(detailShape);
                 }
                 else {
-                    ImageView detailShape = detail.createShape(true, Constants.green, drawEllipse);
+                    int color = (detail.locked) ? Constants.orange : Constants.green;
+                    ImageView detailShape = detail.createShape(true, color, drawEllipse);
                     detailsArea.addView(detailShape);
                 }
-                detail.drawLockImg(detailsArea);
             }
             else { // only 1 or 2 points, remove them
                 for (int i = 0; i < detailsArea.getChildCount(); i++) {
@@ -859,13 +856,14 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 // Add points to detail
                 String[] pointsArray = path.split(" ");
                 if (pointsArray.length > 2) {
+                    details.get(detailTag).locked = (detailAttr.getNamedItem("locked").getTextContent().equals("true"));
                     Integer pointIndex = 0;
                     for (String aPointsArray : pointsArray) {
                         String[] coords = aPointsArray.split(";");
                         if (coords.length == 2) {
                             Float x = Float.parseFloat(coords[0]) * scale + xMin - cornerWidth / 2;
                             Float y = Float.parseFloat(coords[1]) * scale + yMin - cornerHeight / 2;
-                            ImageView newPoint = details.get(detailTag).createPoint(x, y, R.drawable.corner, pointIndex, this);
+                            ImageView newPoint = details.get(detailTag).createPoint(x, y, pointIndex, this);
                             newPoint.setVisibility(View.INVISIBLE);
                             detailsArea.addView(newPoint);
                             pointIndex = pointIndex + 1;
@@ -879,11 +877,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                         details.get(detailTag).constraint = (!constraint.equals(Constants.constraintPolygon) && pointsArray.length != 4) ? Constants.constraintPolygon : constraint;
                     }
                     Boolean drawEllipse = (details.get(detailTag).constraint.equals(Constants.constraintEllipse));
-                    details.get(detailTag).locked = (detailAttr.getNamedItem("locked").getTextContent().equals("true"));
 
-                    ImageView newShape = details.get(detailTag).createShape(true, Constants.green, drawEllipse);
+                    ImageView newShape = details.get(detailTag).createShape(true, (details.get(detailTag).locked) ? Constants.orange : Constants.green, drawEllipse);
                     detailsArea.addView(newShape);
-                    details.get(detailTag).drawLockImg(detailsArea);
 
                     // TODO attainable points
                 }
@@ -962,7 +958,6 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             }
             ImageView newShape = details.get(currentDetailTag).createShape(true, Constants.red, false);
             detailsArea.addView(newShape);
-            details.get(currentDetailTag).drawLockImg(detailsArea);
         }
         setBtnsIcons();
     }

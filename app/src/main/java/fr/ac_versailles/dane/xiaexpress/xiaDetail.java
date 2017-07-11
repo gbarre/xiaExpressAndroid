@@ -6,14 +6,11 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.PathShape;
-import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -116,9 +113,9 @@ class xiaDetail {
         }
     }
 
-    ImageView createPoint(float x, float y, int ResId, Integer index, Context ctx) {
+    ImageView createPoint(float x, float y, Integer index, Context ctx) {
         ImageView image = new ImageView(ctx);
-        image.setImageResource(ResId);
+        image.setImageResource(R.drawable.corner);
         image.setX(x);
         image.setY(y);
         image.setTag(this.tag);
@@ -192,21 +189,6 @@ class xiaDetail {
         shapeView.setTag(this.tag + 100);
 
         return shapeView;
-    }
-
-    void drawLockImg(RelativeLayout parentView) {
-        if (locked) {
-            Drawable draw = ContextCompat.getDrawable(ctx, R.drawable.lock);
-            ImageView img = new ImageView(ctx);
-            img.setImageDrawable(draw);
-            img.setAlpha((float) 0.5);
-            Rect frame = bezierFrame();
-            parentView.addView(img);
-            img.getLayoutParams().width = 40;
-            img.setX((frame.centerX() - img.getLayoutParams().width / 2) * scale);
-            img.setY((frame.centerY() - img.getLayoutParams().height / 2 - toolbarHeight) * scale - cornerHeight / 2);
-            img.setTag(tag + 100);
-        }
     }
 
     Map<Integer, ImageView> makeVirtPoints() {
