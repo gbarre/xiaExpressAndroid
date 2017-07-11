@@ -206,7 +206,11 @@ public class PlayXia extends AppCompatActivity {
         text = text.replaceAll(">", "&gt;");
         if (element.equals("description")) {
             WebView webV = (WebView) findViewById(R.id.documentDescription);
-            new TextConverter(text, webV, 0, 0, this).execute();
+            webV.setVisibility(View.INVISIBLE);
+            // Show progressbar
+            RelativeLayout pb = (RelativeLayout) findViewById(R.id.progressBar2);
+            pb.setVisibility(View.VISIBLE);
+            new TextConverter(text, webV, 0, 0, this, pb).execute();
         } else {
             TextView docElement = (TextView) findViewById(getResources().getIdentifier(id, "id", getPackageName()));
             if (!element.equals("title") && !element.equals("creator")) {
@@ -406,10 +410,13 @@ public class PlayXia extends AppCompatActivity {
             // Put detail description (with scrolling)
             WebView desc = (WebView) findViewById(R.id.detalDescription);
             desc.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
-            desc.loadData(detailDescription, "text/html; charset=UTF-8", null);
+
+            // Show progressbar
+            RelativeLayout pb = (RelativeLayout) findViewById(R.id.progressBar2);
+            pb.setVisibility(View.VISIBLE);
 
             // look for oembed links
-            new TextConverter(detailDescription, desc, 0, 0, this).execute();
+            new TextConverter(detailDescription, desc, 0, 0, this, pb).execute();
 
             int xOri = 0;
             int yOri = 0;

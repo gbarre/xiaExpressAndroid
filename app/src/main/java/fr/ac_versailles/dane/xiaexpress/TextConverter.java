@@ -4,8 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.RelativeLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,18 +42,20 @@ import java.util.regex.Pattern;
 class TextConverter extends AsyncTask<Void, Void, String> {
     private final List<String> replacedURL = new ArrayList<>();
     private final WebView webV;
+    private final RelativeLayout pBar;
     private float videoWidth = 480;
     private float videoHeight = 270;
     private String htmlString;
     private Context context;
     private DBAdapter urlDb;
 
-    TextConverter(String t, WebView wv, float w, float h, Context c) {
+    TextConverter(String t, WebView wv, float w, float h, Context c, RelativeLayout p) {
         htmlString = t;
         webV = wv;
         videoWidth = (w == 0) ? 480 : w;
         videoHeight = (h == 0) ? 270 : h;
         context = c;
+        pBar = p;
     }
 
     @Override
@@ -107,7 +111,7 @@ class TextConverter extends AsyncTask<Void, Void, String> {
                     if (!htmlCode.equals("Please insert correct URL")) {
                         htmlCode = htmlCode.replace("src=\"//", "src=\"https://");
                         // video / image resizing
-                        if (!json.getString("provider_name").equals("Instagram") && !json.getString("provider_name").equals("Twitter")) {
+                        if (json != null && !json.getString("provider_name").equals("Instagram") && !json.getString("provider_name").equals("Twitter")) {
                             int jsonWidth = json.getInt("width");
                             int jsonHeight = json.getInt("height");
                             float scaleX = videoWidth / jsonWidth;
@@ -142,6 +146,7 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         String html = "<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"utf-8\"></head><body>" + desc + "</body></html>";
         // load html in the webview
         webV.loadData(html, "text/html; charset=UTF-8", null);
+        pBar.setVisibility(View.GONE);
         // enable javascript
         WebSettings webSettings = webV.getSettings();
         webSettings.setJavaScriptEnabled(true);

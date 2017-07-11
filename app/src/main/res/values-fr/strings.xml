@@ -66,6 +66,8 @@
     <string name="wrongXML">XML incompatible</string>
     <string name="newPicture">Nouvelle image</string>
     <string name="importXML">Importer un XML</string>
+    <string name="thumb">thumb</string>
+    <string name="line">line</string>
     <!--<string name=""></string>
     <string name=""></string>
     <string name=""></string>
