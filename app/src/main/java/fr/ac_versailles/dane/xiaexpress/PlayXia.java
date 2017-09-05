@@ -449,7 +449,9 @@ public class PlayXia extends AppCompatActivity {
                 mCanvas.drawBitmap(mask, 0, 0, paint);
                 paint.setXfermode(null);
             } else {
-                result = fullSizeBackground;
+                String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
+                String cacheDirectory = Constants.getCacheFrom(rootDirectory);
+                result = BitmapFactory.decodeFile(cacheDirectory + fileTitle + Constants.JPG_EXTENSION);
             }
 
             // The thumbnail is ready !
