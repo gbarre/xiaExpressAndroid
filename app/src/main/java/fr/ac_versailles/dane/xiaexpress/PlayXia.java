@@ -141,12 +141,18 @@ public class PlayXia extends AppCompatActivity {
         fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + Constants.JPG_EXTENSION);
 
         ImageButton showImgInfos = (ImageButton) findViewById(R.id.showImgInfos);
-        showImgInfos.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDetail(0);
-            }
-        });
+        if (Util.getNodeAttribute(xml, "image", "title").length() == 0 && Util.getNodeAttribute(xml, "image", "description").length() == 0) {
+            ImageView bkgImgInfos = (ImageView) findViewById(R.id.bkgImgInfos);
+            bkgImgInfos.setVisibility(View.INVISIBLE);
+            showImgInfos.setVisibility(View.INVISIBLE);
+        } else {
+            showImgInfos.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showDetail(0);
+                }
+            });
+        }
 
         ImageButton showMetas = (ImageButton) findViewById(R.id.showMetas);
         showMetas.setOnClickListener(new View.OnClickListener() {
@@ -393,14 +399,9 @@ public class PlayXia extends AppCompatActivity {
                     }
                 }
             } else { // show image infos
-                NodeList images = xml.getElementsByTagName("image");
-                for (int i = 0; i < images.getLength(); i++) {
-                    Node image = images.item(i);
-                    NamedNodeMap imageAttr = image.getAttributes();
-                    detailTitle = imageAttr.getNamedItem("title").getTextContent();
-                    detailDescription = imageAttr.getNamedItem("description").getTextContent();
-                    enableZoom = false;
-                }
+                detailTitle = Util.getNodeAttribute(xml, "image", "title");
+                detailDescription = Util.getNodeAttribute(xml, "image", "description");
+                enableZoom = false;
             }
 
             // Put detail title

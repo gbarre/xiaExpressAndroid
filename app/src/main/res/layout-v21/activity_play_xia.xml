@@ -17,6 +17,7 @@
         android:layout_height="match_parent">
 
         <ImageView
+            android:id="@+id/bkgImgInfos"
             android:layout_width="90dp"
             android:layout_height="90dp"
             android:layout_alignParentBottom="true"
