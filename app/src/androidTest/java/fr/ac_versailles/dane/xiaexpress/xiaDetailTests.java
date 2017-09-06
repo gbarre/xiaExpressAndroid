@@ -43,18 +43,18 @@ public class xiaDetailTests {
 
     public xiaDetailTests() {
         // Single point detail
-        singlePointDetail.createPoint(10, 10, R.drawable.corner, 0, ctx);
+        singlePointDetail.createPoint(10, 10, 0, ctx);
 
         // Multiple points detail
-        multiplePointsDetail.createPoint(10, 10, R.drawable.corner, 0, ctx);
-        multiplePointsDetail.createPoint(200, 150, R.drawable.corner, 1, ctx);
-        multiplePointsDetail.createPoint(120, 150, 0, 2, ctx);
+        multiplePointsDetail.createPoint(10, 10, 0, ctx);
+        multiplePointsDetail.createPoint(200, 150, 1, ctx);
+        multiplePointsDetail.createPoint(120, 150, 2, ctx);
 
         // Ellipse points detail
-        ellipsePointsDetail.createPoint(200, 200, R.drawable.corner, 0, ctx);
-        ellipsePointsDetail.createPoint(350, 400, R.drawable.corner, 1, ctx);
-        ellipsePointsDetail.createPoint(200, 600, R.drawable.corner, 2, ctx);
-        ellipsePointsDetail.createPoint(50, 400, R.drawable.corner, 3, ctx);
+        ellipsePointsDetail.createPoint(200, 200, 0, ctx);
+        ellipsePointsDetail.createPoint(350, 400, 1, ctx);
+        ellipsePointsDetail.createPoint(200, 600, 2, ctx);
+        ellipsePointsDetail.createPoint(50, 400, 3, ctx);
 
     }
 

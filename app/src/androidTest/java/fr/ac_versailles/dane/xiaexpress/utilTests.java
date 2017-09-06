@@ -42,12 +42,12 @@ public class utilTests {
 
     public utilTests() {
         // Single point detail
-        singlePointDetail.createPoint(10, 10, 0, 0, ctx);
+        singlePointDetail.createPoint(10, 10, 0, ctx);
 
         // Multiple points detail
-        multiplePointsDetail.createPoint(10, 10, 0, 0, ctx);
-        multiplePointsDetail.createPoint(200, 150, 0, 1, ctx);
-        multiplePointsDetail.createPoint(120, 150, 0, 2, ctx);
+        multiplePointsDetail.createPoint(10, 10, 0, ctx);
+        multiplePointsDetail.createPoint(200, 150, 1, ctx);
+        multiplePointsDetail.createPoint(120, 150, 2, ctx);
     }
 
     @Test

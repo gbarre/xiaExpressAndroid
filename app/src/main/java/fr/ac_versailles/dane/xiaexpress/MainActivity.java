@@ -247,6 +247,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
+        if (arrayNames.isEmpty()) {
+            btnEditMode.setClickable(false);
+        }
+
     }
 
     @Override
