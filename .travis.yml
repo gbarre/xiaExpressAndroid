@@ -14,10 +14,10 @@ android:
     components:
         - platform-tools
         - tools
-        - build-tools-25.0.0    #Build tool version
+        - build-tools-26.0.0    #Build tool version
         - android-19
         - android-21
-        - android-25            #targate api version
+        - android-26            #targate api version
 
         # Additional components
         - extra-google-google_play_services
