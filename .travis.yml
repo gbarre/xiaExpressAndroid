@@ -1,48 +1,43 @@
 language: android
 jdk: oraclejdk8
 sudo: false
-
 env:
   matrix:
-    - ANDROID_TARGET=android-19 ANDROID_ABI=armeabi-v7a
-    - ANDROID_TARGET=android-21 ANDROID_ABI=armeabi-v7a
-  global:   #Optional
-    - ADB_INSTALL_TIMEOUT=10    #Time out to 10 mins
-
+  - ANDROID_TARGET=android-19 ANDROID_ABI=armeabi-v7a
+  - ANDROID_TARGET=android-21 ANDROID_ABI=armeabi-v7a
+  global:
+  - ADB_INSTALL_TIMEOUT=10
 android:
-    update_sdk: true  #Check for the updates each time you run the build.
-    components:
-        - platform-tools
-        - tools
-        - build-tools-26.0.0    #Build tool version
-        - android-19
-        - android-21
-        - android-26            #targate api version
-
-        # Additional components
-        - extra-google-google_play_services
-        - extra-google-m2repository
-        - extra-android-m2repository
-
-        #system images for emulator
-        - sys-img-armeabi-v7a-android-19
-        - sys-img-armeabi-v7a-android-21
-
+  update_sdk: true
+  components:
+  - platform-tools
+  - tools
+  - build-tools-26.0.0
+  - android-19
+  - android-21
+  - android-26
+  - extra-google-google_play_services
+  - extra-google-m2repository
+  - extra-android-m2repository
+  - sys-img-armeabi-v7a-android-19
+  - sys-img-armeabi-v7a-android-21
 licenses:
-    - 'android-sdk-preview-license-52d11cd2'
-    - 'android-sdk-license-.+'
-    - 'google-gdk-license-.+'
-
+- android-sdk-preview-license-52d11cd2
+- android-sdk-license-.+
+- google-gdk-license-.+
 before_script:
-    - chmod +x gradlew      #Grant permissions
-    - android list targets
-    - echo no | android create avd --force --name test --target $ANDROID_TARGET --abi $ANDROID_ABI    #Create AVD for given api
-    - emulator -avd test -no-audio -no-window &    #Start emulator
-
+- chmod +x gradlew
+- android list targets
+- echo no | android create avd --force --name test --target $ANDROID_TARGET --abi
+  $ANDROID_ABI
+- emulator -avd test -no-audio -no-window &
 script:
-    - echo "Travis branch is $TRAVIS_BRANCH"    #Print out which branch it is.
-    - echo "Travis branch is in pull request $TRAVIS_PULL+REQUEST"    #Print out pull request number.
-    - android-wait-for-emulator             #Run wait for the emulator script.
-    - adb devices                           #Display list of devices
-    - adb shell input keyevent 82 &
-    - ./gradlew connectedAndroidTest -PdisablePreDex --stacktrace
+- echo "Travis branch is $TRAVIS_BRANCH"
+- echo "Travis branch is in pull request $TRAVIS_PULL+REQUEST"
+- android-wait-for-emulator
+- adb devices
+- adb shell input keyevent 82 &
+- "./gradlew connectedAndroidTest -PdisablePreDex --stacktrace"
+notifications:
+  slack:
+    secure: PVS1gWBepOb2wtYmiAnutC50suOjGYH797LVTQHFkKdB5n8MCic98+e0eS+BN6kIrmRQdCoJS/b7HJvbvJ1RoQ82QNMKuXL71fUyfNwX5w/Y3XUxV/Fvqz6oWweRi16NSgRw5/ekOPJtLXqn7NA3XVKyeeB5mfumnmQLIEFHxwu/x3QuNSjrAVu2gmXf8GHL2Gi/ocmmsrfFRwaW2AoGVbJ/kQSOM9u4lK3ZJfrEpXGcpzGcdKTrv6IEs5qpiH2ZaJWa36GPxDlNHpu8PhbqVp5yT1KbNUnLHInm94gYYXRuWPDY75BvScPyfKJbuo02bQeUVQTDnBvNuQhKlgeX/TyGvHwZpn3cTxovmKd1pr5QzP63Z2ZxwtneiAGhHuWbKDOKXRMKbt8bKJGHLNV9Qh8adt3FuvZm758MTKziea3HjOMFJk4T5VBDysKz9d/FjpMcqSrRNS+sOjMgJFTJCR/NtarYZl7h7FYD9Ls7a0+VJRt1Wg0eNmeaxX6pp3KdFzFSVV9cPrCuVW+1EblTgOd36dFjAiD5M+nqu4OxswNwpFLcWvqMRXmUpt2y19Zqc6wWz9qj8T4hNtT2p//6JvDInO+s43LqGqeXg91s+tCtz69ujm8zRHsMkVAKyeydVdEdzxtSJs/Q8jI65bXSpYg4dRXGod8hOInDhrGyDBE=
