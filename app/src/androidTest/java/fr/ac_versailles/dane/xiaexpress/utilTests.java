@@ -54,7 +54,7 @@ public class utilTests {
     public void modTest() throws Exception {
         int output = mod(5, 3);
         int expectedOutput = 2;
-        assertEquals(output, expectedOutput);
+        assertEquals(expectedOutput, output);
     }
 
     @Test
@@ -62,11 +62,11 @@ public class utilTests {
         // point in
         Boolean outputIn = pointInPolygon(multiplePointsDetail.points, 130, 140);
         Boolean expectedOutputIn= true;
-        assertEquals(outputIn, expectedOutputIn);
+        assertEquals(expectedOutputIn, outputIn);
 
         // point out
         Boolean outputOut = pointInPolygon(multiplePointsDetail.points, 0, 0);
         Boolean expectedOutputOut = false;
-        assertEquals(outputOut, expectedOutputOut);
+        assertEquals(expectedOutputOut, outputOut);
     }
 }

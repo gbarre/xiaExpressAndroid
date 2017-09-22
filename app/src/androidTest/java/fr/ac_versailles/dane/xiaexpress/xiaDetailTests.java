@@ -64,12 +64,12 @@ public class xiaDetailTests {
         String output = singlePointDetail.createPath(0, 0);
 
         String expectedOutput = "0;0";
-        assertEquals(output, expectedOutput);
+        assertEquals(expectedOutput, output);
 
         // Multiple points
         String output3pts = multiplePointsDetail.createPath(0, 0);
         String expectedOutput3pts = "10.0;10.0 200.0;150.0 120.0;150.0";
-        assertEquals(output3pts, expectedOutput3pts);
+        assertEquals(expectedOutput3pts, output3pts);
     }
 
     @Test
@@ -82,10 +82,10 @@ public class xiaDetailTests {
         expectedOutput.setY(10);
         expectedOutput.setTag(1);
 
-        assertEquals(output.getTag(), expectedOutput.getTag());
-        assertEquals(output.getX(), expectedOutput.getX());
-        assertEquals(output.getY(), expectedOutput.getY());
-        assertEquals(output.getBackground(), expectedOutput.getBackground());
+        assertEquals(expectedOutput.getTag(), output.getTag());
+        assertEquals(expectedOutput.getX(), output.getX());
+        assertEquals(expectedOutput.getY(), output.getY());
+        assertEquals(expectedOutput.getBackground(), output.getBackground());
     }
 
     @Test
@@ -97,23 +97,23 @@ public class xiaDetailTests {
         expectedEllipse.setY(210);
         expectedEllipse.setTag(101);
 
-        assertEquals(outputEllipse.getX(), expectedEllipse.getX());
-        assertEquals(outputEllipse.getY(), expectedEllipse.getY());
-        assertEquals(outputEllipse.getTag(), expectedEllipse.getTag());
+        assertEquals(expectedEllipse.getX(), outputEllipse.getX());
+        assertEquals(expectedEllipse.getY(), outputEllipse.getY());
+        assertEquals(expectedEllipse.getTag(), outputEllipse.getTag());
     }
 
     @Test
     public void testXiaDetailCreateShapePolygon() throws Exception {
-        ImageView outputEllipse = multiplePointsDetail.createShape(true, Color.GREEN, false);
+        ImageView outputPoly = multiplePointsDetail.createShape(true, Color.GREEN, false);
 
         ImageView expectedPolygon = new ImageView(ctx);
         expectedPolygon.setX(0);
         expectedPolygon.setY(0);
         expectedPolygon.setTag(101);
 
-        assertEquals(outputEllipse.getX(), expectedPolygon.getX());
-        assertEquals(outputEllipse.getY(), expectedPolygon.getY());
-        assertEquals(outputEllipse.getTag(), expectedPolygon.getTag());
+        assertEquals(expectedPolygon.getX(), outputPoly.getX());
+        assertEquals(expectedPolygon.getY(), outputPoly.getY());
+        assertEquals(expectedPolygon.getTag(), outputPoly.getTag());
     }
 
 }

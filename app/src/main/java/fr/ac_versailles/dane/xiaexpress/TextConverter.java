@@ -40,11 +40,11 @@ import java.util.regex.Pattern;
  */
 
 class TextConverter extends AsyncTask<Void, Void, String> {
-    private final List<String> replacedURL = new ArrayList<>();
+    private static final List<String> replacedURL = new ArrayList<>();
+    private static float videoWidth = 480;
+    private static float videoHeight = 270;
     private final WebView webV;
     private final RelativeLayout pBar;
-    private float videoWidth = 480;
-    private float videoHeight = 270;
     private String htmlString;
     private Context context;
     private DBAdapter urlDb;
@@ -56,6 +56,172 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         videoHeight = (h == 0) ? 270 : h;
         context = c;
         pBar = p;
+    }
+
+    static String getAudio(String url) {
+        String mp3Result = url.replaceAll("\\.(mp3|ogg)", ".mp3");
+        String oggResult = url.replaceAll("\\.(mp3|ogg)", ".ogg");
+        return "<center><audio controls>" +
+                "   <source type=\"audio/mpeg\" src=\"" + mp3Result + "\" />" +
+                "   <source type=\"audio/ogg\" src=\"" + oggResult + "\" />" +
+                "</audio></center>";
+    }
+
+    static String getvideo(String url) {
+        String mp4Result = url.replaceAll("\\.(mp4|ogv|webm)", ".mp4");
+        String ogvResult = url.replaceAll("\\.(mp4|ogv|webm)", ".ogv");
+        String webmResult = url.replaceAll("\\.(mp4|ogv|webm)", ".webm");
+        return "<center><video controls preload=\"none\" width=\"" + videoWidth + "\" height=\"" + videoHeight + ">" +
+                "   <source type=\"video/mp4\" src=\"" + mp4Result + "\" />" +
+                "   <source type=\"video/ogg\" src=\"" + ogvResult + "\" />" +
+                "   <source type=\"video/webm\" src=\"" + webmResult + "\" />" +
+                "</video></center>";
+    }
+
+    static String pikipikiToHTML(String t) {
+        String output = t;
+        // Make bold
+        Pattern bold = Pattern.compile("(\\*){3}((?!\\*{3}).)*\\*{3}");
+        Matcher boldResults = bold.matcher(output);
+        while (boldResults.find()) {
+            String result = boldResults.group();
+            String boldText = result.replace("***", "");
+            output = output.replace(result, "<b>" + boldText + "</b>");
+        }
+
+        // Make emphasize
+        Pattern emph = Pattern.compile("(\\*){2}((?!\\*{2}).)*\\*{2}");
+        Matcher emphResults = emph.matcher(output);
+        while (emphResults.find()) {
+            String result = emphResults.group();
+            String emphText = result.replace("**", "");
+            output = output.replace(result, "<em>" + emphText + "</em>");
+        }
+
+        // Make pre-formatted
+        Pattern pre = Pattern.compile("(\\{){3}((?!\\{{3}).)*\\}{3}");
+        Matcher preResults = pre.matcher(output);
+        while (preResults.find()) {
+            String result = preResults.group();
+            String preText = result.replaceAll("\\{{3}", "");
+            preText = preText.replace("}}}", "");
+            output = output.replace(result, "<pre>" + preText + "</pre>");
+        }
+
+        // Make line
+        output = output.replaceAll("-----", "<hr size=3/>");
+        output = output.replaceAll("----", "<hr/>");
+
+        // Make list line by line
+        String[] outputArray = output.split("<br />");
+        Boolean[] levelList = {false, false};
+        String previousLine = "";
+        int previousClosedLevel = 0;
+        for (String line : outputArray) {
+            String newLine = line;
+            if (line.length() > 3) {
+                if (!line.substring(0, 3).equals(" * ")) {
+                    if (levelList[1]) {
+                        levelList[1] = false;
+                        previousClosedLevel = 1;
+                        newLine = "</li>\n\t</ul>\n" + line;
+                    }
+                }
+                if (!line.substring(0, 2).equals("* ")) {
+                    if (levelList[0] && !levelList[1]) {
+                        levelList[0] = false;
+                        newLine = "</li></ul>\n" + line;
+                    }
+                }
+                if (line.substring(0, 2).equals("* ")) {
+                    if (!levelList[0]) {
+                        levelList[0] = true;
+                        newLine = "<ul>\n\t<li>";
+                    } else {
+                        if (previousClosedLevel == 1) {
+                            newLine = "</li></ul>" + "</li>\n<li>";
+                            previousClosedLevel = 0;
+                        } else {
+                            newLine = "</li>\n<li>";
+                        }
+                    }
+                    newLine = newLine + line.substring(2);
+                }
+                if (line.substring(0, 3).equals(" * ")) {
+                    if (!levelList[1]) {
+                        levelList[1] = true;
+                        levelList[0] = true;
+                        newLine = "<ul>\n\t<li>";
+                    } else {
+                        newLine = "</li>\n\t<li>";
+                    }
+                    newLine = newLine + line.substring(3);
+                }
+                output = output.replace(line, newLine);
+                previousLine = newLine;
+            } else {
+                if (levelList[1]) {
+                    levelList[1] = false;
+                    newLine = previousLine + "<!-- close L1 & L0 --></li>\n\t</ul></li>\n</ul>\n" + line;
+                    output = output.replace(previousLine, newLine);
+                } else if (levelList[0]) {
+                    levelList[0] = false;
+                    newLine = previousLine + "<!-- close L0 last --></li>\n</ul>\n" + line;
+                    output = output.replace(previousLine, newLine);
+                }
+                previousLine = line;
+            }
+        }
+
+        return output;
+    }
+
+    static String replaceURL(String url, String desc) {
+        if (url.matches(".*\\.(mp3|ogg)$")) {
+            String audioUrl = getAudio(url);
+            desc = desc.replace(url, audioUrl);
+        } else if (url.matches(".*\\.(jpg|jpeg|gif|png)$")) {
+            desc = desc.replace(url, "<img src=\"" + url + "\" alt=\"" + url + "\" style=\"max-width: " + videoWidth + "px;\" />");
+        } else if (url.matches(".*\\.(mp4|ogv|webm)$")) {
+            String videoUrl = getvideo(url);
+            desc = desc.replace(url, videoUrl);
+        } else {
+            String[] customLink = showCustomLinks(url, desc);
+            desc = desc.replace(customLink[0], customLink[1]);
+        }
+        return desc;
+    }
+
+    static String[] showCustomLinks(String url, String inText) {
+        String input = url;
+        String replaceString = "<a href=\"" + url + "\">" + url + "</a>";
+        if (inText.matches(".*\\[" + url + " *((?!\\]).)*\\].*")) {
+            Pattern regex = Pattern.compile("\\[" + url + " *((?!\\]).)*\\]");
+            Matcher results = regex.matcher(inText);
+            while (results.find()) {
+                String result = results.group();
+                input = result;
+                String content = result.replaceAll("\\[|\\]", "");
+                String[] contentArray = content.split(" ");
+                String target = contentArray[0];
+                String linkText = "";
+                if (contentArray.length > 1) {
+                    for (int i = 1; i < contentArray.length; i++) {
+                        linkText = linkText + " " + contentArray[i];
+                    }
+                    linkText = linkText.trim();
+                } else {
+                    linkText = target;
+                }
+                replaceString = "<a href=\"" + target + "\">" + linkText + "</a>";
+            }
+        }
+        if (replacedURL.contains(url)) {
+            replaceString = url;
+        } else {
+            replacedURL.add(url);
+        }
+        return new String[]{input, replaceString};
     }
 
     @Override
@@ -130,11 +296,11 @@ class TextConverter extends AsyncTask<Void, Void, String> {
                     }
                 } catch (UnsupportedEncodingException | JSONException e) {
                     e.printStackTrace();
-                    }
-                } else {
-                desc = replaceURL(url, desc);
                 }
+            } else {
+                desc = replaceURL(url, desc);
             }
+        }
 
         return desc;
     }
@@ -159,174 +325,9 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         urlDb.close();
     }
 
-    private String getAudio(String url) {
-        String mp3Result = url.replaceAll("\\.(mp3|ogg)", ".mp3");
-        String oggResult = url.replaceAll("\\.(mp3|ogg)", ".ogg");
-        return "<center><audio controls>" +
-                "   <source type=\"audio/mpeg\" src=\"" + mp3Result + "\" />" +
-                "   <source type=\"audio/ogg\" src=\"" + oggResult + "\" />" +
-                "</audio></center>";
-    }
-
-    private String getvideo(String url) {
-        String mp4Result = url.replaceAll("\\.(mp4|ogv|webm)", ".mp4");
-        String ogvResult = url.replaceAll("\\.(mp4|ogv|webm)", ".ogv");
-        String webmResult = url.replaceAll("\\.(mp4|ogv|webm)", ".webm");
-        return "<center><video controls preload=\"none\" width=\"" + videoWidth + "\" height=\"" + videoHeight + ">" +
-                "   <source type=\"video/mp4\" src=\"" + mp4Result + "\" />" +
-                "   <source type=\"video/ogg\" src=\"" + ogvResult + "\" />" +
-                "   <source type=\"video/webm\" src=\"" + webmResult + "\" />" +
-                "</video></center>";
-    }
-
     private void openDB() {
         urlDb = new DBAdapter(context);
         urlDb.open();
-    }
-
-    private String pikipikiToHTML(String t) {
-        String output = t;
-        // Make bold
-        Pattern bold = Pattern.compile("(\\*){3}((?!\\*{3}).)*\\*{3}");
-        Matcher boldResults = bold.matcher(output);
-        while (boldResults.find()) {
-            String result = boldResults.group();
-            String boldText = result.replace("***", "");
-            output = output.replace(result, "<b>" + boldText + "</b>");
-        }
-
-        // Make emphasize
-        Pattern emph = Pattern.compile("(\\*){2}((?!\\*{2}).)*\\*{2}");
-        Matcher emphResults = emph.matcher(output);
-        while (emphResults.find()) {
-            String result = emphResults.group();
-            String emphText = result.replace("**", "");
-            output = output.replace(result, "<em>" + emphText + "</em>");
-        }
-
-        // Make pre-formatted
-        Pattern pre = Pattern.compile("(\\{){3}((?!\\{{3}).)*\\}{3}");
-        Matcher preResults = pre.matcher(output);
-        while (preResults.find()) {
-            String result = preResults.group();
-            String preText = result.replaceAll("\\{{3}", "");
-            preText = preText.replace("}}}", "");
-            output = output.replace(result, "<pre>" + preText + "</pre>");
-        }
-
-        // Make line
-        output = output.replaceAll("-----", "<hr size=3/>");
-        output = output.replaceAll("----", "<hr/>");
-
-        // Make list line by line
-        String[] outputArray = output.split("<br />");
-        Boolean[] levelList = {false, false};
-        String previousLine = "";
-        int previousClosedLevel = 0;
-        for (String line : outputArray) {
-            String newLine = line;
-            if (line.length() > 3) {
-                if (!line.substring(0, 3).equals(" * ")) {
-                    if (levelList[1]) {
-                        levelList[1] = false;
-                        previousClosedLevel = 1;
-                        newLine = "<!-- close L1 --></li>\n\t</ul>\n" + line;
-                    }
-                }
-                if (!line.substring(0, 2).equals("* ")) {
-                    if (levelList[0] && !levelList[1]) {
-                        levelList[0] = false;
-                        newLine = "<!-- close L0 --></li></ul>\n" + line;
-                    }
-                }
-                if (line.substring(0, 2).equals("* ")) {
-                    if (!levelList[0]) {
-                        levelList[0] = true;
-                        newLine = "<ul>\n\t<li><!-- new L0 -->";
-                    } else {
-                        if (previousClosedLevel == 1) {
-                            newLine = "<!-- close L1 --></li></ul>" + "<!-- close L0 element --></li>\n<li><!-- and open next L0 -->";
-                            previousClosedLevel = 0;
-                        } else {
-                            newLine = "<!-- close L0 element --></li>\n<li><!-- and open next L0 -->";
-                        }
-                    }
-                    newLine = newLine + line.substring(2);
-                }
-                if (line.substring(0, 3).equals(" * ")) {
-                    if (!levelList[1]) {
-                        levelList[1] = true;
-                        levelList[0] = true;
-                        newLine = "<ul>\n\t<li><!-- new L1 -->";
-                    } else {
-                        newLine = "<!-- close L1 element --></li>\n\t<li><!-- and open next L1 -->";
-                    }
-                    newLine = newLine + line.substring(3);
-                }
-                output = output.replace(line, newLine);
-                previousLine = newLine;
-            } else {
-                if (levelList[1]) {
-                    levelList[1] = false;
-                    newLine = previousLine + "<!-- close L1 & L0 --></li>\n\t</ul></li>\n</ul>\n" + line;
-                    output = output.replace(previousLine, newLine);
-                } else if (levelList[0]) {
-                    levelList[0] = false;
-                    newLine = previousLine + "<!-- close L0 last --></li>\n</ul>\n" + line;
-                    output = output.replace(previousLine, newLine);
-                }
-                previousLine = line;
-            }
-        }
-
-        return output;
-    }
-
-    private String replaceURL(String url, String desc) {
-        if (url.matches(".*\\.(mp3|ogg)$")) {
-            String audioUrl = getAudio(url);
-            desc = desc.replace(url, audioUrl);
-        } else if (url.matches(".*\\.(jpg|jpeg|gif|png)$")) {
-            desc = desc.replace(url, "<img src=\"" + url + "\" alt=\"" + url + "\" style=\"max-width: " + videoWidth + "px;\" />");
-        } else if (url.matches(".*\\.(mp4|ogv|webm)$")) {
-            String videoUrl = getvideo(url);
-            desc = desc.replace(url, videoUrl);
-        } else {
-            String[] customLink = showCustomLinks(url, desc);
-            desc = desc.replace(customLink[0], customLink[1]);
-        }
-        return desc;
-    }
-
-    private String[] showCustomLinks(String url, String inText) {
-        String input = url;
-        String replaceString = "<a href=\"" + url + "\">" + url + "</a>";
-        if (inText.matches(".*\\[" + url + " *((?!\\]).)*\\].*")) {
-            Pattern regex = Pattern.compile("\\[" + url + " *((?!\\]).)*\\]");
-            Matcher results = regex.matcher(inText);
-            while (results.find()) {
-                String result = results.group();
-                input = result;
-                String content = result.replaceAll("\\[|\\]", "");
-                String[] contentArray = content.split(" ");
-                String target = contentArray[0];
-                String linkText = "";
-                if (contentArray.length > 1) {
-                    for (int i = 1; i < contentArray.length; i++) {
-                        linkText = linkText + " " + contentArray[i];
-                    }
-                } else {
-                    linkText = target;
-                }
-                replaceString = "<a href=\"" + target + "\">" + linkText + "</a>";
-            }
-        }
-        if (replacedURL.contains(url)) {
-            replaceString = url;
-        } else {
-            replacedURL.add(url);
-        }
-        return new String[]{input, replaceString};
     }
 
 }
