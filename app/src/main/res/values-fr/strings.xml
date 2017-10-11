@@ -68,17 +68,11 @@
     <string name="importXML">Importer un XML</string>
     <string name="thumb">thumb</string>
     <string name="line">line</string>
-    <!--<string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>-->
+    <string name="xeSettings">Réglages Xia Express</string>
+    <string name="version">Version</string>
+    <string name="OffLine">Hors ligne</string>
+    <string name="UseCache">Utiliser le cache local</string>
+    <string name="Fun_Raiders">Fun Raiders</string>
 
     <string-array name="licenses_array">
         <item>Proprietary - CC-Zero</item>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:key="settings"
+        android:title="@string/xeSettings">
+        <Preference
+            android:enabled="true"
+            android:key="keyVersion"
+            android:selectable="false"
+            android:singleLineTitle="true"
+            android:summary=""
+            android:title="@string/version" />
+        <PreferenceScreen
+            android:key="button_licence"
+            android:summary="GNU GENERAL PUBLIC LICENSE Version 3"
+            android:title="@string/license">
+            <Preference
+                android:enabled="true"
+                android:key="keyLicence"
+                android:selectable="false"
+                android:singleLineTitle="true"
+                android:summary=""
+                android:title="GNU GENERAL PUBLIC LICENSE Version 3" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+    <PreferenceCategory>
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="offline"
+            android:title="@string/OffLine" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="useCache"
+            android:title="@string/UseCache" />
+    </PreferenceCategory>
+    <PreferenceCategory>
+        <Preference
+            android:enabled="true"
+            android:key="funraiders"
+            android:selectable="false"
+            android:singleLineTitle="true"
+            android:summary="@string/Fun_Raiders"
+            android:title="" />
+    </PreferenceCategory>
+</PreferenceScreen>

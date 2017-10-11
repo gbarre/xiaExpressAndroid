@@ -92,6 +92,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         btnDuplicate = (ImageButton) findViewById(R.id.duplicate);
         btnEditMode = (Button) findViewById(R.id.editMode);
         btnAdd = (ImageButton) findViewById(R.id.add);
+        ImageButton btnSettings = (ImageButton) findViewById(R.id.settings);
+
+        btnSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent;
+                intent = new Intent(MainActivity.this, SettingsActivity.class);
+                //Start details activity
+                startActivity(intent);
+            }
+        });
 
         String rootDirectory = String.valueOf(getExternalFilesDir(null)) + File.separator;
         imagesDirectory = Constants.getImagesFrom(rootDirectory);

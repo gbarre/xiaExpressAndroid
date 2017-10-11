@@ -91,6 +91,18 @@
         android:orientation="horizontal">
 
         <ImageButton
+            android:id="@+id/settings"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:background="@color/blue"
+            android:contentDescription="@string/xeSettings"
+            android:paddingTop="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/settings" />
+
+        <ImageButton
             android:id="@+id/add"
             android:layout_width="36dp"
             android:layout_height="36dp"
