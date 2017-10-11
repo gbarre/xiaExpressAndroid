@@ -2,8 +2,10 @@ package fr.ac_versailles.dane.xiaexpress;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -243,12 +245,15 @@ class TextConverter extends AsyncTask<Void, Void, String> {
     protected String doInBackground(Void... arg0) {
         String desc = htmlString;
 
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean offline = sharedPref.getBoolean("offline", true);
+
         // Search http(s) links
         Pattern urls = Pattern.compile("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
         Matcher urlsMatcher = urls.matcher(htmlString);
         while (urlsMatcher.find()) {
             String url = urlsMatcher.group();
-            if (Util.isOnline(context)) {
+            if (Util.isOnline(context) && !offline) {
                 try {
                     Boolean error = false;
                     // Look in DB
