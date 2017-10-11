@@ -247,6 +247,7 @@ class TextConverter extends AsyncTask<Void, Void, String> {
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         boolean offline = sharedPref.getBoolean("offline", true);
+        boolean useCache = sharedPref.getBoolean("useCache", true);
 
         // Search http(s) links
         Pattern urls = Pattern.compile("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
@@ -271,8 +272,10 @@ class TextConverter extends AsyncTask<Void, Void, String> {
                         // convert string to json
                         if (jsonStr != null) {
                             json = new JSONObject(jsonStr);
-                            // Save jsonString to DB
-                            urlDb.insertRow(url, jsonStr);
+                            if (useCache) {
+                                // Save jsonString to DB
+                                urlDb.insertRow(url, jsonStr);
+                            }
                         } else {
                             error = true;
                         }

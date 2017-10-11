@@ -2,11 +2,13 @@ package fr.ac_versailles.dane.xiaexpress;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -261,7 +263,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (arrayNames.isEmpty()) {
             btnEditMode.setClickable(false);
         }
+    }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        if (hasFocus) {
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            boolean useCache = sharedPref.getBoolean("useCache", true);
+            if (!useCache) {
+                DBAdapter urlDb = new DBAdapter(this);
+                urlDb.open();
+                urlDb.deleteAll();
+                urlDb.close();
+            }
+        }
     }
 
     @Override
