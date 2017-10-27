@@ -84,7 +84,7 @@ public class Metas extends AppCompatActivity {
         int height = metrics.heightPixels * 8 / 10;
 
         // Gets linearlayout
-        LinearLayout layout = (LinearLayout) findViewById(R.id.activity_metas);
+        LinearLayout layout = findViewById(R.id.activity_metas);
         // Gets the layout params that will allow you to resize the layout
         ViewGroup.LayoutParams params = layout.getLayoutParams();
         // Changes the height and width to the specified *pixels*
@@ -100,22 +100,22 @@ public class Metas extends AppCompatActivity {
         xml = Util.getXMLFromPath(xmlDirectory + fileTitle + Constants.XML_EXTENSION);
 
         // Load subviews
-        final LinearLayout metas1 = (LinearLayout) findViewById(R.id.metas1);
-        final LinearLayout metas2 = (LinearLayout) findViewById(R.id.metas2);
-        final LinearLayout metas3 = (LinearLayout) findViewById(R.id.metas3);
-        final LinearLayout metasimginfos = (LinearLayout) findViewById(R.id.metasimginfos);
+        final LinearLayout metas1 = findViewById(R.id.metas1);
+        final LinearLayout metas2 = findViewById(R.id.metas2);
+        final LinearLayout metas3 = findViewById(R.id.metas3);
+        final LinearLayout metasimginfos = findViewById(R.id.metasimginfos);
         metas1.setVisibility(View.VISIBLE);
         metas2.setVisibility(View.GONE);
         metas3.setVisibility(View.GONE);
         metasimginfos.setVisibility(View.GONE);
 
-        title = (TextView) findViewById(R.id.Title);
+        title = findViewById(R.id.Title);
 
         // First subview
-        final EditText metasTitle = (EditText) findViewById(R.id.metasTitle);
-        final EditText metasDescription = (EditText) findViewById(R.id.metasDescription);
+        final EditText metasTitle = findViewById(R.id.metasTitle);
+        final EditText metasDescription = findViewById(R.id.metasDescription);
         setNextFocus(metasTitle, metasDescription);
-        ReadOnly = (Switch) findViewById(R.id.readOnly);
+        ReadOnly = findViewById(R.id.readOnly);
         String roStatus = Util.getNodeValue(xml, "xia/readonly");
         ReadOnly.setChecked(roStatus.equals("true"));
         ReadOnly.setOnClickListener(new View.OnClickListener() {
@@ -124,21 +124,21 @@ public class Metas extends AppCompatActivity {
                 showMyDialog(ReadOnly.isChecked(), "");
             }
         });
-        final Switch ShowDetails = (Switch) findViewById(R.id.showDetails);
+        final Switch ShowDetails = findViewById(R.id.showDetails);
         String sdStatus = Util.getNodeAttribute(xml, "details", "show");
         ShowDetails.setChecked(sdStatus.equals("true"));
 
         // Second subview
-        final EditText Creator = (EditText) findViewById(R.id.metasCreator);
-        final EditText Rights = (EditText) findViewById(R.id.metasRights);
+        final EditText Creator = findViewById(R.id.metasCreator);
+        final EditText Rights = findViewById(R.id.metasRights);
         setNextFocus(Creator, Rights);
-        final EditText Publisher = (EditText) findViewById(R.id.metasPublisher);
+        final EditText Publisher = findViewById(R.id.metasPublisher);
         setNextFocus(Rights, Publisher);
-        final EditText Identifier = (EditText) findViewById(R.id.metasIdentifier);
+        final EditText Identifier = findViewById(R.id.metasIdentifier);
         setNextFocus(Publisher, Identifier);
-        final EditText Source = (EditText) findViewById(R.id.metasSource);
+        final EditText Source = findViewById(R.id.metasSource);
         setNextFocus(Identifier, Source);
-        metasDate = (EditText) findViewById(R.id.metasDate);
+        metasDate = findViewById(R.id.metasDate);
 
         metasDate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,21 +150,21 @@ public class Metas extends AppCompatActivity {
         });
 
         // Third view
-        final EditText Language = (EditText) findViewById(R.id.metasLanguage);
-        final EditText Keywords = (EditText) findViewById(R.id.metasKeywords);
+        final EditText Language = findViewById(R.id.metasLanguage);
+        final EditText Keywords = findViewById(R.id.metasKeywords);
         setNextFocus(Language, Keywords);
-        final EditText Contributors = (EditText) findViewById(R.id.metasContributors);
+        final EditText Contributors = findViewById(R.id.metasContributors);
         setNextFocus(Keywords, Contributors);
-        final EditText Relation = (EditText) findViewById(R.id.metasRelation);
+        final EditText Relation = findViewById(R.id.metasRelation);
         setNextFocus(Contributors, Relation);
-        final EditText Coverage = (EditText) findViewById(R.id.metasCoverage);
+        final EditText Coverage = findViewById(R.id.metasCoverage);
         setNextFocus(Relation, Coverage);
-        metasLicence = (Spinner) findViewById(R.id.metasLicense);
+        metasLicence = findViewById(R.id.metasLicense);
 
         // Fourth view
-        final EditText ImgTitle = (EditText) findViewById(R.id.metasImgTitle);
+        final EditText ImgTitle = findViewById(R.id.metasImgTitle);
         ImgTitle.setText(Util.getNodeAttribute(xml, "image", "title"));
-        final EditText ImgDescription = (EditText) findViewById(R.id.metasImgDescription);
+        final EditText ImgDescription = findViewById(R.id.metasImgDescription);
         ImgDescription.setText(Util.getNodeAttribute(xml, "image", "description"));
         setNextFocus(ImgTitle, ImgDescription);
 
@@ -174,7 +174,7 @@ public class Metas extends AppCompatActivity {
             setStoredText(key);
         }
 
-        SegmentedButtonGroup segmentedButtonGroup = (SegmentedButtonGroup) findViewById(R.id.segmentedButtonGroup);
+        SegmentedButtonGroup segmentedButtonGroup = findViewById(R.id.segmentedButtonGroup);
         segmentedButtonGroup.setOnClickedButtonPosition(new SegmentedButtonGroup.OnClickedButtonPosition() {
             @Override
             public void onClickedButtonPosition(int position) {
@@ -241,8 +241,8 @@ public class Metas extends AppCompatActivity {
             }
         };
 
-        Button btnDone = (Button) findViewById(R.id.done);
-        Button btnCancel = (Button) findViewById(R.id.cancel);
+        Button btnDone = findViewById(R.id.done);
+        Button btnCancel = findViewById(R.id.cancel);
 
         btnDone.setOnClickListener(doneListener);
         btnCancel.setOnClickListener(cancelListener);
@@ -282,7 +282,7 @@ public class Metas extends AppCompatActivity {
                 metasLicence.setSelection(4); // CC Attribution-NonCommercial - CC-BY-NC
             }
         } else {
-            EditText docElement = (EditText) findViewById(getResources().getIdentifier(id, "id", getPackageName()));
+            EditText docElement = findViewById(getResources().getIdentifier(id, "id", getPackageName()));
             if (text.length() > 0) {
                 if (element.equals("date")) {
                     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -320,7 +320,7 @@ public class Metas extends AppCompatActivity {
         // get prompts.xml view
         LayoutInflater li = LayoutInflater.from(Metas.this);
         final View promptView = li.inflate(R.layout.prompt, null);
-        final TextView roText = (TextView) promptView.findViewById(R.id.textView1);
+        final TextView roText = promptView.findViewById(R.id.textView1);
         String roAction;
         if (createPass) {
             roAction = (previousPass.equals("")) ?
@@ -337,7 +337,7 @@ public class Metas extends AppCompatActivity {
         // set prompt.xml to alertdialog builder
         alertDialogBuilder.setView(promptView);
 
-        final EditText userInput = (EditText) promptView
+        final EditText userInput = promptView
                 .findViewById(R.id.editTextDialogUserInput);
 
         // set dialog message

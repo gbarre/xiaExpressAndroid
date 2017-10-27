@@ -6,9 +6,9 @@ import android.os.Bundle;
 /**
  * SettingsActivity.java
  * XiaExpress Android
- * <p>
+ *
  * Created by guillaume on 11/10/2017.
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or

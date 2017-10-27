@@ -115,34 +115,34 @@ public class PlayXia extends AppCompatActivity {
         String xmlDirectory = Constants.getXMLFrom(rootDirectory);
         Constants.buildXMLElements(this);
 
-        background = (ImageView) findViewById(R.id.image);
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        background = findViewById(R.id.image);
+        mProgressBar = findViewById(R.id.progressBar);
 
         fileTitle = getIntent().getStringExtra("filename");
         xml = Util.getXMLFromPath(xmlDirectory + fileTitle + Constants.XML_EXTENSION);
 
         showDetails = (Util.getNodeAttribute(xml, "details", "show").equals("true"));
 
-        playDetail = (LinearLayout) findViewById(R.id.playDetail);
+        playDetail = findViewById(R.id.playDetail);
         playDetail.setVisibility(View.INVISIBLE);
 
-        playMetas = (RelativeLayout) findViewById(R.id.playMetas);
+        playMetas = findViewById(R.id.playMetas);
         playMetas.setVisibility(View.INVISIBLE);
 
-        zoomDetailLayout = (RelativeLayout) findViewById(R.id.zoomDetail);
+        zoomDetailLayout = findViewById(R.id.zoomDetail);
         zoomDetailLayout.setVisibility(View.INVISIBLE);
 
-        detailThumb = (ImageView) findViewById(R.id.detailThumb);
+        detailThumb = findViewById(R.id.detailThumb);
         detailThumb.setVisibility(View.INVISIBLE);
 
-        rippleBackground = (RippleBackground) findViewById(R.id.content);
-        movingArea = (RelativeLayout) findViewById(R.id.movingArea);
+        rippleBackground = findViewById(R.id.content);
+        movingArea = findViewById(R.id.movingArea);
 
         fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + Constants.JPG_EXTENSION);
 
-        ImageButton showImgInfos = (ImageButton) findViewById(R.id.showImgInfos);
+        ImageButton showImgInfos = findViewById(R.id.showImgInfos);
         if (Util.getNodeAttribute(xml, "image", "title").length() == 0 && Util.getNodeAttribute(xml, "image", "description").length() == 0) {
-            ImageView bkgImgInfos = (ImageView) findViewById(R.id.bkgImgInfos);
+            ImageView bkgImgInfos = findViewById(R.id.bkgImgInfos);
             bkgImgInfos.setVisibility(View.INVISIBLE);
             showImgInfos.setVisibility(View.INVISIBLE);
         } else {
@@ -154,7 +154,7 @@ public class PlayXia extends AppCompatActivity {
             });
         }
 
-        ImageButton showMetas = (ImageButton) findViewById(R.id.showMetas);
+        ImageButton showMetas = findViewById(R.id.showMetas);
         showMetas.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -195,7 +195,7 @@ public class PlayXia extends AppCompatActivity {
         showMetasPopup = true;
         showPopup = true;
 
-        ImageButton closeButton = (ImageButton) findViewById(R.id.close2);
+        ImageButton closeButton = findViewById(R.id.close2);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -211,14 +211,14 @@ public class PlayXia extends AppCompatActivity {
         text = text.replaceAll("<", "&lt;");
         text = text.replaceAll(">", "&gt;");
         if (element.equals("description")) {
-            WebView webV = (WebView) findViewById(R.id.documentDescription);
+            WebView webV = findViewById(R.id.documentDescription);
             webV.setVisibility(View.INVISIBLE);
             // Show progressbar
-            RelativeLayout pb = (RelativeLayout) findViewById(R.id.progressBar2);
+            RelativeLayout pb = findViewById(R.id.progressBar2);
             pb.setVisibility(View.VISIBLE);
             new TextConverter(text, webV, 0, 0, this, pb).execute();
         } else {
-            TextView docElement = (TextView) findViewById(getResources().getIdentifier(id, "id", getPackageName()));
+            TextView docElement = findViewById(getResources().getIdentifier(id, "id", getPackageName()));
             if (!element.equals("title") && !element.equals("creator")) {
                 text = "<b>" + xmlElementsDict.get(element) + ": </b>" + text;
             }
@@ -235,7 +235,7 @@ public class PlayXia extends AppCompatActivity {
             cornerWidth = corner.getWidth();
             cornerHeight = corner.getHeight();
 
-            detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
+            detailsArea = findViewById(R.id.detailsArea);
             // AsyncTask loading => background resizing + details
             loadResource loading = new loadResource(background);
             loading.execute();
@@ -405,15 +405,15 @@ public class PlayXia extends AppCompatActivity {
             }
 
             // Put detail title
-            TextView title = (TextView) findViewById(R.id.detailTitle);
+            TextView title = findViewById(R.id.detailTitle);
             title.setText(detailTitle);
 
             // Put detail description (with scrolling)
-            WebView desc = (WebView) findViewById(R.id.detalDescription);
+            WebView desc = findViewById(R.id.detalDescription);
             desc.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
 
             // Show progressbar
-            RelativeLayout pb = (RelativeLayout) findViewById(R.id.progressBar2);
+            RelativeLayout pb = findViewById(R.id.progressBar2);
             pb.setVisibility(View.VISIBLE);
 
             // look for oembed links
@@ -531,7 +531,7 @@ public class PlayXia extends AppCompatActivity {
                 anim.start();
             }
 
-            ImageButton closeButton = (ImageButton) findViewById(R.id.close);
+            ImageButton closeButton = findViewById(R.id.close);
             closeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -544,7 +544,7 @@ public class PlayXia extends AppCompatActivity {
 
     private void zoomDetail(Boolean show, ImageView im) {
         if (show) {
-            ImageView detail_zoom = (ImageView) findViewById(R.id.detail_zoom);
+            ImageView detail_zoom = findViewById(R.id.detail_zoom);
             detail_zoom.setImageDrawable(im.getDrawable());
 
             // Scale zoom

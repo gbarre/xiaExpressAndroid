@@ -88,13 +88,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         setContentView(R.layout.activity_main);
 
         // Get menu buttons
-        btnTrash = (ImageButton) findViewById(R.id.trash);
-        btnExport = (ImageButton) findViewById(R.id.export);
-        btnEdit = (ImageButton) findViewById(R.id.edit);
-        btnDuplicate = (ImageButton) findViewById(R.id.duplicate);
-        btnEditMode = (Button) findViewById(R.id.editMode);
-        btnAdd = (ImageButton) findViewById(R.id.add);
-        ImageButton btnSettings = (ImageButton) findViewById(R.id.settings);
+        btnTrash = findViewById(R.id.trash);
+        btnExport = findViewById(R.id.export);
+        btnEdit = findViewById(R.id.edit);
+        btnDuplicate = findViewById(R.id.duplicate);
+        btnEditMode = findViewById(R.id.editMode);
+        btnAdd = findViewById(R.id.add);
+        ImageButton btnSettings = findViewById(R.id.settings);
 
         btnSettings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -241,8 +241,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onClick(View view) {
                 isEditing = !isEditing;
-                LinearLayout leftMenu = (LinearLayout) findViewById(R.id.leftMenu);
-                LinearLayout menu = (LinearLayout) findViewById(R.id.mainMenu);
+                LinearLayout leftMenu = findViewById(R.id.leftMenu);
+                LinearLayout menu = findViewById(R.id.mainMenu);
                 if (isEditing) {
                     leftMenu.setVisibility(View.VISIBLE);
                     menu.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.orange));
@@ -355,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         btnDuplicate.setBackgroundColor(color);
         btnAdd.setBackgroundColor(color);
         btnEditMode.setBackgroundColor(color);
-        TextView title = (TextView) findViewById(R.id.title);
+        TextView title = findViewById(R.id.title);
         title.setBackgroundColor(color);
         if (items == 1) {
             btnTrash.setVisibility(View.VISIBLE);
@@ -439,7 +439,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
         gridAdapter.notifyDataSetChanged();
         gridView.setAdapter(gridAdapter);
-        LinearLayout menu = (LinearLayout) findViewById(R.id.mainMenu);
+        LinearLayout menu = findViewById(R.id.mainMenu);
         menu.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.blue));
         btnEditMode.setText(getResources().getString(R.string.edit));
 
@@ -522,7 +522,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void setGridView() {
         // Load the collection in grid view
-        gridView = (GridView) findViewById(R.id.gridView);
+        gridView = findViewById(R.id.gridView);
         gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(), xmlDirectory);
         gridView.setAdapter(gridAdapter);
         gridAdapter.setEmpty(nbThumb == 0);

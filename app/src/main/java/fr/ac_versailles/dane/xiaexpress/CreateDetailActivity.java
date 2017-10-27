@@ -116,7 +116,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         detailsType = new String[]{rectangle, ellipse, polygon};
         exportsType = new String[]{getResources().getString(R.string.xia_tablet), getResources().getString(R.string.inkscape)};
 
-        imgTopBarBkgd = (ImageView) findViewById(R.id.imgTopBarBkgd);
+        imgTopBarBkgd = findViewById(R.id.imgTopBarBkgd);
         imgTopBarBkgd.setBackgroundColor(Color.TRANSPARENT);
         setBtnsIcons();
 
@@ -136,7 +136,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         // Always lok for xml on focus changed
         this.xml = Util.getXMLFromPath(xmlDirectory + fileTitle + Constants.XML_EXTENSION);
         if (hasFocus) {
-            TextView menuTitle = (TextView) findViewById(R.id.menuTitle);
+            TextView menuTitle = findViewById(R.id.menuTitle);
             menuTitle.setText(Util.getNodeValue(xml, "xia/title"));
             menuTitle.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -146,7 +146,7 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
             });
             if (!detailsLoaded) {
                 // This is done after onCreate
-                Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+                Toolbar myToolbar = findViewById(R.id.toolbar);
                 toolbarHeight = myToolbar.getBottom();
                 // Get device infos
                 metrics = getResources().getDisplayMetrics();
@@ -155,9 +155,9 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
                 cornerWidth = corner.getWidth();
                 cornerHeight = corner.getHeight();
                 // Load elements from res
-                detailsArea = (RelativeLayout) findViewById(R.id.detailsArea);
-                mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
-                ImageView background = (ImageView) findViewById(R.id.image);
+                detailsArea = findViewById(R.id.detailsArea);
+                mProgressBar = findViewById(R.id.progressBar);
+                ImageView background = findViewById(R.id.image);
                 // AsyncTask loading => background resizing + details
                 loadResource loading = new loadResource(background);
                 loading.execute();
@@ -965,15 +965,15 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
     private void setBtnsIcons() {
 
         // Buttons
-        Button btCollection = (Button) findViewById(R.id.collection);
-        ImageButton btAddDetail = (ImageButton) findViewById(R.id.addDetail);
-        ImageButton btUndo = (ImageButton) findViewById(R.id.undo);
-        ImageButton btPlay = (ImageButton) findViewById(R.id.play);
-        Button btOK = (Button) findViewById(R.id.ok);
-        ImageButton btExport = (ImageButton) findViewById(R.id.export);
-        ImageButton btEdit = (ImageButton) findViewById(R.id.edit);
-        ImageButton btTrash = (ImageButton) findViewById(R.id.trash);
-        ImageButton btDebug = (ImageButton) findViewById(R.id.debug);
+        Button btCollection = findViewById(R.id.collection);
+        ImageButton btAddDetail = findViewById(R.id.addDetail);
+        ImageButton btUndo = findViewById(R.id.undo);
+        ImageButton btPlay = findViewById(R.id.play);
+        Button btOK = findViewById(R.id.ok);
+        ImageButton btExport = findViewById(R.id.export);
+        ImageButton btEdit = findViewById(R.id.edit);
+        ImageButton btTrash = findViewById(R.id.trash);
+        ImageButton btDebug = findViewById(R.id.debug);
 
         // Build the addDetail menu
         listPopupWindow = new ListPopupWindow(this);

@@ -22,7 +22,8 @@
                 android:id="@+id/imgTopBarBkgd"
                 android:layout_width="match_parent"
                 android:layout_height="3dp"
-                android:background="@color/red" />
+                android:background="@color/red"
+                android:contentDescription="@string/NO" />
 
         </FrameLayout>
     </android.support.v7.widget.Toolbar>
