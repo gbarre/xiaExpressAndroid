@@ -2,10 +2,8 @@ package fr.ac_versailles.dane.xiaexpress;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -50,14 +48,18 @@ class TextConverter extends AsyncTask<Void, Void, String> {
     private String htmlString;
     private Context context;
     private DBAdapter urlDb;
+    private Boolean offline;
+    private Boolean useCache;
 
-    TextConverter(String t, WebView wv, float w, float h, Context c, RelativeLayout p) {
+    TextConverter(String t, WebView wv, float w, float h, Context c, RelativeLayout p, Boolean offline, boolean useCache) {
         htmlString = t;
         webV = wv;
         videoWidth = (w == 0) ? 480 : w;
         videoHeight = (h == 0) ? 270 : h;
         context = c;
         pBar = p;
+        this.offline = offline;
+        this.useCache = useCache;
     }
 
     static String getAudio(String url) {
@@ -245,9 +247,6 @@ class TextConverter extends AsyncTask<Void, Void, String> {
     protected String doInBackground(Void... arg0) {
         String desc = htmlString;
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean offline = sharedPref.getBoolean("offline", true);
-        boolean useCache = sharedPref.getBoolean("useCache", true);
 
         // Search http(s) links
         Pattern urls = Pattern.compile("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");

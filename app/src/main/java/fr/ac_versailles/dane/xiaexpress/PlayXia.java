@@ -1,6 +1,7 @@
 package fr.ac_versailles.dane.xiaexpress;
 
 import android.animation.Animator;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -15,6 +16,7 @@ import android.graphics.drawable.shapes.PathShape;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -101,6 +103,8 @@ public class PlayXia extends AppCompatActivity {
     private ImageView detailThumb = null;
     private ProgressBar mProgressBar;
     private RippleBackground rippleBackground;
+    private Boolean offline;
+    private Boolean useCache;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -139,6 +143,10 @@ public class PlayXia extends AppCompatActivity {
         movingArea = findViewById(R.id.movingArea);
 
         fullSizeBackground = BitmapFactory.decodeFile(imagesDirectory + fileTitle + Constants.JPG_EXTENSION);
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        offline = sharedPref.getBoolean("offline", true);
+        useCache = sharedPref.getBoolean("useCache", true);
 
         ImageButton showImgInfos = findViewById(R.id.showImgInfos);
         if (Util.getNodeAttribute(xml, "image", "title").length() == 0 && Util.getNodeAttribute(xml, "image", "description").length() == 0) {
@@ -216,7 +224,7 @@ public class PlayXia extends AppCompatActivity {
             // Show progressbar
             RelativeLayout pb = findViewById(R.id.progressBar2);
             pb.setVisibility(View.VISIBLE);
-            new TextConverter(text, webV, 0, 0, this, pb).execute();
+            new TextConverter(text, webV, 0, 0, this, pb, offline, useCache).execute();
         } else {
             TextView docElement = findViewById(getResources().getIdentifier(id, "id", getPackageName()));
             if (!element.equals("title") && !element.equals("creator")) {
@@ -417,7 +425,7 @@ public class PlayXia extends AppCompatActivity {
             pb.setVisibility(View.VISIBLE);
 
             // look for oembed links
-            new TextConverter(detailDescription, desc, 0, 0, this, pb).execute();
+            new TextConverter(detailDescription, desc, 0, 0, this, pb, offline, useCache).execute();
 
             int xOri = 0;
             int yOri = 0;
