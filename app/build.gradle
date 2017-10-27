@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '26.0.0'
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "fr.ac_versailles.dane.xiaexpress"
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 10
-        versionName "1.0-Beta4"
+        versionCode 11
+        versionName "1.0-Beta5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -25,7 +25,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:26.0.0-alpha1'
+    compile 'com.android.support:appcompat-v7:26.1.0'
     testCompile 'junit:junit:4.12'
     compile 'com.skyfishjy.ripplebackground:library:1.0.1'
     compile 'com.github.ceryle:SegmentedButton:v1.2.2'
