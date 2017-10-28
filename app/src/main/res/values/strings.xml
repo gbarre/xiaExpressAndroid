@@ -73,6 +73,8 @@
     <string name="OffLine">OffLine</string>
     <string name="UseCache">Use local cache</string>
     <string name="Fun_Raiders">Fun Raiders</string>
+    <string name="warning">Warning!</string>
+    <string name="delete_detail">Delete detail?</string>
 
     <string-array name="licenses_array">
         <item>Proprietary - CC-Zero</item>

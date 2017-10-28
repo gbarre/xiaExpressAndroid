@@ -742,8 +742,8 @@ public class CreateDetailActivity extends AppCompatActivity implements AdapterVi
         if ( detailTag != 0 ) {
             // Alert
             AlertDialog.Builder controller = new AlertDialog.Builder(this);
-            controller.setTitle("WARNING");
-            controller.setMessage("DELETE_DETAIL");
+            controller.setTitle(R.string.warning);
+            controller.setMessage(R.string.delete_detail);
             controller.setPositiveButton(getResources().getString(R.string.YES), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     createDetail = false;
