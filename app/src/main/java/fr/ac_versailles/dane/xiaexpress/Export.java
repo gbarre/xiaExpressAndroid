@@ -261,12 +261,13 @@ class Export {
                     output = output + "\t\t\t\t<cc:" + state + " rdf:resource=\"http://creativecommons.org/ns#" + permit + "\"></cc:" + state + ">\n";
                 }
             }
-            output = output + "\t\t\t</cc:license>\n" +
-                    "\t\t</rdf:RDF>\n" +
-                    "\t</metadata>\n";
+            output = output + "\t\t\t</cc:license>\n";
         } else if (!openFont.equals("")) {
             output = output + openFont;
         }
+
+        output = output + "\t\t</rdf:RDF>\n" +
+                "\t</metadata>\n";
 
         output = output + "\t<defs id=\"defs" + (svgID + 3) + "\"></defs>\n" +
                 "\t<sodipodi:namedview " +
