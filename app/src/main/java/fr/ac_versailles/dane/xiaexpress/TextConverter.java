@@ -5,8 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.view.View;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
 
 import org.json.JSONException;
@@ -321,8 +323,11 @@ class TextConverter extends AsyncTask<Void, Void, String> {
         webV.loadData(html, "text/html; charset=UTF-8", null);
         pBar.setVisibility(View.GONE);
         // enable javascript
-        WebSettings webSettings = webV.getSettings();
-        webSettings.setJavaScriptEnabled(true);
+        webV.getSettings().setJavaScriptEnabled(true);
+        // fix grey video on old API
+        webV.setWebChromeClient(new WebChromeClient());
+        webV.getSettings().setPluginState(WebSettings.PluginState.ON);
+        webV.setWebViewClient(new WebViewClient());
 
         // close DB
         clodeDB();
