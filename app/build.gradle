@@ -7,8 +7,8 @@ android {
         applicationId "fr.ac_versailles.dane.xiaexpress"
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 13
-        versionName "1.0-Beta7"
+        versionCode 14
+        versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -24,14 +24,14 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    testCompile 'junit:junit:4.12'
-    compile 'com.skyfishjy.ripplebackground:library:1.0.1'
-    compile 'com.github.ceryle:SegmentedButton:v1.2.2'
-    compile 'com.github.Mariovc:ImagePicker:1.1.1'
-    androidTestCompile 'junit:junit:4.12'
-    androidTestCompile('com.android.support.test.espresso:espresso-core:3.0.1', {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.skyfishjy.ripplebackground:library:1.0.1'
+    implementation 'com.github.ceryle:SegmentedButton:v1.2.2'
+    implementation 'com.github.Mariovc:ImagePicker:1.1.1'
+    androidTestImplementation 'junit:junit:4.12'
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.1', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 }
