@@ -1,7 +1,7 @@
 Xia Express
 ===========
 
-With Xia Express app, you can create interactive images by croping zoomable details. You can add commentaries to those details. This Android application is a lite version of [Xia on desktop.](https://xia.dane.ac-versailles.fr/)
+With Xia Express app, you can create interactive images by croping zoomable details. You can add commentaries to those details. This Android application is a lite version of [Xia on desktop](https://xia.dane.ac-versailles.fr/) **only for tablets**.
 
 Use Xia Express to :
 * Create interactive images
@@ -18,3 +18,5 @@ Use Xia Express to :
      height="80">](https://play.google.com/store/apps/details?id=fr.ac_versailles.dane.xiaexpress)
 
 This educational app was designed to be easily mastered. It is for teachers and students.
+
+**Warning : Works only on tablets**
